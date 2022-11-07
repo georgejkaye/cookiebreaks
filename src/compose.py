@@ -1,3 +1,4 @@
+from email.utils import make_msgid
 from pathlib import Path
 import smtplib
 import ssl
@@ -46,6 +47,7 @@ def send_email(config: Config, cookie_break: Break, email_content: str) -> None:
         message["Subject"] = get_email_subject(cookie_break)
         message["From"] = email_sender
         message["To"] = email_recipient
+        message["Message-ID"] = make_msgid()
         text = MIMEText(email_content, "plain")
         message.attach(text)
         context = ssl.create_default_context()
