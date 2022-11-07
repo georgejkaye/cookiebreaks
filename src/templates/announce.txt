@@ -1,0 +1,8 @@
+Hi all
+
+This week's cookie break will take place on *{{ cookie_break.get_break_date() }}* at *{{ cookie_break.get_break_time() }}* in *{{ cookie_break.location }}*.
+
+This week the break will be hosted by *{{ cookie_break.host }}*. If you would like to host a cookie break (you will be reimbursed for your troubles), please let me know!
+
+Best
+{{ admin.shortname }}

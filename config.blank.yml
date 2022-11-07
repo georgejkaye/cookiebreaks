@@ -1,0 +1,15 @@
+admin:
+  fullname:
+  shortname:
+  email:
+smtp:
+  host:
+  port:
+  user:
+  password:
+db:
+  host:
+  user:
+  database:
+  password:
+list:
