@@ -13,3 +13,4 @@ db:
   database:
   password:
 list:
+log:
