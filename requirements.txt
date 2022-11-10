@@ -1,2 +1,4 @@
 Jinja2
 yml
+types-PyYAML
+psycopg2w
