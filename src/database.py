@@ -23,17 +23,35 @@ def disconnect(conn: Any, cur: Any) -> None:
     cur.close()
 
 
-def get_next_break(config: Config):
+def get_next_breaks(config: Config, number: int) -> list[Break]:
     today = datetime.now()
     (conn, cur) = connect(config)
     statement = f"""
         SELECT break_date, host, location
         FROM cookiebreak
-        WHERE break_date > '{today}'
+        WHERE break_date > %s
         ORDER BY break_date ASC
     """
-    cur.execute(statement)
-    (date, host, location) = cur.fetchone()
-    next_break = Break(host, date, location)
+    cur.execute(statement, [today])
+    rows = cur.fetchmany(size=number)
     disconnect(conn, cur)
-    return next_break
+    next_breaks = []
+    for row in rows:
+        (host, date, location) = row
+        next_breaks.append(Break(host, date, location))
+    return next_breaks
+
+
+def get_next_break(config: Config) -> Break:
+    return get_next_breaks(config, 1)[0]
+
+
+def insert_host(config: Config, host: str, break_id: int) -> None:
+    (conn, cur) = connect(config)
+    statement = f"""
+        UPDATE cookiebreak
+        SET host = '%s'
+        WHERE break_id = '%n'
+    """
+    cur.execute(statement, host, break_id)
+    disconnect(conn, cur)
