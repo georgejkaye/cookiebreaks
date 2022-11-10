@@ -1,7 +1,17 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, time
 
 import yaml
+
+config_file = "config.yml"
+
+
+@dataclass
+class BreakConfig:
+    day: int
+    time: time
+    location: str
+    maximum: int
 
 
 @dataclass
@@ -29,6 +39,7 @@ class DatabaseConfig:
 
 @dataclass
 class Config:
+    breaks: BreakConfig
     admin: AdminConfig
     smtp: SMTPConfig
     db: DatabaseConfig
@@ -36,10 +47,16 @@ class Config:
     log_file: str
 
 
-def parse_config(config_file: str) -> Config:
+def parse_config() -> Config:
     with open(config_file, "r") as data:
         config = yaml.safe_load(data)
     return Config(
+        BreakConfig(
+            config["breaks"]["day"],
+            datetime.strptime(config["breaks"]["time"], "%H:%M").time(),
+            config["breaks"]["location"],
+            config["breaks"]["maximum"],
+        ),
         AdminConfig(
             config["admin"]["fullname"],
             config["admin"]["shortname"],
