@@ -53,7 +53,7 @@ def parse_config() -> Config:
     return Config(
         BreakConfig(
             config["breaks"]["day"],
-            datetime.strptime(config["breaks"]["time"], "%H:%M").time(),
+            datetime.strptime(str(config["breaks"]["time"]), "%H%M").time(),
             config["breaks"]["location"],
             config["breaks"]["maximum"],
         ),
