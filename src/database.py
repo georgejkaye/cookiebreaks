@@ -25,7 +25,7 @@ def disconnect(conn: Any, cur: Any) -> None:
 
 def insert_host(config: Config, host: str, break_id: int) -> None:
     (conn, cur) = connect(config)
-    statement = f"""
+    statement = """
         UPDATE cookiebreak
         SET host = %s
         WHERE break_id = %s

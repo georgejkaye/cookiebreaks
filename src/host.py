@@ -11,8 +11,13 @@ def main():
         exit(0)
     else:
         host = input("Host name: ")
+        if host == "":
+            host_text = "nobody"
+            host = None
+        else:
+            host_text = host
         check = input((
-            f"Is {host} hosting the cookie break on "
+            f"Is {host_text} hosting the cookie break on "
             f"{chosen_break.get_break_datetime()}? (y/N) "
         ))
         if not check == "y":
