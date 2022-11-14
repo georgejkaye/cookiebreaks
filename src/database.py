@@ -23,6 +23,18 @@ def disconnect(conn: Any, cur: Any) -> None:
     cur.close()
 
 
+def insert_host(config: Config, host: str, break_id: int) -> None:
+    (conn, cur) = connect(config)
+    statement = f"""
+        UPDATE cookiebreak
+        SET host = %s
+        WHERE break_id = %s
+    """
+    cur.execute(statement, (host, break_id))
+    conn.commit()
+    disconnect(conn, cur)
+
+
 def get_next_breaks(config: Config, number: int) -> list[Break]:
     today = datetime.now()
     (conn, cur) = connect(config)

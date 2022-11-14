@@ -17,3 +17,6 @@ class Break:
 
     def get_short_break_date(self) -> str:
         return self.time.strftime("%a %d %b")
+
+    def get_break_datetime(self) -> str:
+        return f"{self.get_break_date()} @ {self.get_break_time()}"
