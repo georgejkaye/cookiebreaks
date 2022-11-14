@@ -43,7 +43,7 @@ class Config:
     admin: AdminConfig
     smtp: SMTPConfig
     db: DatabaseConfig
-    mailing_list: str
+    mailing_lists: list[str]
     log_file: str
 
 
@@ -74,7 +74,7 @@ def parse_config() -> Config:
             config["db"]["database"],
             config["db"]["password"]
         ),
-        config["list"],
+        config["lists"],
         config["log"]
     )
 

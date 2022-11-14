@@ -1,4 +1,4 @@
-from email.utils import make_msgid
+from email.utils import make_msgid, formataddr
 from pathlib import Path
 import smtplib
 import ssl
@@ -35,8 +35,8 @@ def handle_str_or_bytes(obj: Union[str, bytes]) -> str:
 
 def send_email(config: Config, cookie_break: Break, email_content: str) -> None:
     email_sender = config.admin.email
-    email_recipient = config.mailing_list
-    if email_recipient is not None:
+    email_recipients = config.mailing_lists
+    if len(email_recipients) > 0:
         # Get smtp variables
         smtp_host = config.smtp.host
         smtp_port = config.smtp.port
@@ -45,8 +45,9 @@ def send_email(config: Config, cookie_break: Break, email_content: str) -> None:
         # Make the message and fill in the fields
         message = MIMEMultipart("alternative")
         message["Subject"] = get_email_subject(cookie_break)
-        message["From"] = email_sender
-        message["To"] = email_recipient
+        message["From"] = formataddr(
+            (config.admin.full_name, email_sender))
+        message["To"] = ", ".join(email_recipients)
         message["Message-ID"] = make_msgid()
         text = MIMEText(email_content, "plain")
         message.attach(text)
@@ -60,10 +61,10 @@ def send_email(config: Config, cookie_break: Break, email_content: str) -> None:
                 exit(1)
 
             try:
-                server.sendmail(email_sender, email_recipient,
+                server.sendmail(email_sender, email_recipients,
                                 message.as_string())
             except smtplib.SMTPResponseException as e:
                 debug(config,
                       f"Error sending email from server {smtp_host}:{smtp_port} as user {smtp_user}: {e.smtp_code} {handle_str_or_bytes(e.smtp_error)}")
                 exit(1)
-        debug(config, f"Sent email to {email_recipient}")
+        debug(config, f"Sent email to {email_recipients}")
