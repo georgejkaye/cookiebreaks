@@ -1,14 +1,6 @@
-from datetime import date, datetime, time, timedelta
-
 from config import parse_config
-from database import get_next_breaks, insert_host, insert_missing_breaks
+from database import insert_host
 from interactive import select_break
-from structs import Break
-
-
-def get_next_date(next_day: date, offset: int, time: time) -> datetime:
-    date = next_day + timedelta(offset * 7)
-    return datetime.combine(date, time)
 
 
 def main():
