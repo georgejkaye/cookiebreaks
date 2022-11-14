@@ -25,3 +25,7 @@ Set the host for one of the upcoming cookie breaks.
 ### `next.py`
 
 Update the cookie break database with any cookie breaks in the next few weeks.
+
+### `holiday.py`
+
+Set an upcoming break as a holiday or not.

@@ -8,7 +8,9 @@ def select_break(config: Config) -> Break:
     for i, b in enumerate(next_breaks):
         break_date = b.get_break_date()
         break_time = b.get_break_time()
-        if b.host is None:
+        if b.holiday:
+            break_host = "holiday"
+        elif b.host is None:
             break_host = "no host"
         else:
             break_host = b.host

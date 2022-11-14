@@ -8,6 +8,7 @@ class Break:
     host: str
     time: datetime
     location: str
+    holiday: bool
 
     def get_break_time(self) -> str:
         return self.time.strftime("%H:%M")
