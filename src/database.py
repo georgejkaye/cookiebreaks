@@ -58,12 +58,23 @@ def get_next_break(config: Config) -> Break:
     return get_next_breaks(config, 1)[0]
 
 
-def insert_host(config: Config, host: str, break_id: int) -> None:
+def insert_missing_breaks(config: Config, breaks: list[Break]) -> None:
     (conn, cur) = connect(config)
-    statement = f"""
-        UPDATE cookiebreak
-        SET host = '%s'
-        WHERE break_id = '%n'
-    """
-    cur.execute(statement, host, break_id)
+    for b in breaks:
+        statement = """
+            INSERT INTO cookiebreak (break_date, location)
+            VALUES (%s, %s)
+        """
+        try:
+            cur.execute(
+                statement,
+                (b.time, b.location)
+            )
+        except:
+            # If the break already exists then the above query throws an error
+            # Postgres >= 9.5 has an ON CONFLICT keyword that lets us do this
+            # natively but the version on the CS server is only 9.2 so we can't
+            # do that and we hack it instead
+            conn.rollback()
+    conn.commit()
     disconnect(conn, cur)

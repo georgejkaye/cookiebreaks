@@ -1,7 +1,8 @@
 from datetime import date, datetime, time, timedelta
 
 from config import parse_config
-from database import get_next_breaks
+from database import insert_missing_breaks
+from structs import Break
 
 
 def get_next_date(next_day: date, offset: int, time: time) -> datetime:
@@ -14,11 +15,15 @@ def main():
     today = datetime.today().date()
     next_break_day_delta = (config.breaks.day - today.weekday()) % 7
     next_break_day = today + timedelta(days=next_break_day_delta)
-    next_breaks = list(map(
+    next_break_dates = list(map(
         lambda x: get_next_date(next_break_day, x, config.breaks.time),
         range(0, config.breaks.maximum)
     ))
-    print(next_breaks)
+    next_break_objects = list(map(
+        lambda x: Break("", x, config.breaks.location),
+        next_break_dates
+    ))
+    insert_missing_breaks(config, next_break_objects)
 
 
 if __name__ == "__main__":
