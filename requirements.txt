@@ -1,4 +1,4 @@
 Jinja2
 yml
 types-PyYAML
-psycopg2w
+psycopg2-binary
