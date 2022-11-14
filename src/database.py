@@ -27,18 +27,18 @@ def get_next_breaks(config: Config, number: int) -> list[Break]:
     today = datetime.now()
     (conn, cur) = connect(config)
     statement = f"""
-        SELECT break_date, host, location
+        SELECT break_id, host, break_date, location
         FROM cookiebreak
         WHERE break_date > %s
         ORDER BY break_date ASC
     """
-    cur.execute(statement, [today])
+    cur.execute(statement, (today,))
     rows = cur.fetchmany(size=number)
     disconnect(conn, cur)
     next_breaks = []
     for row in rows:
-        (host, date, location) = row
-        next_breaks.append(Break(host, date, location))
+        (id, host, date, location) = row
+        next_breaks.append(Break(id, host, date, location))
     return next_breaks
 
 
