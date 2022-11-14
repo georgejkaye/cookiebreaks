@@ -1,21 +1,21 @@
 breaks:
-  day:
-  time:
-  location:
-  maximum:
+  day:       # The day the breaks are on 0=Monday, 1=Tuesday etc
+  time:      # The time the breaks are on, formatted as e.g. 1500
+  location:  # Where the breaks take place
+  maximum:   # The maximum number of breaks to allocate in the future
 admin:
-  fullname:
-  shortname:
-  email:
-smtp:
+  fullname:  # Full name of the admin, displayed in email headers
+  shortname: # Short name of the admin, displayed in email signature
+  email:     # Address to send the emails from
+smtp:        # SMTP parameters
   host:
   port:
   user:
   password:
-db:
+db:          # Database parameters
   host:
   user:
   database:
   password:
-list:
-log:
+lists:        # Lists to send the emails to
+log:          # File to write log messages in
