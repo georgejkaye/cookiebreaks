@@ -23,14 +23,14 @@ def disconnect(conn: Any, cur: Any) -> None:
     cur.close()
 
 
-def insert_host(config: Config, host: str, break_id: int) -> None:
+def insert_host(config: Config, break_host: str, break_id: int) -> None:
     (conn, cur) = connect(config)
     statement = """
         UPDATE cookiebreak
-        SET host = %s
+        SET break_host = %s
         WHERE break_id = %s
     """
-    cur.execute(statement, (host, break_id))
+    cur.execute(statement, (break_host, break_id))
     conn.commit()
     disconnect(conn, cur)
 
@@ -39,18 +39,19 @@ def get_next_breaks(config: Config, number: int) -> list[Break]:
     today = datetime.now()
     (conn, cur) = connect(config)
     statement = f"""
-        SELECT break_id, host, break_date, location, is_holiday
+        SELECT break_id, break_host, break_datetime, break_location, is_holiday
         FROM cookiebreak
-        WHERE break_date > %s
-        ORDER BY break_date ASC
+        WHERE break_datetime > %s
+        ORDER BY break_datetime ASC
     """
     cur.execute(statement, (today,))
     rows = cur.fetchmany(size=number)
     disconnect(conn, cur)
     next_breaks = []
     for row in rows:
-        (id, host, date, location, holiday) = row
-        next_breaks.append(Break(id, host, date, location, holiday))
+        (id, break_host, date, break_location, holiday) = row
+        next_breaks.append(
+            Break(id, break_host, date, break_location, holiday))
     return next_breaks
 
 
@@ -62,13 +63,13 @@ def insert_missing_breaks(config: Config, breaks: list[Break]) -> None:
     (conn, cur) = connect(config)
     for b in breaks:
         statement = """
-            INSERT INTO cookiebreak (break_date, location)
+            INSERT INTO cookiebreak (break_datetime, break_location)
             VALUES (%s, %s)
         """
         try:
             cur.execute(
                 statement,
-                (b.time, b.location)
+                (b.time, b.break_location)
             )
         except:
             # If the break already exists then the above query throws an error
@@ -85,7 +86,7 @@ def set_holiday(config: Config, break_id: int, holiday: bool) -> None:
     if holiday:
         statement = """
             UPDATE cookiebreak
-            SET is_holiday = true, host = NULL
+            SET is_holiday = true, break_host = NULL
             WHERE break_id = %s
         """
     else:
