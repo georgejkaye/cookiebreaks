@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Tuple, List
 
 import psycopg2
 
@@ -7,7 +7,7 @@ from config import Config
 from structs import Break
 
 
-def connect(config: Config) -> tuple[Any, Any]:
+def connect(config: Config) -> Tuple[Any, Any]:
     conn = psycopg2.connect(
         dbname=config.db.database,
         user=config.db.user,
@@ -35,7 +35,7 @@ def insert_host(config: Config, break_host: str, break_id: int) -> None:
     disconnect(conn, cur)
 
 
-def get_next_breaks(config: Config, number: int) -> list[Break]:
+def get_next_breaks(config: Config, number: int) -> List[Break]:
     today = datetime.now()
     (conn, cur) = connect(config)
     statement = f"""
@@ -59,7 +59,7 @@ def get_next_break(config: Config) -> Break:
     return get_next_breaks(config, 1)[0]
 
 
-def insert_missing_breaks(config: Config, breaks: list[Break]) -> None:
+def insert_missing_breaks(config: Config, breaks: List[Break]) -> None:
     (conn, cur) = connect(config)
     for b in breaks:
         statement = """

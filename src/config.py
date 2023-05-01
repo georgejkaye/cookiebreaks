@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, time
+from typing import List
 
 import yaml
 
@@ -43,7 +44,7 @@ class Config:
     admin: AdminConfig
     smtp: SMTPConfig
     db: DatabaseConfig
-    mailing_lists: list[str]
+    mailing_lists: List[str]
     log_file: str
 
 
