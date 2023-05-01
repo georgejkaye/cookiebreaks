@@ -20,7 +20,7 @@ def main():
         range(0, config.breaks.maximum)
     ))
     next_break_objects = list(map(
-        lambda x: Break("", x, config.breaks.location),
+        lambda x: Break(0, "", x, config.breaks.location, False),
         next_break_dates
     ))
     insert_missing_breaks(config, next_break_objects)

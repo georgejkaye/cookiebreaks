@@ -69,9 +69,10 @@ def insert_missing_breaks(config: Config, breaks: List[Break]) -> None:
         try:
             cur.execute(
                 statement,
-                (b.time, b.break_location)
+                (b.time, b.location)
             )
-        except:
+        except Exception as e:
+            print(e)
             # If the break already exists then the above query throws an error
             # Postgres >= 9.5 has an ON CONFLICT keyword that lets us do this
             # natively but the version on the CS server is only 9.2 so we can't
