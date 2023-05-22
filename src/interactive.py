@@ -3,8 +3,9 @@ from database import get_next_breaks
 from structs import Break
 
 
-def select_break(config: Config) -> Break:
-    next_breaks = get_next_breaks(config, config.breaks.maximum)
+def select_break(config: Config, past: bool, hosted: bool) -> Break:
+    next_breaks = get_next_breaks(
+        config, number=config.breaks.maximum, past=past, hosted=hosted)
     for i, b in enumerate(next_breaks):
         break_date = b.get_break_date()
         break_time = b.get_break_time()
@@ -18,7 +19,7 @@ def select_break(config: Config) -> Break:
     print(f"{len(next_breaks) + 1}: Cancel")
     choice = None
     while choice is None:
-        choice_input = input(f"Select break (1-{len(next_breaks)}): ")
+        choice_input = input(f"Select break (1-{len(next_breaks) + 1}): ")
         if choice_input.isnumeric():
             choice_input_no = int(choice_input)
             if choice_input_no >= 1 and choice_input_no <= len(next_breaks) + 1:

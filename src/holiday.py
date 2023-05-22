@@ -5,7 +5,7 @@ from interactive import select_break
 
 def main():
     config = parse_config()
-    chosen_break = select_break(config)
+    chosen_break = select_break(config, past=False)
     if chosen_break is None:
         print("No choice made, exiting")
         exit(0)

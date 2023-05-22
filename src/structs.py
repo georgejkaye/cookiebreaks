@@ -9,6 +9,7 @@ class Break:
     time: datetime
     location: str
     holiday: bool
+    cost: float
 
     def get_break_time(self) -> str:
         return self.time.strftime("%H:%M")

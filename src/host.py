@@ -5,10 +5,16 @@ from interactive import select_break
 
 def main():
     config = parse_config()
-    chosen_break = select_break(config)
+    chosen_break = select_break(config, past=False, hosted=False)
     if chosen_break is None:
         print("No choice made, exiting")
         exit(0)
+    elif chosen_break.host is not None:
+        overwrite = input(
+            f"{chosen_break.host} is already hosting on {chosen_break.get_break_datetime()}, overwrite? (y/N) ")
+        if not overwrite == "y":
+            print("Aborting...")
+            exit(0)
     else:
         host = input("Host name: ")
         if host == "":
