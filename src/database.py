@@ -59,25 +59,37 @@ def get_next_break(config: Config) -> Break:
     return get_next_breaks(config, 1)[0]
 
 
-def insert_missing_breaks(config: Config, breaks: List[Break]) -> None:
+def to_postgres_day(day: int) -> int:
+    if day == 6:
+        return 0
+    else:
+        return day + 1
+
+
+def insert_missing_breaks(config: Config) -> None:
     (conn, cur) = connect(config)
-    for b in breaks:
-        statement = """
-            INSERT INTO cookiebreak (break_datetime, break_location)
-            VALUES (%s, %s)
-        """
-        try:
-            cur.execute(
-                statement,
-                (b.time, b.location)
-            )
-        except Exception as e:
-            print(e)
-            # If the break already exists then the above query throws an error
-            # Postgres >= 9.5 has an ON CONFLICT keyword that lets us do this
-            # natively but the version on the CS server is only 9.2 so we can't
-            # do that and we hack it instead
-            conn.rollback()
+    statement = f"""
+        INSERT INTO cookiebreak(break_datetime, break_location)
+            SELECT days AS break_datetime, %(location)s
+            FROM (
+                SELECT days
+                FROM generate_series(
+                    CURRENT_DATE + TIME %(time)s,
+                    CURRENT_DATE + TIME %(time)s + INTERVAL '%(max)s weeks',
+                    '1 day'
+                ) AS days
+                WHERE EXTRACT(DOW from days) = %(day)s
+            ) AS dates
+            WHERE dates.days NOT IN (SELECT break_datetime FROM cookiebreak)
+    """
+    cur.execute(
+        statement,
+        {
+            "location": config.breaks.day,
+            "time": config.breaks.time,
+            "max": config.breaks.maximum,
+            "day": to_postgres_day(config.breaks.day)
+        })
     conn.commit()
     disconnect(conn, cur)
 
