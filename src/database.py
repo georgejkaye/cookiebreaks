@@ -25,8 +25,8 @@ def disconnect(conn: Any, cur: Any) -> None:
 
 def insert_host(config: Config, break_host: str, break_id: int) -> None:
     (conn, cur) = connect(config)
-    statement = """
-        UPDATE cookiebreak
+    statement = f"""
+        UPDATE {config.db.database}
         SET break_host = %(host)s
         WHERE break_id = %(id)s
     """
@@ -38,11 +38,11 @@ def insert_host(config: Config, break_host: str, break_id: int) -> None:
 def reimburse_and_mask_host(config: Config, break_id: int) -> None:
     (conn, cur) = connect(config)
     statement = """
-        UPDATE cookiebreak
+        UPDATE {config.db.database}
         SET break_host = '', host_reimbursed = 't'
         WHERE break_id = %(id)s
     """
-    cur.execute(statement, {"id": break_id})
+    cur.execute(statement, {"id": break_id,})
     conn.commit()
     disconnect(conn, cur)
 
@@ -59,7 +59,7 @@ def get_next_breaks(config: Config, number: int, past: int, hosted: bool) -> Lis
         hosted_condition = ""
     statement = f"""
         SELECT break_id, break_host, break_datetime, break_location, is_holiday, break_cost
-        FROM cookiebreak
+        FROM {config.db.database}
         WHERE break_datetime {op} NOW() {hosted_condition}
         ORDER BY break_datetime ASC
     """
@@ -88,7 +88,7 @@ def to_postgres_day(day: int) -> int:
 def insert_missing_breaks(config: Config) -> None:
     (conn, cur) = connect(config)
     statement = f"""
-        INSERT INTO cookiebreak(break_datetime, break_location)
+        INSERT INTO {config.db.database} (break_datetime, break_location)
             SELECT days AS break_datetime, %(location)s
             FROM (
                 SELECT days
@@ -99,7 +99,7 @@ def insert_missing_breaks(config: Config) -> None:
                 ) AS days
                 WHERE EXTRACT(DOW from days) = %(day)s
             ) AS dates
-            WHERE dates.days NOT IN (SELECT break_datetime FROM cookiebreak)
+            WHERE dates.days NOT IN (SELECT break_datetime FROM {config.db.database})
     """
     cur.execute(
         statement,
@@ -117,16 +117,16 @@ def set_holiday(config: Config, break_id: int, holiday: bool) -> None:
     (conn, cur) = connect(config)
     if holiday:
         statement = """
-            UPDATE cookiebreak
+            UPDATE {config.db.database}
             SET is_holiday = true, break_host = NULL
-            WHERE break_id = %s
+            WHERE break_id = %(id)s
         """
     else:
         statement = """
-            UPDATE cookiebreak
+            UPDATE {config.db.database}
             SET is_holiday = false
-            WHERE break_id = %s
+            WHERE break_id = %(id)s
         """
-    cur.execute(statement, (break_id, ))
+    cur.execute(statement, { "id": break_id})
     conn.commit()
     disconnect(conn, cur)
