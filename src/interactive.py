@@ -3,6 +3,7 @@ from config import Config
 from database import get_breaks
 from structs import Break, BreakFilters, format_as_price
 
+
 def display_breaks(breaks: list[Break]):
     for i, b in enumerate(breaks):
         break_date = b.get_break_date()
@@ -10,13 +11,17 @@ def display_breaks(breaks: list[Break]):
         if b.holiday:
             break_host = "holiday"
         elif b.host_reimbursed:
-            break_host = format_as_price(b.cost)
+            if(b.cost):
+                break_host = format_as_price(b.cost)
+            else:
+                break_host = ""
         elif b.host is None:
             break_host = "no host"
         else:
             break_host = b.host
         print(f"{i+1}: {break_date} @ {break_time} ({break_host})")
     print(f"{len(breaks) + 1}: Cancel")
+
 
 def validate_choice(choice_input: str, min: int, max: int) -> Optional[int]:
     if choice_input.isnumeric():
@@ -31,7 +36,11 @@ def validate_choice(choice_input: str, min: int, max: int) -> Optional[int]:
 
 def select_break(config: Config, filters: BreakFilters) -> Break:
     breaks = get_breaks(config, filters)
-    display_breaks(breaks)
+    if len(breaks) > 0:
+        display_breaks(breaks)
+    else:
+        print("No breaks to show, aborting...")
+        exit(0)
     choice = None
     while choice is None:
         choice_input = input(f"Select break (1-{len(breaks) + 1}): ")
@@ -41,13 +50,19 @@ def select_break(config: Config, filters: BreakFilters) -> Break:
     else:
         return breaks[choice - 1]
 
-def select_multiple_breaks(config: Config, filters : BreakFilters) -> List[Break]:
+
+def select_multiple_breaks(config: Config, filters: BreakFilters) -> List[Break]:
     breaks = get_breaks(config, filters)
-    display_breaks(breaks)
+    if len(breaks) > 0:
+        display_breaks(breaks)
+    else:
+        print("No breaks to show, aborting...")
+        exit(0)
     choices = None
     while choices is None:
-        choice_input = input(f"Select breaks (1-{len(breaks) + 1}) e.g. 1,2,3: ")
-        candidate_choices : List[int] = []
+        choice_input = input(
+            f"Select breaks (1-{len(breaks) + 1}) e.g. 1,2,3: ")
+        candidate_choices: List[int] = []
         choice_strings = choice_input.split(",")
         for choice_string in choice_strings:
             current_choice = validate_choice(choice_string, 1, len(breaks) + 1)
