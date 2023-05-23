@@ -1,11 +1,12 @@
 from config import parse_config
 from database import insert_host
 from interactive import select_break
+from structs import BreakFilters
 
 
 def main():
     config = parse_config()
-    chosen_break = select_break(config, past=False, hosted=False)
+    chosen_break = select_break(config, BreakFilters(past=False))
     if chosen_break is None:
         print("No choice made, exiting")
         exit(0)
