@@ -4,14 +4,7 @@ breaks:
   location:  # Where the breaks take place
   maximum:   # The maximum number of breaks to allocate in the future
 admin:
-  fullname:  # Full name of the admin, displayed in email headers
-  shortname: # Short name of the admin, displayed in email signature
-  email:     # Address to send the emails from
-smtp:        # SMTP parameters
-  host:
-  port:
-  user:
-  password:
+  name:
 db:          # Database parameters
   host:
   user:

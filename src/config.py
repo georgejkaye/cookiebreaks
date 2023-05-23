@@ -17,18 +17,7 @@ class BreakConfig:
 
 @dataclass
 class AdminConfig:
-    full_name: str
-    short_name: str
-    email: str
-
-
-@dataclass
-class SMTPConfig:
-    host: str
-    port: int
-    user: str
-    password: str
-
+    name: str
 
 @dataclass
 class DatabaseConfig:
@@ -42,7 +31,6 @@ class DatabaseConfig:
 class Config:
     breaks: BreakConfig
     admin: AdminConfig
-    smtp: SMTPConfig
     db: DatabaseConfig
     mailing_lists: List[str]
     log_file: str
@@ -59,15 +47,7 @@ def parse_config() -> Config:
             config["breaks"]["maximum"],
         ),
         AdminConfig(
-            config["admin"]["fullname"],
-            config["admin"]["shortname"],
-            config["admin"]["email"]
-        ),
-        SMTPConfig(
-            config["smtp"]["host"],
-            int(config["smtp"]["port"]),
-            config["smtp"]["user"],
-            config["smtp"]["password"]
+            config["admin"]["name"],
         ),
         DatabaseConfig(
             config["db"]["host"],
