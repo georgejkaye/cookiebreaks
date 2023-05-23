@@ -10,6 +10,9 @@ class Break:
     location: str
     holiday: bool
     cost: float
+    host_reimbursed: bool
+    admin_claimed: bool
+    admin_reimbursed: bool
 
     def get_break_time(self) -> str:
         return self.time.strftime("%H:%M")
@@ -22,3 +25,13 @@ class Break:
 
     def get_break_datetime(self) -> str:
         return f"{self.get_break_date()} @ {self.get_break_time()}"
+
+@dataclass
+class BreakFilters:
+    number: Optional[int] = None
+    past: Optional[bool] = None
+    hosted: Optional[bool] = None
+    holiday: Optional[bool] = None
+    host_reimbursed: Optional[bool] = None
+    admin_claimed: Optional[bool] = None
+    admin_reimbursed: Optional[bool] = None

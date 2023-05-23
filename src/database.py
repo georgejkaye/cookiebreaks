@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Any, Tuple, List
+from typing import Any, Optional, Tuple, List
 
 import psycopg2
 
 from config import Config
-from structs import Break
+from structs import Break, BreakFilters
 
 
 def connect(config: Config) -> Tuple[Any, Any]:
@@ -46,36 +46,63 @@ def reimburse_and_mask_host(config: Config, break_id: int) -> None:
     conn.commit()
     disconnect(conn, cur)
 
+def get_boolean_where_clause(where_clauses : list[str], boolean : Optional[bool], field : str):
+    if boolean is not None:
+        if boolean:
+            var = "t"
+        else:
+            var = "f"
+        where_clauses.append(f"{field} = '{var}'")
 
-def get_next_breaks(config: Config, number: int, past: int, hosted: bool) -> List[Break]:
+def get_breaks(config: Config, filters : BreakFilters) -> List[Break]:
     (conn, cur) = connect(config)
-    if past:
-        op = "<"
+    where_clauses = []
+    if filters.past is not None:
+        if filters.past:
+            op = "<"
+        else:
+            op = ">"
+        where_clauses.append(f"break_datetime {op} NOW()")
+    if filters.hosted is not None:
+        if filters.hosted:
+            op = "!="
+            var = "t"
+        else:
+            op = "="
+            var = "f"
+        where_clauses.append(f"(break_host {op} '' OR host_reimbursed = '{var}')")
+    get_boolean_where_clause(where_clauses, filters.holiday, "is_holiday")
+    get_boolean_where_clause(where_clauses, filters.host_reimbursed, "host_reimbursed")
+    get_boolean_where_clause(where_clauses, filters.admin_claimed, "admin_claimed")
+    get_boolean_where_clause(where_clauses, filters.admin_reimbursed, "admin_reimbursed")
+    if len(where_clauses) == 0:
+        where_string = ""
     else:
-        op = ">"
-    if hosted:
-        hosted_condition = " AND break_host != ''"
+        where_string = "WHERE " + " AND ".join(where_clauses)
+    if filters.number is None:
+        limit_string = ""
     else:
-        hosted_condition = ""
+        limit_string = "LIMIT {number}"
     statement = f"""
-        SELECT break_id, break_host, break_datetime, break_location, is_holiday, break_cost
+        SELECT *
         FROM {config.db.database}
-        WHERE break_datetime {op} NOW() {hosted_condition}
+        {where_string}
         ORDER BY break_datetime ASC
+        {limit_string}
     """
     cur.execute(statement)
-    rows = cur.fetchmany(size=number)
+    rows = cur.fetchall()
     disconnect(conn, cur)
     next_breaks = []
     for row in rows:
-        (id, break_host, date, break_location, holiday, cost) = row
+        (id, break_host, date, break_location, is_holiday, host_reimbursed, admin_claimed, admin_reimbursed, cost) = row
         next_breaks.append(
-            Break(id, break_host, date, break_location, holiday, cost))
+            Break(id, break_host, date, break_location, is_holiday, cost, host_reimbursed, admin_claimed, admin_reimbursed))
     return next_breaks
 
 
 def get_next_break(config: Config) -> Break:
-    return get_next_breaks(config, number=1, past=False, hosted=False)[0]
+    return get_breaks(config, number=1)[0]
 
 
 def to_postgres_day(day: int) -> int:
@@ -116,13 +143,13 @@ def insert_missing_breaks(config: Config) -> None:
 def set_holiday(config: Config, break_id: int, holiday: bool) -> None:
     (conn, cur) = connect(config)
     if holiday:
-        statement = """
+        statement = f"""
             UPDATE {config.db.database}
             SET is_holiday = true, break_host = NULL
             WHERE break_id = %(id)s
         """
     else:
-        statement = """
+        statement = f"""
             UPDATE {config.db.database}
             SET is_holiday = false
             WHERE break_id = %(id)s
