@@ -1,6 +1,7 @@
 from config import parse_config
 from database import reimburse_and_mask_host
 from interactive import select_break
+from structs import format_as_price
 
 
 def main():
@@ -11,7 +12,7 @@ def main():
         exit(0)
     else:
         host = chosen_break.host
-        cost = "{:.2f}".format(chosen_break.cost)
+        cost = format_as_price(chosen_break.cost)
         date = chosen_break.get_break_datetime()
         check = input((
             f"Have you reimbursed {host} £{cost} for hosting cookie break on {date}? (y/N) "

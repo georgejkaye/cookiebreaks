@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
 
+def format_as_price(cost : float):
+    return "£" + "{:.2f}".format(cost)
 
 @dataclass
 class Break:
