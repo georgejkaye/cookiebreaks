@@ -157,3 +157,14 @@ def set_holiday(config: Config, break_id: int, holiday: bool) -> None:
     cur.execute(statement, { "id": break_id})
     conn.commit()
     disconnect(conn, cur)
+
+def claim_for_breaks(config: Config, break_ids: List[int]) -> None:
+    (conn, cur) = connect(config)
+    statement = f"""
+        UPDATE {config.db.database}
+        SET admin_claimed = true
+        WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
+    """
+    cur.execute(statement, {"ids": break_ids})
+    conn.commit()
+    disconnect(conn, cur)
