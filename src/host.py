@@ -15,22 +15,21 @@ def main():
         if not overwrite == "y":
             print("Aborting...")
             exit(0)
+    host = input("Host name: ")
+    if host == "":
+        host_text = "nobody"
+        host = None
     else:
-        host = input("Host name: ")
-        if host == "":
-            host_text = "nobody"
-            host = None
-        else:
-            host_text = host
-        check = input((
-            f"Is {host_text} hosting the cookie break on "
-            f"{chosen_break.get_break_datetime()}? (y/N) "
-        ))
-        if not check == "y":
-            print("Aborting...")
-            exit(0)
-        else:
-            insert_host(config, host, chosen_break.id)
+        host_text = host
+    check = input((
+        f"Is {host_text} hosting the cookie break on "
+        f"{chosen_break.get_break_datetime()}? (y/N) "
+    ))
+    if not check == "y":
+        print("Aborting...")
+        exit(0)
+    else:
+        insert_host(config, host, chosen_break.id)
 
 
 if __name__ == "__main__":
