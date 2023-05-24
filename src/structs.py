@@ -50,3 +50,13 @@ class Claim:
     breaks_claimed: List[Break]
     claim_amount: float
     claim_reimbursed: Optional[datetime] = None
+
+
+def claim_list_date_string(breaks: list[Break]) -> str:
+    return ", ".join(list(
+        map(lambda b: b.get_break_date(), breaks)))
+
+
+@dataclass
+class ClaimFilters:
+    reimbursed: Optional[bool] = None

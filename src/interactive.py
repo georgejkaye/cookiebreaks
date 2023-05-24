@@ -1,7 +1,7 @@
 from typing import List, Optional
 from config import Config
-from database import get_breaks
-from structs import Break, BreakFilters, format_as_price
+from database import get_breaks, get_claims
+from structs import Break, BreakFilters, Claim, ClaimFilters, claim_list_date_string, format_as_price
 
 
 def display_breaks(breaks: list[Break]):
@@ -23,6 +23,16 @@ def display_breaks(breaks: list[Break]):
     print(f"{len(breaks) + 1}: Cancel")
 
 
+def display_claims(claims: list[Claim]):
+    for i, c in enumerate(claims):
+        claim_submitted = c.claim_date
+        claim_amount = c.claim_amount
+        claim_breaks = c.breaks_claimed
+        claim_break_dates = claim_list_date_string(claim_breaks)
+        print(f"{i+1}: {claim_submitted}, {claim_amount} for {claim_break_dates}")
+    print(f"{len(claims) + 1}: Cancel")
+
+
 def validate_choice(choice_input: str, min: int, max: int) -> Optional[int]:
     if choice_input.isnumeric():
         choice_input_no = int(choice_input)
@@ -34,7 +44,7 @@ def validate_choice(choice_input: str, min: int, max: int) -> Optional[int]:
         return None
 
 
-def select_break(config: Config, filters: BreakFilters) -> Break:
+def select_break(config: Config, filters: BreakFilters) -> Optional[Break]:
     breaks = get_breaks(config, filters)
     if len(breaks) > 0:
         display_breaks(breaks)
@@ -49,6 +59,23 @@ def select_break(config: Config, filters: BreakFilters) -> Break:
         return None
     else:
         return breaks[choice - 1]
+
+
+def select_claim(config: Config, filters: ClaimFilters) -> Optional[Claim]:
+    claims = get_claims(config, filters)
+    if(len(claims) > 0):
+        display_claims(claims)
+    else:
+        print("No claims to show, aborting...")
+        exit(0)
+    choice = None
+    while choice is None:
+        choice_input = input(f"Select claim (1-{len(claims) + 1}): ")
+        choice = validate_choice(choice_input, 1, len(claims) + 1)
+    if choice == len(claims) + 1:
+        return None
+    else:
+        return claims[choice - 1]
 
 
 def select_multiple_breaks(config: Config, filters: BreakFilters) -> List[Break]:

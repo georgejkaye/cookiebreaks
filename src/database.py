@@ -4,7 +4,7 @@ from typing import Any, Optional, Tuple, List, TypeVar
 import psycopg2
 
 from config import Config
-from structs import Break, BreakFilters, Claim
+from structs import Break, BreakFilters, Claim, ClaimFilters
 
 
 def connect(config: Config) -> Tuple[Any, Any]:
@@ -84,6 +84,15 @@ def get_specific_breaks(config: Config, breaks: List[int]) -> List[Break]:
     rows = cur.fetchall()
     disconnect(conn, cur)
     return rows_to_breaks(rows)
+
+
+def rows_to_claims(config: Config, rows) -> List[Claim]:
+    claims = []
+    for row in rows:
+        (id, date, breaks, amount, reimbursed) = row
+        break_objects = get_specific_breaks(config, breaks)
+        claims.append(Claim(id, date, break_objects, amount, reimbursed))
+    return claims
 
 
 def get_breaks(config: Config, filters: BreakFilters) -> List[Break]:
@@ -207,19 +216,20 @@ def claim_for_breaks(config: Config, break_ids: List[int], amount: float) -> Non
     disconnect(conn, cur)
 
 
-def get_claims(config: Config, reimbursed: Optional[bool] = None) -> List[Claim]:
+def get_claims(config: Config, filters: ClaimFilters) -> List[Claim]:
     (conn, cur) = connect(config)
-    if reimbursed is not None:
-        if reimbursed:
-            var = "t"
+    if filters.reimbursed is not None:
+        if filters.reimbursed:
+            modifier = " NOT"
         else:
-            var = "f"
-        where_statement = f"WHERE claim_reimbursed = '{var}'"
+            modifier = ""
+        where_statement = f"WHERE claim_reimbursed IS{modifier} NULL"
     else:
         where_statement = ""
     statement = f""""
         SELECT * FROM claim
         {where_statement}
+        ORDER BY claim_date ASC
     """
     cur.execute(statement)
     rows = cur.fetchall()
@@ -232,3 +242,14 @@ def get_claims(config: Config, reimbursed: Optional[bool] = None) -> List[Claim]
         claims.append(Claim(claim_id, claim_date, breaks,
                       claim_amount, claim_reimbursed))
     return claims
+
+
+def claim_reimbursed(config: Config, claim_id: int) -> None:
+    (conn, cur) = connect(config)
+    statement = """
+        UPDATE claim
+        SET claim_reimbursed = NOW()
+        WHERE claim_id = %(id)s
+    """
+    cur.execute(statement, {"id": claim_id})
+    disconnect(conn, cur)
