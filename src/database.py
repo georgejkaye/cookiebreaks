@@ -127,7 +127,7 @@ def get_breaks(config: Config, filters: BreakFilters) -> List[Break]:
     if filters.number is None:
         limit_string = ""
     else:
-        limit_string = "LIMIT {number}"
+        limit_string = f"LIMIT {filters.number}"
     statement = f"""
         SELECT *
         FROM break
