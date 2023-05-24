@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import List, Optional
 
 
-def format_as_price(cost: float):
-    return "£" + "{:.2f}".format(cost)
+def format_as_price(cost: float) -> str:
+    return f"£{cost:.2f}"
 
 
 @dataclass

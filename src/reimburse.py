@@ -15,10 +15,10 @@ def main():
         cost = None
         while cost is None:
             candidate_cost = input("Break cost: ")
-            if candidate_cost.isnumeric():
+            if candidate_cost.replace(".","",1).isdigit():
                 cost = float(candidate_cost)
         host = chosen_break.host
-        cost = format_as_price(chosen_break.cost)
+        cost_string = format_as_price(cost)
         date = chosen_break.get_break_datetime()
         check = input((
             f"Have you reimbursed {host} £{cost} for hosting cookie break on {date}? (y/N) "
@@ -27,7 +27,7 @@ def main():
             print("Aborting...")
             exit(0)
         else:
-            reimburse_and_mask_host(config, chosen_break.id)
+            reimburse_and_mask_host(config, chosen_break.id, cost)
 
 
 if __name__ == "__main__":

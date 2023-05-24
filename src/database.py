@@ -35,14 +35,14 @@ def insert_host(config: Config, break_host: str, break_id: int) -> None:
     disconnect(conn, cur)
 
 
-def reimburse_and_mask_host(config: Config, break_id: int) -> None:
+def reimburse_and_mask_host(config: Config, break_id: int, cost: float) -> None:
     (conn, cur) = connect(config)
     statement = """
         UPDATE break
-        SET break_host = '', host_reimbursed = NOW()
+        SET break_host = '', break_cost = %(cost)s, host_reimbursed = NOW()
         WHERE break_id = %(id)s
     """
-    cur.execute(statement, {"id": break_id, })
+    cur.execute(statement, {"id": break_id, "cost": cost})
     conn.commit()
     disconnect(conn, cur)
 
