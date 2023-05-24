@@ -2,6 +2,7 @@ from email.utils import make_msgid, formataddr
 from pathlib import Path
 import smtplib
 import ssl
+import subprocess
 from typing import Union
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from email.mime.text import MIMEText
@@ -31,6 +32,22 @@ def handle_str_or_bytes(obj: Union[str, bytes]) -> str:
     if(isinstance(obj, bytes)):
         return obj.decode('UTF-8')
     return obj
+
+
+def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str) -> None:
+    subject_item = f"subject='[cookies] Next cookie break, {next_break.get_short_break_date()} @ {next_break.get_break_time()}'"
+    emails = ", ".join(config.mailing_lists)
+    to_item = f"to='{emails}'"
+    from_item = f"from={config.admin.email}"
+    body_item = f"body='{body}'"
+    plain_text_item = "format=2"
+    compose_items = ",".join(
+        [to_item, from_item, subject_item, body_item, plain_text_item])
+    quoted_compose_items = f"\"{compose_items}\""
+    print(quoted_compose_items)
+    command = f"thunderbird -compose {quoted_compose_items}"
+    print(command)
+    process = subprocess.Popen(command, shell=True)
 
 
 def send_email(config: Config, cookie_break: Break, email_content: str) -> None:

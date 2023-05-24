@@ -18,6 +18,8 @@ class BreakConfig:
 @dataclass
 class AdminConfig:
     name: str
+    email: str
+
 
 @dataclass
 class DatabaseConfig:
@@ -48,6 +50,7 @@ def parse_config() -> Config:
         ),
         AdminConfig(
             config["admin"]["name"],
+            config["admin"]["email"]
         ),
         DatabaseConfig(
             config["db"]["host"],

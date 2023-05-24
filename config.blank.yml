@@ -5,6 +5,7 @@ breaks:
   maximum:   # The maximum number of breaks to allocate in the future
 admin:
   name:
+  email:
 db:          # Database parameters
   host:
   user:
