@@ -9,7 +9,6 @@ def main():
     config = parse_config()
     next_break = get_next_break(config)
     email = write_email(config, next_break, "announce.txt")
-    print(email)
     prepare_email_in_thunderbird(config, next_break, email)
     # send_email(config, next_break, email)
 

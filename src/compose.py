@@ -44,9 +44,7 @@ def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str) -
     compose_items = ",".join(
         [to_item, from_item, subject_item, body_item, plain_text_item])
     quoted_compose_items = f"\"{compose_items}\""
-    print(quoted_compose_items)
     command = f"thunderbird -compose {quoted_compose_items}"
-    print(command)
     process = subprocess.Popen(command, shell=True)
 
 
