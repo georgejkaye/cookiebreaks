@@ -1,13 +1,12 @@
 from config import parse_config
 from database import claim_reimbursed, reimburse_and_mask_host
 from interactive import select_break, select_claim
-from structs import BreakFilters, claim_list_date_string, format_as_price
+from structs import BreakFilters, ClaimFilters, claim_list_date_string, format_as_price
 
 
 def main():
     config = parse_config()
-    chosen_claim = select_claim(config, BreakFilters(
-        past=True, hosted=True, host_reimbursed=False))
+    chosen_claim = select_claim(config, ClaimFilters(reimbursed = False))
     if chosen_claim is None:
         print("No choice made, exiting")
         exit(0)

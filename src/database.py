@@ -77,7 +77,7 @@ def rows_to_breaks(rows) -> List[Break]:
 
 def get_specific_breaks(config: Config, breaks: List[int]) -> List[Break]:
     (conn, cur) = connect(config)
-    statement = f""""
+    statement = f"""
         SELECT * FROM break WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
     """
     cur.execute(statement, {"ids": breaks})
@@ -214,7 +214,7 @@ def claim_for_breaks(config: Config, break_ids: List[int], amount: float) -> Non
     cur.execute(claim_table_statement, {"breaks": break_ids, "amount": amount})
     conn.commit()
     disconnect(conn, cur)
-
+1
 
 def get_claims(config: Config, filters: ClaimFilters) -> List[Claim]:
     (conn, cur) = connect(config)
@@ -226,7 +226,7 @@ def get_claims(config: Config, filters: ClaimFilters) -> List[Claim]:
         where_statement = f"WHERE claim_reimbursed IS{modifier} NULL"
     else:
         where_statement = ""
-    statement = f""""
+    statement = f"""
         SELECT * FROM claim
         {where_statement}
         ORDER BY claim_date ASC
