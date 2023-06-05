@@ -47,7 +47,7 @@ def reimburse_and_mask_host(config: Config, break_id: int, cost: float) -> None:
     disconnect(conn, cur)
 
 
-def get_exists_where_clause(where_clauses: list[str], boolean: Optional[bool], field: str):
+def get_exists_where_clause(where_clauses: List[str], boolean: Optional[bool], field: str):
     if boolean is not None:
         if boolean:
             modifier = " NOT"
@@ -56,7 +56,7 @@ def get_exists_where_clause(where_clauses: list[str], boolean: Optional[bool], f
         where_clauses.append(f"{field} IS{modifier} NULL")
 
 
-def get_boolean_where_clause(where_clauses: list[str], boolean: Optional[bool], field: str):
+def get_boolean_where_clause(where_clauses: List[str], boolean: Optional[bool], field: str):
     if boolean is not None:
         if boolean:
             var = "t"

@@ -52,7 +52,7 @@ class Claim:
     claim_reimbursed: Optional[datetime] = None
 
 
-def claim_list_date_string(breaks: list[Break]) -> str:
+def claim_list_date_string(breaks: List[Break]) -> str:
     return ", ".join(list(
         map(lambda b: b.get_break_date(), breaks)))
 

@@ -4,7 +4,7 @@ from database import get_breaks, get_claims
 from structs import Break, BreakFilters, Claim, ClaimFilters, claim_list_date_string, format_as_price
 
 
-def display_breaks(breaks: list[Break]):
+def display_breaks(breaks: List[Break]):
     for i, b in enumerate(breaks):
         break_date = b.get_break_date()
         break_time = b.get_break_time()
@@ -23,7 +23,7 @@ def display_breaks(breaks: list[Break]):
     print(f"{len(breaks) + 1}: Cancel")
 
 
-def display_claims(claims: list[Claim]):
+def display_claims(claims: List[Claim]):
     for i, c in enumerate(claims):
         claim_submitted = c.claim_date
         claim_amount = c.claim_amount
