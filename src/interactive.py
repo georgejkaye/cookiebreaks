@@ -100,4 +100,7 @@ def select_multiple_breaks(config: Config, filters: BreakFilters) -> List[Break]
                 candidate_choices.append(current_choice)
         if len(candidate_choices) > 0:
             choices = candidate_choices
+    if len(breaks) + 1 in choices:
+        print("Cancel selected, aborting...")
+        exit(0)
     return list(map(lambda i: breaks[i - 1], choices))
