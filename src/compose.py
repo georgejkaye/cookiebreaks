@@ -1,8 +1,12 @@
-from email.utils import make_msgid, formataddr
-from pathlib import Path
+import os
 import smtplib
 import ssl
 import subprocess
+
+from email.utils import make_msgid, formataddr
+from pathlib import Path
+from time import sleep
+from ics import Event, Calendar, Attendee # type: ignore
 from typing import Union
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from email.mime.text import MIMEText
@@ -33,20 +37,48 @@ def handle_str_or_bytes(obj: Union[str, bytes]) -> str:
         return obj.decode('UTF-8')
     return obj
 
+def get_cookiebreak_ics_file(next_break: Break) -> str:
+    date_string = next_break.time.strftime("%Y-%m-%d")
+    return f"cookiebreak-{date_string}.ics"
 
-def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str) -> None:
-    subject_item = f"subject='[cookies] Next cookie break, {next_break.get_short_break_date()} @ {next_break.get_break_time()}'"
+def create_calendar_event(config: Config, next_break: Break) -> str:
+    c = Calendar()
+    c.method = "REQUEST"
+    e = Event()
+    e.name = f"Cookie break: {next_break.host}"
+    e.begin = next_break.time
+    e.end = next_break.time.shift(hours=1)
+    e.location = next_break.location
+    e.organizer = config.admin.email
+    for list in config.mailing_lists:
+        e.add_attendee(Attendee(list, cutype="GROUP", role="REQ-PARTICIPANT", partstat="NEEDS-ACTION", rsvp="TRUE"))
+    c.events.add(e)
+    file_name = get_cookiebreak_ics_file(next_break)
+    with open(file_name, "w", encoding="ISO-8859-1") as f:
+        f.writelines(c.serialize_iter())
+    return os.path.abspath(file_name)
+
+
+def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str, ics: str):
+    subject = get_email_subject(next_break)
+    subject_item = f"subject='{subject}'"
     emails = ", ".join(config.mailing_lists)
     to_item = f"to='{emails}'"
     from_item = f"from={config.admin.email}"
     body_item = f"body='{body}'"
+    attachment_item = f"attachment='{ics}'"
     plain_text_item = "format=2"
     compose_items = ",".join(
-        [to_item, from_item, subject_item, body_item, plain_text_item])
-    quoted_compose_items = f"\"{compose_items}\""
-    command = f"thunderbird -compose {quoted_compose_items}"
-    process = subprocess.Popen(command, shell=True)
-
+        [to_item, from_item, subject_item, body_item, plain_text_item, attachment_item])
+    command = ["thunderbird", "-compose", compose_items]
+    subprocess.run(command)
+    window_title = f"Write: {subject} - Thunderbird"
+    sleep(1)
+    while True:
+        wmctrl_output = str(subprocess.check_output(["wmctrl", "-l"]))
+        if window_title not in wmctrl_output:
+            return
+        sleep(1)
 
 def send_email(config: Config, cookie_break: Break, email_content: str) -> None:
     email_sender = config.admin.email
