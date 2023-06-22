@@ -1,5 +1,5 @@
-from datetime import datetime
 from typing import Any, Optional, Tuple, List, TypeVar
+import arrow
 
 import psycopg2
 
@@ -68,10 +68,11 @@ def get_boolean_where_clause(where_clauses: List[str], boolean: Optional[bool], 
 def rows_to_breaks(rows) -> List[Break]:
     next_breaks = []
     for row in rows:
-        (id, break_host, date, break_location, is_holiday, cost,
+        (id, break_host, datetime, break_location, is_holiday, cost,
          host_reimbursed, admin_claimed, admin_reimbursed) = row
+        date_arrow = arrow.get(datetime, "Europe/London")
         next_breaks.append(
-            Break(id, break_host, date, break_location, is_holiday, cost, host_reimbursed, admin_claimed, admin_reimbursed))
+            Break(id, break_host, date_arrow, break_location, is_holiday, cost, host_reimbursed, admin_claimed, admin_reimbursed))
     return next_breaks
 
 

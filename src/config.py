@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from datetime import datetime, time
 from typing import List
+from arrow import Arrow
+import arrow
 
 import yaml
 
@@ -10,7 +11,7 @@ config_file = "config.yml"
 @dataclass
 class BreakConfig:
     day: int
-    time: time
+    time: Arrow
     location: str
     maximum: int
 
@@ -44,7 +45,7 @@ def parse_config() -> Config:
     return Config(
         BreakConfig(
             config["breaks"]["day"],
-            datetime.strptime(str(config["breaks"]["time"]), "%H%M").time(),
+            arrow.get(str(config["breaks"]["time"]), "HHmm"),
             config["breaks"]["location"],
             config["breaks"]["maximum"],
         ),
@@ -65,6 +66,6 @@ def parse_config() -> Config:
 
 def debug(config: Config, msg: str) -> None:
     with open(config.log_file, "a+") as log:
-        now = datetime.now()
-        timestamp = now.strftime("%d-%m-%y %H:%M:%S")
+        now = arrow.now("Europe/London")
+        timestamp = now.format("YYYY-MM-DD HH:mm:ss")
         log.write(f"[{timestamp}] {msg}\n")
