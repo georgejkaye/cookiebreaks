@@ -5,7 +5,10 @@ breaks:
   maximum:   # The maximum number of breaks to allocate in the future
 admin:
   name:
+  fullname:
   email:
+msmtp:
+  account:   # msmtp account to use for sending emails
 db:          # Database parameters
   host:
   user:
