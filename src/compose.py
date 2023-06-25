@@ -6,10 +6,11 @@ import smtplib
 import ssl
 import subprocess
 
+from icalendar import Calendar, Event, vCalAddress, vText # type: ignore
 from email.utils import make_msgid, formataddr
 from pathlib import Path
 from time import sleep
-from ics import Event, Calendar, Attendee # type: ignore
+import arrow
 from typing import List, Tuple, Union
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from email.mime.text import MIMEText
@@ -45,18 +46,35 @@ def get_cookiebreak_ics_filename(next_break: Break) -> str:
     return f"cookiebreak-{date_string}.ics"
 
 def create_calendar_event(config: Config, next_break: Break) -> str:
-    c = Calendar()
-    c.method = "REQUEST"
-    e = Event()
-    e.name = f"Cookie break: {next_break.host}"
-    e.begin = next_break.time
-    e.end = next_break.time.shift(hours=1)
-    e.location = next_break.location
-    e.organizer = config.admin.email
+    cal = Calendar()
+    cal.add('prodid', 'cookiebreaks - https://github.com/georgejkaye/cookiebreak-scripts')
+    cal.add('version', '2.0')
+    cal.add('method', "REQUEST")
+
+    event = Event()
+    event.add("summary", f"Cookie break: {next_break.host}")
+    event.add("dtstart", next_break.time.datetime)
+    event.add("dtend", next_break.time.shift(hours=1).datetime)
+    event.add("dtstamp", arrow.now().datetime)
+    event.add("location", next_break.location)
+
+    organizer = vCalAddress(f"mailto:{config.admin.email}")
+    organizer.params["cn"] = config.admin.fullname
+    event["organizer"] = organizer
+
+    event["uid"] = f"cookiebreak/{next_break.time.datetime}"
+
     for list in config.mailing_lists:
-        e.add_attendee(Attendee(list, cutype="GROUP", role="REQ-PARTICIPANT", partstat="NEEDS-ACTION", rsvp="TRUE"))
-    c.events.add(e)
-    return c.serialize()
+        attendee = vCalAddress(list)
+        attendee.params["cutype"] = vText("INDIVIDUAL")
+        attendee.params["role"] = vText("REQ-PARTICIPANT")
+        attendee.params["partstat"] = vText("NEEDS-ACTION")
+        attendee.params["rsvp"] = vText("TRUE")
+        event.add("attendee", attendee, encode=0)
+    cal.add_component(event)
+    cal_text = cal.to_ical().decode()
+    cal_text_fixed = cal_text.replace("BST", "Europe/London").replace("GMT", "Europe/London")
+    return cal_text_fixed
 
 
 def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str, ics: str):
