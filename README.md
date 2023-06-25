@@ -11,6 +11,8 @@ cp config.blank.yml config.yml
 ```
 
 ...and populate it with the required fields.
+You will also need to set up an account with `msmtp` to send the emails.
+How to do this with an Office 365 account is [detailed below](https://github.com/georgejkaye/cookiebreak-scripts#setting-up-smtp-with-office-365).
 
 ## Usage
 
