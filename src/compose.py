@@ -1,3 +1,6 @@
+from email.encoders import encode_base64
+from email.message import Message
+from email.mime.base import MIMEBase
 import os
 import smtplib
 import ssl
@@ -7,7 +10,7 @@ from email.utils import make_msgid, formataddr
 from pathlib import Path
 from time import sleep
 from ics import Event, Calendar, Attendee # type: ignore
-from typing import Union
+from typing import List, Tuple, Union
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -16,7 +19,7 @@ from structs import Break
 from config import Config, debug
 
 
-def write_email(config: Config, cookie_break: Break, template_name: str) -> str:
+def write_email_template(config: Config, cookie_break: Break, template_name: str) -> str:
     current_dir = Path(__file__).resolve().parent
     templates_dir = current_dir / "templates"
     env = Environment(
@@ -28,8 +31,8 @@ def write_email(config: Config, cookie_break: Break, template_name: str) -> str:
     return email
 
 
-def get_email_subject(cookie_break: Break) -> str:
-    return f"[cookies] Next cookie break, {cookie_break.get_short_break_date()} @ {cookie_break.get_break_time()}"
+def get_announce_email_subject(cookie_break: Break) -> str:
+    return f"[cookies] Cookie break this week, {cookie_break.get_short_break_date()} @ {cookie_break.get_break_time()}"
 
 
 def handle_str_or_bytes(obj: Union[str, bytes]) -> str:
@@ -37,7 +40,7 @@ def handle_str_or_bytes(obj: Union[str, bytes]) -> str:
         return obj.decode('UTF-8')
     return obj
 
-def get_cookiebreak_ics_file(next_break: Break) -> str:
+def get_cookiebreak_ics_filename(next_break: Break) -> str:
     date_string = next_break.time.strftime("%Y-%m-%d")
     return f"cookiebreak-{date_string}.ics"
 
@@ -53,14 +56,11 @@ def create_calendar_event(config: Config, next_break: Break) -> str:
     for list in config.mailing_lists:
         e.add_attendee(Attendee(list, cutype="GROUP", role="REQ-PARTICIPANT", partstat="NEEDS-ACTION", rsvp="TRUE"))
     c.events.add(e)
-    file_name = get_cookiebreak_ics_file(next_break)
-    with open(file_name, "w", encoding="ISO-8859-1") as f:
-        f.writelines(c.serialize_iter())
-    return os.path.abspath(file_name)
+    return c.serialize()
 
 
 def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str, ics: str):
-    subject = get_email_subject(next_break)
+    subject = get_announce_email_subject(next_break)
     subject_item = f"subject='{subject}'"
     emails = ", ".join(config.mailing_lists)
     to_item = f"to='{emails}'"
@@ -80,38 +80,41 @@ def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str, i
             return
         sleep(1)
 
-def send_email(config: Config, cookie_break: Break, email_content: str) -> None:
-    email_sender = config.admin.email
-    email_recipients = config.mailing_lists
-    if len(email_recipients) > 0:
-        # Get smtp variables
-        smtp_host = config.smtp.host
-        smtp_port = config.smtp.port
-        smtp_user = config.smtp.user
-        smtp_password = config.smtp.password
-        # Make the message and fill in the fields
-        message = MIMEMultipart("alternative")
-        message["Subject"] = get_email_subject(cookie_break)
-        message["From"] = formataddr(
-            (config.admin.full_name, email_sender))
-        message["To"] = ", ".join(email_recipients)
-        message["Message-ID"] = make_msgid()
-        text = MIMEText(email_content, "plain")
-        message.attach(text)
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
-            try:
-                server.login(smtp_user, smtp_password)
-            except smtplib.SMTPResponseException as e:
-                debug(config,
-                      f"Error logging into server {smtp_host}:{smtp_port} as user {smtp_user}: {e.smtp_code} {handle_str_or_bytes(e.smtp_error)}")
-                exit(1)
+def write_calendar_mime_parts(ics_content : str, ics_name: str) -> Tuple[Message, Message]:
+    ics_text = MIMEText(ics_content, "calendar;method=REQUEST")
+    ics_attachment = MIMEBase("text/calendar", f" ;name={ics_name}")
+    ics_attachment.set_payload(ics_content)
+    encode_base64(ics_attachment)
+    return (ics_text, ics_attachment)
 
-            try:
-                server.sendmail(email_sender, email_recipients,
-                                message.as_string())
-            except smtplib.SMTPResponseException as e:
-                debug(config,
-                      f"Error sending email from server {smtp_host}:{smtp_port} as user {smtp_user}: {e.smtp_code} {handle_str_or_bytes(e.smtp_error)}")
-                exit(1)
-        debug(config, f"Sent email to {email_recipients}")
+
+def write_email(sender_name: str, sender_email: str, recipients: List[str], subject: str, content: List[Message]) -> MIMEMultipart:
+    message = MIMEMultipart("mixed")
+    message["Subject"] = subject
+    message["From"] = formataddr((sender_name, sender_email))
+    message["To"] = ", ".join(recipients)
+    message["Message-ID"] = make_msgid()
+    for item in content:
+        message.attach(item)
+    return message
+
+def write_announce_email(config : Config, next_break: Break) -> MIMEMultipart:
+    announce_subject = get_announce_email_subject(next_break)
+    ics_content = create_calendar_event(config, next_break)
+    ics_name = get_cookiebreak_ics_filename(next_break)
+    email_body = MIMEText(write_email_template(config, next_break, "announce.txt"))
+    (ics_text, ics_attachment) = write_calendar_mime_parts(ics_content, ics_name)
+    return write_email(
+        sender_name=config.admin.fullname,
+        sender_email=config.admin.email,
+        recipients=config.mailing_lists,
+        subject=announce_subject,
+        content=[email_body, ics_text, ics_attachment]
+    )
+
+def send_email(email : MIMEMultipart):
+    process = subprocess.Popen(["msmtp", "--read-envelope-from", "--read-recipients"], stdin=subprocess.PIPE)
+    process.communicate(email.as_bytes())
+
+def send_announce_email(config : Config, email : MIMEMultipart):
+    send_email(email)

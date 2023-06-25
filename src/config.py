@@ -19,8 +19,12 @@ class BreakConfig:
 @dataclass
 class AdminConfig:
     name: str
+    fullname: str
     email: str
 
+@dataclass
+class MSMTPConfig:
+    account: str
 
 @dataclass
 class DatabaseConfig:
@@ -34,6 +38,7 @@ class DatabaseConfig:
 class Config:
     breaks: BreakConfig
     admin: AdminConfig
+    msmtp: MSMTPConfig
     db: DatabaseConfig
     mailing_lists: List[str]
     log_file: str
@@ -51,7 +56,11 @@ def parse_config() -> Config:
         ),
         AdminConfig(
             config["admin"]["name"],
+            config["admin"]["fullname"],
             config["admin"]["email"]
+        ),
+        MSMTPConfig(
+            config["msmtp"]["account"]
         ),
         DatabaseConfig(
             config["db"]["host"],
