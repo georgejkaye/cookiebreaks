@@ -20,7 +20,7 @@ python src/main.py TASK
 
 Where `TASK` can be chosen from the following list:
 
-```bash
+```txt
 announce      Announce the next cookie break
 host          Set the host for a future cookie break
 reimburse     Reimburse a host of a past cookie break
