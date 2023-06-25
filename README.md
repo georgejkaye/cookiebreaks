@@ -92,7 +92,7 @@ microsoft:
 
 The `client_id` and the `client_secret` are the publicly available details
 that Thunderbird provides Microsoft.
-These can be found [in the Firefox source here](https://hg.mozilla.org/comm-central/file/tip/mailnews/base/src/OAuth2Providers.jsm).
+These can be found in the [Thunderbird source](https://hg.mozilla.org/comm-central/file/tip/mailnews/base/src/OAuth2Providers.jsm).
 
 To setup the account, run the following, where `<alias>` is a name you
 will use to identify the account later.
