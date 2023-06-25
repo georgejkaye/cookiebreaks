@@ -1,10 +1,10 @@
 from config import parse_config
-from database import claim_reimbursed, reimburse_and_mask_host
-from interactive import select_break, select_claim
-from structs import BreakFilters, ClaimFilters, claim_list_date_string, format_as_price
+from database import claim_reimbursed
+from interactive import select_claim
+from structs import ClaimFilters, claim_list_date_string
 
 
-def main():
+def success():
     config = parse_config()
     chosen_claim = select_claim(config, ClaimFilters(reimbursed = False))
     if chosen_claim is None:
@@ -24,4 +24,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    success()

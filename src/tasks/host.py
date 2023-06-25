@@ -4,7 +4,7 @@ from interactive import select_break
 from structs import BreakFilters
 
 
-def main():
+def host():
     config = parse_config()
     chosen_break = select_break(config, BreakFilters(past=False))
     if chosen_break is None:
@@ -34,4 +34,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    host()

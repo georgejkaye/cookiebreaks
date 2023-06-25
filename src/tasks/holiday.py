@@ -1,11 +1,12 @@
 from config import parse_config
 from database import set_holiday
 from interactive import select_break
+from structs import BreakFilters
 
 
-def main():
+def holiday():
     config = parse_config()
-    chosen_break = select_break(config, past=False)
+    chosen_break = select_break(config, BreakFilters(past=False))
     if chosen_break is None:
         print("No choice made, exiting")
         exit(0)
@@ -29,4 +30,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    holiday()

@@ -1,11 +1,14 @@
+import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List
 from arrow import Arrow
 import arrow
 
 import yaml
 
-config_file = "config.yml"
+this_source_file = os.path.dirname(os.path.abspath(__file__))
+config_file = Path(this_source_file) / ".." / "config.yml"
 
 
 @dataclass

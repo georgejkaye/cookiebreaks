@@ -4,7 +4,7 @@ from interactive import select_break
 from structs import BreakFilters, format_as_price
 
 
-def main():
+def reimburse():
     config = parse_config()
     chosen_break = select_break(config, BreakFilters(
         past=True, hosted=True, host_reimbursed=False))
@@ -31,4 +31,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    reimburse()

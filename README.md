@@ -12,23 +12,23 @@ cp config.blank.yml config.yml
 
 ...and populate it with the required fields.
 
-## Scripts
+## Usage
 
-### `announce.py`
+```bash
+python src/main.py TASK
+```
 
-Send an email to the mailing list advertising the next cookie break.
+Where `TASK` can be chosen from the following list:
 
-### `host.py`
-
-Set the host for one of the upcoming cookie breaks.
-
-### `next.py`
-
-Update the cookie break database with any cookie breaks in the next few weeks.
-
-### `holiday.py`
-
-Set an upcoming break as a holiday or not.
+```bash
+announce      Announce the next cookie break
+host          Set the host for a future cookie break
+reimburse     Reimburse a host of a past cookie break
+claim         Make a claim for some past cookie breaks
+success       Note a successful claim
+holiday       Set an upcoming cookie break as a holiday
+next          Add upcoming cookie breaks to the database
+```
 
 ## Setting up SMTP with Office 365
 

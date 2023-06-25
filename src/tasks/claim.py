@@ -1,10 +1,10 @@
 from config import parse_config
-from database import claim_for_breaks, reimburse_and_mask_host
-from interactive import select_break, select_multiple_breaks
+from database import claim_for_breaks
+from interactive import select_multiple_breaks
 from structs import BreakFilters, format_as_price
 
 
-def main():
+def claim():
     config = parse_config()
     chosen_breaks = select_multiple_breaks(
         config, BreakFilters(past=True, hosted=True, admin_claimed=False))
@@ -28,4 +28,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    claim()
