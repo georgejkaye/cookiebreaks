@@ -99,7 +99,7 @@ def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str, i
 
 def write_calendar_mime_parts(ics_content : str, ics_name: str) -> Tuple[Message, Message]:
     ics_text = MIMEText(ics_content, "calendar;method=REQUEST")
-    ics_attachment = MIMEBase("text/calendar", f" ;name={ics_name}")
+    ics_attachment = MIMEBase("text", f"calendar;name={ics_name}")
     ics_attachment.set_payload(ics_content)
     encode_base64(ics_attachment)
     return (ics_text, ics_attachment)
