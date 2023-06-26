@@ -66,10 +66,9 @@ def create_calendar_event(config: Config, next_break: Break) -> str:
 
     for list in config.mailing_lists:
         attendee = vCalAddress(list)
-        attendee.params["cutype"] = vText("INDIVIDUAL")
+        attendee.params["cutype"] = vText("GROUP")
         attendee.params["role"] = vText("REQ-PARTICIPANT")
         attendee.params["partstat"] = vText("NEEDS-ACTION")
-        attendee.params["rsvp"] = vText("TRUE")
         event.add("attendee", attendee, encode=0)
     cal.add_component(event)
     cal_text = cal.to_ical().decode()
