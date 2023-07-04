@@ -18,7 +18,7 @@ def display_breaks(breaks: List[Break]):
         if b.holiday:
             break_host = "holiday"
         elif b.host_reimbursed:
-            if(b.cost):
+            if b.cost:
                 break_host = format_as_price(b.cost)
             else:
                 break_host = ""
@@ -52,7 +52,7 @@ def validate_choice(choice_input: str, min: int, max: int) -> Optional[int]:
 
 
 def select_break(config: Config, filters: BreakFilters) -> Optional[Break]:
-    breaks = get_breaks(config, filters)
+    breaks = get_break_objects(config, filters)
     if len(breaks) > 0:
         display_breaks(breaks)
     else:
@@ -70,7 +70,7 @@ def select_break(config: Config, filters: BreakFilters) -> Optional[Break]:
 
 def select_claim(config: Config, filters: ClaimFilters) -> Optional[Claim]:
     claims = get_claims(config, filters)
-    if(len(claims) > 0):
+    if len(claims) > 0:
         display_claims(claims)
     else:
         print("No claims to show, aborting...")
@@ -86,7 +86,7 @@ def select_claim(config: Config, filters: ClaimFilters) -> Optional[Claim]:
 
 
 def select_multiple_breaks(config: Config, filters: BreakFilters) -> List[Break]:
-    breaks = get_breaks(config, filters)
+    breaks = get_break_objects(config, filters)
     if len(breaks) > 0:
         display_breaks(breaks)
     else:
@@ -94,8 +94,7 @@ def select_multiple_breaks(config: Config, filters: BreakFilters) -> List[Break]
         exit(0)
     choices = None
     while choices is None:
-        choice_input = input(
-            f"Select breaks (1-{len(breaks) + 1}) e.g. 1,2,3: ")
+        choice_input = input(f"Select breaks (1-{len(breaks) + 1}) e.g. 1,2,3: ")
         candidate_choices: List[int] = []
         choice_strings = choice_input.split(",")
         for choice_string in choice_strings:

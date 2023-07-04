@@ -25,9 +25,11 @@ class AdminConfig:
     fullname: str
     email: str
 
+
 @dataclass
 class MSMTPConfig:
     account: str
+
 
 @dataclass
 class DatabaseConfig:
@@ -60,19 +62,17 @@ def parse_config() -> Config:
         AdminConfig(
             config["admin"]["name"],
             config["admin"]["fullname"],
-            config["admin"]["email"]
+            config["admin"]["email"],
         ),
-        MSMTPConfig(
-            config["msmtp"]["account"]
-        ),
+        MSMTPConfig(config["msmtp"]["account"]),
         DatabaseConfig(
             config["db"]["host"],
             config["db"]["user"],
             config["db"]["database"],
-            config["db"]["password"]
+            config["db"]["password"],
         ),
         config["lists"],
-        config["log"]
+        config["log"],
     )
 
 

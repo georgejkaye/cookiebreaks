@@ -13,7 +13,7 @@ def connect(config: Config) -> Tuple[Any, Any]:
         dbname=config.db.database,
         user=config.db.user,
         password=config.db.password,
-        host=config.db.host
+        host=config.db.host,
     )
     cur = conn.cursor()
     return (conn, cur)
@@ -48,7 +48,9 @@ def reimburse_and_mask_host(config: Config, break_id: int, cost: float) -> None:
     disconnect(conn, cur)
 
 
-def get_exists_where_clause(where_clauses: List[str], boolean: Optional[bool], field: str):
+def get_exists_where_clause(
+    where_clauses: List[str], boolean: Optional[bool], field: str
+):
     if boolean is not None:
         if boolean:
             modifier = " NOT"
@@ -57,7 +59,9 @@ def get_exists_where_clause(where_clauses: List[str], boolean: Optional[bool], f
         where_clauses.append(f"{field} IS{modifier} NULL")
 
 
-def get_boolean_where_clause(where_clauses: List[str], boolean: Optional[bool], field: str):
+def get_boolean_where_clause(
+    where_clauses: List[str], boolean: Optional[bool], field: str
+):
     if boolean is not None:
         if boolean:
             var = "t"
@@ -66,14 +70,41 @@ def get_boolean_where_clause(where_clauses: List[str], boolean: Optional[bool], 
         where_clauses.append(f"{field} = '{var}'")
 
 
+def arrow_or_none(candidate, timezone: str) -> Optional[Arrow]:
+    if candidate is None:
+        return None
+    else:
+        return arrow.get(candidate, timezone)
+
+
 def rows_to_breaks(rows) -> List[Break]:
     next_breaks = []
     for row in rows:
-        (id, break_host, datetime, break_location, is_holiday, cost,
-         host_reimbursed, admin_claimed, admin_reimbursed) = row
-        date_arrow = arrow.get(datetime, "Europe/London")
+        (
+            id,
+            break_host,
+            datetime,
+            break_location,
+            is_holiday,
+            cost,
+            host_reimbursed,
+            admin_claimed,
+            admin_reimbursed,
+        ) = row
+        timezone = "Europe/London"
         next_breaks.append(
-            Break(id, break_host, date_arrow, break_location, is_holiday, cost, host_reimbursed, admin_claimed, admin_reimbursed))
+            Break(
+                id,
+                break_host,
+                arrow.get(datetime, timezone),
+                break_location,
+                is_holiday,
+                cost,
+                arrow_or_none(host_reimbursed, timezone),
+                arrow_or_none(admin_claimed, timezone),
+                arrow_or_none(admin_reimbursed, timezone),
+            )
+        )
     return next_breaks
 
 
@@ -97,7 +128,9 @@ def rows_to_claims(config: Config, rows) -> List[Claim]:
     return claims
 
 
-def get_breaks(config: Config, filters: BreakFilters) -> List[Break]:
+def get_break_dicts(
+    config: Config, filters: BreakFilters = BreakFilters()
+) -> List[dict]:
     (conn, cur) = connect(config)
     where_clauses = []
     if filters.past is not None:
@@ -113,15 +146,11 @@ def get_breaks(config: Config, filters: BreakFilters) -> List[Break]:
         else:
             op = "="
             var = ""
-        where_clauses.append(
-            f"(break_host {op} '' OR host_reimbursed IS{var} NULL)")
+        where_clauses.append(f"(break_host {op} '' OR host_reimbursed IS{var} NULL)")
     get_boolean_where_clause(where_clauses, filters.holiday, "is_holiday")
-    get_exists_where_clause(
-        where_clauses, filters.host_reimbursed, "host_reimbursed")
-    get_exists_where_clause(
-        where_clauses, filters.admin_claimed, "admin_claimed")
-    get_exists_where_clause(
-        where_clauses, filters.admin_reimbursed, "admin_reimbursed")
+    get_exists_where_clause(where_clauses, filters.host_reimbursed, "host_reimbursed")
+    get_exists_where_clause(where_clauses, filters.admin_claimed, "admin_claimed")
+    get_exists_where_clause(where_clauses, filters.admin_reimbursed, "admin_reimbursed")
     if len(where_clauses) == 0:
         where_string = ""
     else:
@@ -176,8 +205,9 @@ def insert_missing_breaks(config: Config) -> None:
             "location": config.breaks.location,
             "time": config.breaks.time,
             "max": config.breaks.maximum,
-            "day": to_postgres_day(config.breaks.day)
-        })
+            "day": to_postgres_day(config.breaks.day),
+        },
+    )
     conn.commit()
     disconnect(conn, cur)
 
@@ -216,7 +246,10 @@ def claim_for_breaks(config: Config, break_ids: List[int], amount: float) -> Non
     cur.execute(claim_table_statement, {"breaks": break_ids, "amount": amount})
     conn.commit()
     disconnect(conn, cur)
+
+
 1
+
 
 def get_claims(config: Config, filters: ClaimFilters) -> List[Claim]:
     (conn, cur) = connect(config)
@@ -238,11 +271,11 @@ def get_claims(config: Config, filters: ClaimFilters) -> List[Claim]:
     disconnect(conn, cur)
     claims = []
     for row in rows:
-        (claim_id, claim_date, breaks_claimed,
-         claim_amount, claim_reimbursed) = row
+        (claim_id, claim_date, breaks_claimed, claim_amount, claim_reimbursed) = row
         breaks = get_specific_breaks(config, breaks_claimed)
-        claims.append(Claim(claim_id, claim_date, breaks,
-                      claim_amount, claim_reimbursed))
+        claims.append(
+            Claim(claim_id, claim_date, breaks, claim_amount, claim_reimbursed)
+        )
     return claims
 
 

@@ -9,5 +9,6 @@ def announce():
     email = write_announce_email(config, next_break)
     send_announce_email(config, email)
 
+
 if __name__ == "__main__":
     announce()

@@ -13,7 +13,8 @@ def holiday():
     else:
         if chosen_break.holiday:
             choice = input(
-                f"Make {chosen_break.get_break_datetime()} a non-holiday? (y/N) ")
+                f"Make {chosen_break.get_break_datetime()} a non-holiday? (y/N) "
+            )
             if choice == "y":
                 holiday = False
             else:
