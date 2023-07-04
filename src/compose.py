@@ -16,12 +16,14 @@ from structs import Break
 from config import Config
 
 
-def write_email_template(config: Config, cookie_break: Break, template_name: str) -> str:
+def write_email_template(
+    config: Config, cookie_break: Break, template_name: str
+) -> str:
     current_dir = Path(__file__).resolve().parent
     templates_dir = current_dir / "templates"
     env = Environment(
         loader=FileSystemLoader(templates_dir),
-        autoescape=select_autoescape(["html", "xml"])
+        autoescape=select_autoescape(["html", "xml"]),
     )
     template = env.get_template(template_name)
     email = template.render(cookie_break=cookie_break, admin=config.admin)
@@ -33,11 +35,14 @@ def get_announce_email_subject(cookie_break: Break) -> str:
 
 
 def handle_str_or_bytes(obj: Union[str, bytes]) -> str:
-    if(isinstance(obj, bytes)):
-        return obj.decode('UTF-8')
+    if isinstance(obj, bytes):
+        return obj.decode("UTF-8")
     return obj
 
-def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str, ics: str):
+
+def prepare_email_in_thunderbird(
+    config: Config, next_break: Break, body: str, ics: str
+):
     subject = get_announce_email_subject(next_break)
     subject_item = f"subject='{subject}'"
     emails = ", ".join(config.mailing_lists)
@@ -47,7 +52,8 @@ def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str, i
     attachment_item = f"attachment='{ics}'"
     plain_text_item = "format=2"
     compose_items = ",".join(
-        [to_item, from_item, subject_item, body_item, plain_text_item, attachment_item])
+        [to_item, from_item, subject_item, body_item, plain_text_item, attachment_item]
+    )
     command = ["thunderbird", "-compose", compose_items]
     subprocess.run(command)
     window_title = f"Write: {subject} - Thunderbird"
@@ -58,7 +64,10 @@ def prepare_email_in_thunderbird(config: Config, next_break: Break, body: str, i
             return
         sleep(1)
 
-def write_calendar_mime_parts(ics_content : str, ics_name: str) -> Tuple[Message, Message]:
+
+def write_calendar_mime_parts(
+    ics_content: str, ics_name: str
+) -> Tuple[Message, Message]:
     ics_text = MIMEText(ics_content, "calendar;method=REQUEST")
     ics_attachment = MIMEBase("text", f"calendar;name={ics_name}")
     ics_attachment.set_payload(ics_content)
@@ -66,7 +75,13 @@ def write_calendar_mime_parts(ics_content : str, ics_name: str) -> Tuple[Message
     return (ics_text, ics_attachment)
 
 
-def write_email(sender_name: str, sender_email: str, recipients: List[str], subject: str, content: List[Message]) -> MIMEMultipart:
+def write_email(
+    sender_name: str,
+    sender_email: str,
+    recipients: List[str],
+    subject: str,
+    content: List[Message],
+) -> MIMEMultipart:
     message = MIMEMultipart("mixed")
     message["Subject"] = subject
     message["From"] = formataddr((sender_name, sender_email))
@@ -76,7 +91,8 @@ def write_email(sender_name: str, sender_email: str, recipients: List[str], subj
         message.attach(item)
     return message
 
-def write_announce_email(config : Config, next_break: Break) -> MIMEMultipart:
+
+def write_announce_email(config: Config, next_break: Break) -> MIMEMultipart:
     announce_subject = get_announce_email_subject(next_break)
     ics_content = create_calendar_event(config, next_break)
     ics_name = get_cookiebreak_ics_filename(next_break)
@@ -87,12 +103,16 @@ def write_announce_email(config : Config, next_break: Break) -> MIMEMultipart:
         sender_email=config.admin.email,
         recipients=config.mailing_lists,
         subject=announce_subject,
-        content=[email_body, ics_text, ics_attachment]
+        content=[email_body, ics_text, ics_attachment],
     )
 
-def send_email(email : MIMEMultipart):
-    process = subprocess.Popen(["msmtp", "--read-envelope-from", "--read-recipients"], stdin=subprocess.PIPE)
+
+def send_email(email: MIMEMultipart):
+    process = subprocess.Popen(
+        ["msmtp", "--read-envelope-from", "--read-recipients"], stdin=subprocess.PIPE
+    )
     process.communicate(email.as_bytes())
 
-def send_announce_email(config : Config, email : MIMEMultipart):
+
+def send_announce_email(config: Config, email: MIMEMultipart):
     send_email(email)
