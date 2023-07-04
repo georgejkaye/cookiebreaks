@@ -1,10 +1,11 @@
-from typing import Any, Optional, Tuple, List, TypeVar
+from typing import Any, Optional, Tuple, List
 import arrow
 
 import psycopg2
 
-from config import Config
-from structs import Break, BreakFilters, Claim, ClaimFilters
+from src.config import Config
+from src.structs import Break, BreakFilters, Claim, ClaimFilters
+from arrow import Arrow
 
 
 def connect(config: Config) -> Tuple[Any, Any]:

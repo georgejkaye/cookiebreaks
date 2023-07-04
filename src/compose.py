@@ -10,10 +10,10 @@ from typing import List, Tuple, Union
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from event import create_calendar_event, get_cookiebreak_ics_filename
+from src.event import create_calendar_event, get_cookiebreak_ics_filename
 
-from structs import Break
-from config import Config
+from src.structs import Break
+from src.config import Config
 
 
 def write_email_template(

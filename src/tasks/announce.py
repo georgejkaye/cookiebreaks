@@ -1,6 +1,6 @@
-from compose import send_announce_email, write_announce_email
-from config import parse_config
-from database import get_next_break
+from src.compose import send_announce_email, write_announce_email
+from src.config import parse_config
+from src.database import get_next_break
 
 
 def announce():
