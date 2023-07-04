@@ -17,6 +17,7 @@ arrow = "^1.2.3"
 icalendar = "^5.0.7"
 fastapi = "^0.99.1"
 uvicorn = "^0.22.0"
+psycopg2 = "^2.9.6"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.4.1"
