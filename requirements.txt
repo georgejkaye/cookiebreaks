@@ -1,6 +1,0 @@
-Jinja2
-yml
-types-PyYAML
-psycopg2-binary
-arrow
-icalendar

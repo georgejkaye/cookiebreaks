@@ -2,6 +2,24 @@
 
 Scripts to interact with the cookie break database.
 
+## Installation
+
+You should install [Poetry](https://python-poetry.org/) for managing packages.
+
+```sh
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+To install the packages and generate a `.venv` file in the project directory,
+run the following:
+
+```sh
+poetry config virtualenvs.in-project true
+poetry install
+```
+
+Now all the dependencies will have been installed!
+
 ## Configuration
 
 Before using the scripts, you'll need to set up a `config.yml`...
