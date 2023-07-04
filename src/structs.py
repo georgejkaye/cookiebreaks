@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+import json
 from typing import List, Optional
-
+from pydantic import ConfigDict
+from pydantic.dataclasses import dataclass
 from arrow import Arrow
 
 
@@ -8,11 +9,21 @@ def format_as_price(cost: float) -> str:
     return f"£{cost:.2f}"
 
 
-@dataclass
+def format_as_iso8601(a: Arrow) -> str:
+    return a.format("YYYY-MM-dd[T]HH:mm:ss[Z]ZZ")
+
+
+def format_as_maybe_iso8601(a: Optional[Arrow]) -> Optional[str]:
+    if a is None:
+        return None
+    return format_as_iso8601(a)
+
+
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Break:
     id: int
     host: Optional[str]
-    time: Arrow
+    break_time: Arrow
     location: str
     holiday: bool
     cost: Optional[float]
@@ -21,16 +32,29 @@ class Break:
     admin_reimbursed: Optional[Arrow]
 
     def get_break_time(self) -> str:
-        return self.time.format("HH:mm")
+        return self.break_time.format("HH:mm")
 
     def get_break_date(self) -> str:
-        return self.time.format("dddd DD MMMM")
+        return self.break_time.format("dddd DD MMMM")
 
     def get_short_break_date(self) -> str:
-        return self.time.format("ddd DD MMM")
+        return self.break_time.format("ddd DD MMM")
 
     def get_break_datetime(self) -> str:
         return f"{self.get_break_date()} @ {self.get_break_time()}"
+
+    def to_json(self):
+        return {
+            "id": id,
+            "host": self.host,
+            "break_time": format_as_iso8601(self.break_time),
+            "location": self.location,
+            "holiday": self.holiday,
+            "cost": self.cost,
+            "host_reimbursed": format_as_maybe_iso8601(self.host_reimbursed),
+            "admin_claimed": format_as_maybe_iso8601(self.admin_claimed),
+            "admin_reimbursed": format_as_maybe_iso8601(self.admin_reimbursed),
+        }
 
 
 @dataclass
@@ -44,7 +68,7 @@ class BreakFilters:
     admin_reimbursed: Optional[bool] = None
 
 
-@dataclass
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Claim:
     id: int
     claim_date: Arrow
@@ -54,8 +78,7 @@ class Claim:
 
 
 def claim_list_date_string(breaks: List[Break]) -> str:
-    return ", ".join(list(
-        map(lambda b: b.get_break_date(), breaks)))
+    return ", ".join(list(map(lambda b: b.get_break_date(), breaks)))
 
 
 @dataclass

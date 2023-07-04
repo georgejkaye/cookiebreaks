@@ -169,11 +169,18 @@ def get_break_dicts(
     cur.execute(statement)
     rows = cur.fetchall()
     disconnect(conn, cur)
-    return rows_to_breaks(rows)
+    return rows
+
+
+def get_break_objects(
+    config: Config, filters: BreakFilters = BreakFilters()
+) -> List[Break]:
+    break_dicts = get_break_dicts(config, filters)
+    return rows_to_breaks(break_dicts)
 
 
 def get_next_break(config: Config) -> Break:
-    return get_breaks(config, BreakFilters(past=False, number=1))[0]
+    return get_break_objects(config, BreakFilters(past=False, number=1))[0]
 
 
 def to_postgres_day(day: int) -> int:
