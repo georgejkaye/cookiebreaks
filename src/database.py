@@ -24,6 +24,24 @@ def disconnect(conn: Any, cur: Any) -> None:
     cur.close()
 
 
+def insert_breaks(config: Config, breaks: list[tuple[Arrow, str]]) -> None:
+    (conn, cur) = connect(config)
+    statement = """
+        INSERT INTO break (break_datetime, break_location) (
+            SELECT unnest(%(datetimes)s), unnest(%(locations)s)
+        )
+    """
+    cur.execute(
+        statement,
+        {
+            "datetimes": list(map(lambda b: b[0].datetime, breaks)),
+            "locations": list(map(lambda b: b[1], breaks)),
+        },
+    )
+    conn.commit()
+    disconnect(conn, cur)
+
+
 def insert_host(config: Config, break_host: str, break_id: int) -> None:
     (conn, cur) = connect(config)
     statement = f"""
