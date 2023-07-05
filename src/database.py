@@ -210,7 +210,7 @@ def insert_missing_breaks(config: Config) -> None:
         statement,
         {
             "location": config.breaks.location,
-            "time": config.breaks.time,
+            "time": config.breaks.time.time(),
             "max": config.breaks.maximum,
             "day": to_postgres_day(config.breaks.day),
         },
