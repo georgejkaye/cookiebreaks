@@ -1,4 +1,5 @@
 import dataclasses
+from dataclasses import field
 
 from typing import List, Optional
 from arrow import Arrow
@@ -37,23 +38,19 @@ class BreakConfig:
 
 @dataclass(config=BreakConfig)
 class Break:
-    id: int = dataclasses.field(metadata=dict(example=21))
-    break_time: Arrow = dataclasses.field(
-        metadata=dict(example="2023-07-05T15:00:00+01:00")
-    )
-    location: str = dataclasses.field(metadata=dict(example="LG06a, Computer Science"))
-    holiday: bool = dataclasses.field(metadata=dict(example=False))
-    host: Optional[str] = dataclasses.field(
-        default=None, metadata=dict(example="George Kaye")
-    )
-    cost: Optional[float] = dataclasses.field(default=None, metadata=dict(example=9.8))
-    host_reimbursed: Optional[Arrow] = dataclasses.field(
+    id: int = field(metadata=dict(example=21))
+    break_time: Arrow = field(metadata=dict(example="2023-07-05T15:00:00+01:00"))
+    location: str = field(metadata=dict(example="LG06a, Computer Science"))
+    holiday: bool = field(metadata=dict(example=False))
+    host: Optional[str] = field(default=None, metadata=dict(example="George Kaye"))
+    cost: Optional[float] = field(default=None, metadata=dict(example=9.8))
+    host_reimbursed: Optional[Arrow] = field(
         default=None, metadata=dict(example="2023-07-05T16:00+01:00")
     )
-    admin_claimed: Optional[Arrow] = dataclasses.field(
+    admin_claimed: Optional[Arrow] = field(
         default=None, metadata=dict(example="2023-07-26T16:45:00+01:00")
     )
-    admin_reimbursed: Optional[Arrow] = dataclasses.field(
+    admin_reimbursed: Optional[Arrow] = field(
         default=None, metadata=dict(example="2023-08-04T09:00:00+01:00")
     )
 
@@ -94,13 +91,15 @@ class BreakFilters:
     admin_reimbursed: Optional[bool] = None
 
 
-@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
+@dataclass
 class Claim:
     id: int
     claim_date: Arrow
     breaks_claimed: List[Break]
     claim_amount: float
-    claim_reimbursed: Optional[Arrow] = None
+    claim_reimbursed: Optional[Arrow] = field(
+        default=None, metadata=dict(example="2023-05-04T15:00")
+    )
 
 
 def claim_list_date_string(breaks: List[Break]) -> str:
