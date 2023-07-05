@@ -238,18 +238,23 @@ def set_holiday(config: Config, break_id: int, holiday: bool) -> None:
     disconnect(conn, cur)
 
 
-def claim_for_breaks(config: Config, break_ids: List[int], amount: float) -> None:
+def claim_for_breaks(config: Config, break_ids: List[int]) -> None:
     (conn, cur) = connect(config)
     break_table_statement = f"""
-        UPDATE break
-        SET admin_claimed = NOW()
-        WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
+        WITH updated AS (
+            UPDATE break
+            SET admin_claimed = DATE_TRUNC('minute', NOW())
+            WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
+            RETURNING *
+        ) SELECT SUM(break_cost) FROM updated
     """
     claim_table_statement = f"""
         INSERT INTO claim(claim_date, breaks_claimed, claim_amount)
-        VALUES(NOW(), %(breaks)s, %(amount)s)
+        VALUES(DATE_TRUNC('minute', NOW()), %(breaks)s, %(amount)s)
     """
     cur.execute(break_table_statement, {"ids": break_ids})
+    rows = cur.fetchall()
+    amount = rows[0][0]
     cur.execute(claim_table_statement, {"breaks": break_ids, "amount": amount})
     conn.commit()
     disconnect(conn, cur)
