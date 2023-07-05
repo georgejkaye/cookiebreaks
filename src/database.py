@@ -95,10 +95,10 @@ def rows_to_breaks(rows) -> List[Break]:
         next_breaks.append(
             Break(
                 id,
-                break_host,
                 arrow.get(datetime, timezone),
                 break_location,
                 is_holiday,
+                break_host,
                 cost,
                 arrow_or_none(host_reimbursed, timezone),
                 arrow_or_none(admin_claimed, timezone),
