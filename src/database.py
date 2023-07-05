@@ -58,7 +58,9 @@ def reimburse_and_mask_host(config: Config, break_id: int, cost: float) -> None:
     (conn, cur) = connect(config)
     statement = """
         UPDATE break
-        SET break_host = '', break_cost = %(cost)s, host_reimbursed = NOW()
+        SET
+            break_host = '', break_cost = %(cost)s,
+            host_reimbursed = DATE_TRUNC('minute', NOW())
         WHERE break_id = %(id)s
     """
     cur.execute(statement, {"id": break_id, "cost": cost})
@@ -211,7 +213,7 @@ def to_postgres_day(day: int) -> int:
 def insert_missing_breaks(config: Config) -> None:
     (conn, cur) = connect(config)
     statement = f"""
-        INSERT INTO break (break_datetime, break_location)
+        INSERT INTO break (break_datetime, break_location) (
             SELECT days AS break_datetime, %(location)s
             FROM (
                 SELECT days
@@ -223,6 +225,7 @@ def insert_missing_breaks(config: Config) -> None:
                 WHERE EXTRACT(DOW from days) = %(day)s
             ) AS dates
             WHERE dates.days NOT IN (SELECT break_datetime FROM break)
+        )
     """
     cur.execute(
         statement,
@@ -281,7 +284,7 @@ def claim_for_breaks(config: Config, break_ids: List[int]) -> None:
 1
 
 
-def get_claims(config: Config, filters: ClaimFilters) -> List[Claim]:
+def get_claims(config: Config, filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
     (conn, cur) = connect(config)
     if filters.reimbursed is not None:
         if filters.reimbursed:
@@ -313,7 +316,7 @@ def claim_reimbursed(config: Config, claim_id: int) -> None:
     (conn, cur) = connect(config)
     statement = """
         UPDATE claim
-        SET claim_reimbursed = NOW()
+        SET claim_reimbursed = DATE_TRUNC('minute', NOW())
         WHERE claim_id = %(id)s
     """
     cur.execute(statement, {"id": claim_id})
