@@ -3,13 +3,13 @@ import argparse
 import sys
 from typing import Dict, Callable, Tuple
 
-from src.tasks.announce import announce
-from src.tasks.claim import claim
-from src.tasks.holiday import holiday
-from src.tasks.host import host
-from src.tasks.reimburse import reimburse
-from src.tasks.success import success
-from src.tasks.update import update
+from tasks.announce import announce
+from tasks.claim import claim
+from tasks.holiday import holiday
+from tasks.host import host
+from tasks.reimburse import reimburse
+from tasks.success import success
+from tasks.update import update
 
 
 class HelpParser(argparse.ArgumentParser):

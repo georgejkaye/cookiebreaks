@@ -1,7 +1,7 @@
-from src.config import parse_config
-from src.database import insert_host
-from src.interactive import select_break
-from src.structs import BreakFilters
+from config import parse_config
+from database import insert_host
+from interactive import select_break
+from structs import BreakFilters
 
 
 def host():

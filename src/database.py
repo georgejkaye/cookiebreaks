@@ -3,8 +3,8 @@ import arrow
 
 import psycopg2
 
-from src.config import Config
-from src.structs import Break, BreakFilters, Claim, ClaimFilters
+from config import Config
+from structs import Break, BreakFilters, Claim, ClaimFilters
 from arrow import Arrow
 
 

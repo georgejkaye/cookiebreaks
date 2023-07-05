@@ -1,7 +1,7 @@
 from typing import List, Optional
-from src.config import Config
-from src.database import get_break_objects, get_claims
-from src.structs import (
+from config import Config
+from database import get_break_objects, get_claims
+from structs import (
     Break,
     BreakFilters,
     Claim,

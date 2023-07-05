@@ -1,7 +1,7 @@
-from src.config import parse_config
-from src.database import claim_for_breaks
-from src.interactive import select_multiple_breaks
-from src.structs import BreakFilters, format_as_price
+from config import parse_config
+from database import claim_for_breaks
+from interactive import select_multiple_breaks
+from structs import BreakFilters, format_as_price
 
 
 def claim():

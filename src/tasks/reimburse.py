@@ -1,7 +1,7 @@
-from src.config import parse_config
-from src.database import reimburse_and_mask_host
-from src.interactive import select_break
-from src.structs import BreakFilters, format_as_price
+from config import parse_config
+from database import reimburse_and_mask_host
+from interactive import select_break
+from structs import BreakFilters, format_as_price
 
 
 def reimburse():

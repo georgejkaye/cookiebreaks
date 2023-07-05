@@ -1,6 +1,6 @@
 import arrow
-from src.config import Config
-from src.structs import Break
+from config import Config
+from structs import Break
 from icalendar import Calendar, Event, vCalAddress, vText  # type: ignore
 
 

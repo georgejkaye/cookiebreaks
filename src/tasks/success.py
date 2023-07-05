@@ -1,7 +1,7 @@
-from src.config import parse_config
-from src.database import claim_reimbursed
-from src.interactive import select_claim
-from src.structs import ClaimFilters, claim_list_date_string
+from config import parse_config
+from database import claim_reimbursed
+from interactive import select_claim
+from structs import ClaimFilters, claim_list_date_string
 
 
 def success():
