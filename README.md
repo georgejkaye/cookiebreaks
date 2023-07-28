@@ -18,7 +18,12 @@ poetry config virtualenvs.in-project true
 poetry install
 ```
 
-Now all the dependencies will have been installed!
+Now all the dependencies will have been installed in the virtual shell.
+To enter the virtual shell, run the following:
+
+```sh
+poetry shell
+```
 
 ## Configuration
 
@@ -34,8 +39,11 @@ How to do this with an Office 365 account is [detailed below](https://github.com
 
 ## Usage
 
+You will need to run the scripts from within a Poetry virtualenv.
+The easiest way to do this is to run the following in the `api` directory:
+
 ```bash
-python src/main.py TASK
+poetry run python src/main.py TASK
 ```
 
 Where `TASK` can be chosen from the following list:
@@ -48,6 +56,13 @@ claim         Make a claim for some past cookie breaks
 success       Note a successful claim
 holiday       Set an upcoming cookie break as a holiday
 next          Add upcoming cookie breaks to the database
+```
+
+A helper executable has been provided which does the necessary `poetry` commands for you.
+To use it, set the environment variable `CB_ROOT` to the path this repo is cloned to.
+
+```
+CB_ROOT=/home/george/cookiebreak-scripts cb
 ```
 
 ## Setting up SMTP with Office 365
