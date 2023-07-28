@@ -6,17 +6,8 @@ from arrow import Arrow
 
 from pydantic import BaseConfig, ConfigDict
 from pydantic.dataclasses import dataclass
-from pydantic.json import ENCODERS_BY_TYPE
 
 BaseConfig.arbitrary_types_allowed = True
-
-# Arrows get handled a bit weirdly by default pydantic behaviour
-# so we declare that they are strings
-ENCODERS_BY_TYPE |= {Arrow: str}
-
-# We need to update the schema as well
-Arrow.__modify_schema__ = lambda schema: schema.update(type="string")  # type: ignore
-
 
 def format_as_price(cost: float) -> str:
     return f"£{cost:.2f}"
@@ -34,6 +25,7 @@ def format_as_maybe_iso8601(a: Optional[Arrow]) -> Optional[str]:
 
 class BreakConfig:
     json_encoders = {Arrow: lambda x: x.isoformat()}
+    arbitrary_types_allowed = True
 
 
 @dataclass(config=BreakConfig)
@@ -90,8 +82,11 @@ class BreakFilters:
     admin_claimed: Optional[bool] = None
     admin_reimbursed: Optional[bool] = None
 
+class ClaimConfig:
+    json_encoders = {Arrow: lambda x: x.isoformat()}
+    arbitrary_types_allowed = True
 
-@dataclass
+@dataclass(config=ClaimConfig)
 class Claim:
     id: int
     claim_date: Arrow
