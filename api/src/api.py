@@ -4,7 +4,6 @@ import os
 from typing import List, Optional
 import arrow
 from fastapi import FastAPI
-from dotenv import find_dotenv, load_dotenv
 
 from database import (
     claim_for_breaks,
@@ -100,17 +99,6 @@ app = FastAPI(
         "url": "https://www.gnu.org/licenses/gpl-3.0.en.html",
     },
     openapi_tags=tags_metadata,
-)
-
-now: Arrow = arrow.now()
-example_break = break_internal_to_external(
-    BreakInternal(
-        0,
-        now,
-        "LG06a, Computer Science",
-        False,
-        "George Kaye",
-    )
 )
 
 
