@@ -1,19 +1,28 @@
+import os
 from typing import Any, Optional, Tuple, List
 import arrow
 
 import psycopg2
 
 from config import Config
-from structs import Break, BreakFilters, Claim, ClaimFilters
-from arrow import Arrow
+from structs import Break, BreakFilters, Claim, ClaimFilters, Arrow
 
 
-def connect(config: Config) -> Tuple[Any, Any]:
+def get_env_variable(name: str) -> str:
+    var = os.getenv(name)
+    if var:
+        return var
+    else:
+        print(f"Environment variable {name} not set")
+        exit(1)
+
+
+def connect() -> Tuple[Any, Any]:
     conn = psycopg2.connect(
-        dbname=config.db.database,
-        user=config.db.user,
-        password=config.db.password,
-        host=config.db.host,
+        dbname=get_env_variable("DB_NAME"),
+        user=get_env_variable("DB_USER"),
+        password=get_env_variable("DB_PASSWORD"),
+        host=get_env_variable("DB_HOST"),
     )
     cur = conn.cursor()
     return (conn, cur)
@@ -24,8 +33,8 @@ def disconnect(conn: Any, cur: Any) -> None:
     cur.close()
 
 
-def insert_breaks(config: Config, breaks: list[tuple[Arrow, str]]) -> None:
-    (conn, cur) = connect(config)
+def insert_breaks(breaks: list[tuple[Arrow, str]]) -> None:
+    (conn, cur) = connect()
     statement = """
         INSERT INTO break (break_datetime, break_location) (
             SELECT unnest(%(datetimes)s), unnest(%(locations)s)
@@ -42,8 +51,8 @@ def insert_breaks(config: Config, breaks: list[tuple[Arrow, str]]) -> None:
     disconnect(conn, cur)
 
 
-def insert_host(config: Config, break_host: str, break_id: int) -> None:
-    (conn, cur) = connect(config)
+def insert_host(break_host: str, break_id: int) -> None:
+    (conn, cur) = connect()
     statement = f"""
         UPDATE break
         SET break_host = %(host)s
@@ -54,8 +63,8 @@ def insert_host(config: Config, break_host: str, break_id: int) -> None:
     disconnect(conn, cur)
 
 
-def reimburse_and_mask_host(config: Config, break_id: int, cost: float) -> None:
-    (conn, cur) = connect(config)
+def reimburse_and_mask_host(break_id: int, cost: float) -> None:
+    (conn, cur) = connect()
     statement = """
         UPDATE break
         SET
@@ -128,8 +137,8 @@ def rows_to_breaks(rows) -> List[Break]:
     return next_breaks
 
 
-def get_specific_breaks(config: Config, breaks: List[int]) -> List[Break]:
-    (conn, cur) = connect(config)
+def get_specific_breaks(breaks: List[int]) -> List[Break]:
+    (conn, cur) = connect()
     statement = f"""
         SELECT * FROM break WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
     """
@@ -139,19 +148,17 @@ def get_specific_breaks(config: Config, breaks: List[int]) -> List[Break]:
     return rows_to_breaks(rows)
 
 
-def rows_to_claims(config: Config, rows) -> List[Claim]:
+def rows_to_claims(rows) -> List[Claim]:
     claims = []
     for row in rows:
         (id, date, breaks, amount, reimbursed) = row
-        break_objects = get_specific_breaks(config, breaks)
+        break_objects = get_specific_breaks(breaks)
         claims.append(Claim(id, date, break_objects, amount, reimbursed))
     return claims
 
 
-def get_break_dicts(
-    config: Config, filters: BreakFilters = BreakFilters()
-) -> List[dict]:
-    (conn, cur) = connect(config)
+def get_break_dicts(filters: BreakFilters = BreakFilters()) -> List[dict]:
+    (conn, cur) = connect()
     where_clauses = []
     if filters.past is not None:
         if filters.past:
@@ -192,15 +199,13 @@ def get_break_dicts(
     return rows
 
 
-def get_break_objects(
-    config: Config, filters: BreakFilters = BreakFilters()
-) -> List[Break]:
-    break_dicts = get_break_dicts(config, filters)
+def get_break_objects(filters: BreakFilters = BreakFilters()) -> List[Break]:
+    break_dicts = get_break_dicts(filters)
     return rows_to_breaks(break_dicts)
 
 
-def get_next_break(config: Config) -> Break:
-    return get_break_objects(config, BreakFilters(past=False, number=1))[0]
+def get_next_break() -> Break:
+    return get_break_objects(BreakFilters(past=False, number=1))[0]
 
 
 def to_postgres_day(day: int) -> int:
@@ -211,7 +216,7 @@ def to_postgres_day(day: int) -> int:
 
 
 def insert_missing_breaks(config: Config) -> None:
-    (conn, cur) = connect(config)
+    (conn, cur) = connect()
     statement = f"""
         INSERT INTO break (break_datetime, break_location) (
             SELECT days AS break_datetime, %(location)s
@@ -241,7 +246,7 @@ def insert_missing_breaks(config: Config) -> None:
 
 
 def set_holiday(config: Config, break_id: int, holiday: bool) -> None:
-    (conn, cur) = connect(config)
+    (conn, cur) = connect()
     if holiday:
         statement = f"""
             UPDATE break
@@ -259,8 +264,8 @@ def set_holiday(config: Config, break_id: int, holiday: bool) -> None:
     disconnect(conn, cur)
 
 
-def claim_for_breaks(config: Config, break_ids: List[int]) -> None:
-    (conn, cur) = connect(config)
+def claim_for_breaks(break_ids: List[int]) -> None:
+    (conn, cur) = connect()
     break_table_statement = f"""
         WITH updated AS (
             UPDATE break
@@ -284,8 +289,8 @@ def claim_for_breaks(config: Config, break_ids: List[int]) -> None:
 1
 
 
-def get_claims(config: Config, filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
-    (conn, cur) = connect(config)
+def get_claims(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
+    (conn, cur) = connect()
     if filters.reimbursed is not None:
         if filters.reimbursed:
             modifier = " NOT"
@@ -305,15 +310,15 @@ def get_claims(config: Config, filters: ClaimFilters = ClaimFilters()) -> List[C
     claims = []
     for row in rows:
         (claim_id, claim_date, breaks_claimed, claim_amount, claim_reimbursed) = row
-        breaks = get_specific_breaks(config, breaks_claimed)
+        breaks = get_specific_breaks(breaks_claimed)
         claims.append(
             Claim(claim_id, claim_date, breaks, claim_amount, claim_reimbursed)
         )
     return claims
 
 
-def claim_reimbursed(config: Config, claim_id: int) -> None:
-    (conn, cur) = connect(config)
+def claim_reimbursed(claim_id: int) -> None:
+    (conn, cur) = connect()
     statement = """
         UPDATE claim
         SET claim_reimbursed = DATE_TRUNC('minute', NOW())

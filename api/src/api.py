@@ -1,8 +1,8 @@
 from typing import List, Optional
 import arrow
 from fastapi import FastAPI
+from dotenv import find_dotenv, load_dotenv
 
-from config import parse_config
 from database import (
     claim_for_breaks,
     claim_reimbursed,

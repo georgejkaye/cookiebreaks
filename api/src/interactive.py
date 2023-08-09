@@ -51,8 +51,8 @@ def validate_choice(choice_input: str, min: int, max: int) -> Optional[int]:
         return None
 
 
-def select_break(config: Config, filters: BreakFilters) -> Optional[Break]:
-    breaks = get_break_objects(config, filters)
+def select_break(filters: BreakFilters) -> Optional[Break]:
+    breaks = get_break_objects(filters)
     if len(breaks) > 0:
         display_breaks(breaks)
     else:
@@ -69,7 +69,7 @@ def select_break(config: Config, filters: BreakFilters) -> Optional[Break]:
 
 
 def select_claim(config: Config, filters: ClaimFilters) -> Optional[Claim]:
-    claims = get_claims(config, filters)
+    claims = get_claims(filters)
     if len(claims) > 0:
         display_claims(claims)
     else:
@@ -86,7 +86,7 @@ def select_claim(config: Config, filters: ClaimFilters) -> Optional[Claim]:
 
 
 def select_multiple_breaks(config: Config, filters: BreakFilters) -> List[Break]:
-    breaks = get_break_objects(config, filters)
+    breaks = get_break_objects(filters)
     if len(breaks) > 0:
         display_breaks(breaks)
     else:
