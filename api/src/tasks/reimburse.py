@@ -7,7 +7,7 @@ from structs import BreakFilters, format_as_price
 def reimburse():
     config = parse_config()
     chosen_break = select_break(
-        config, BreakFilters(past=True, hosted=True, host_reimbursed=False)
+        config, BreakFilters(hosted=True, host_reimbursed=False)
     )
     if chosen_break is None:
         print("No choice made, exiting")
