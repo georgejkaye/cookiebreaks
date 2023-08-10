@@ -310,9 +310,14 @@ def get_claims(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
     claims = []
     for row in rows:
         (claim_id, claim_date, breaks_claimed, claim_amount, claim_reimbursed) = row
+        if claim_reimbursed is not None:
+            claim_reimbursed = arrow.get(claim_reimbursed)
+        claim_date = arrow.get(claim_date)
         breaks = get_specific_breaks(breaks_claimed)
         claims.append(
-            Claim(claim_id, claim_date, breaks, claim_amount, claim_reimbursed)
+            Claim(
+                claim_id, arrow.get(claim_date), breaks, claim_amount, claim_reimbursed
+            )
         )
     return claims
 
