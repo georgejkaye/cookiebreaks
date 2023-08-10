@@ -1,15 +1,24 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
-from typing import List, Optional
+from typing import Annotated, List, Optional
 import arrow
-from fastapi import FastAPI
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+)
+
 
 from database import (
     claim_for_breaks,
     claim_reimbursed,
     get_break_objects,
     get_claims,
+    get_env_variable,
     insert_breaks,
     insert_host,
     reimburse_and_mask_host,
@@ -77,6 +86,7 @@ def claim_internal_to_external(internal: ClaimInternal) -> Claim:
 
 
 tags_metadata = [
+    {"name": "auth", "description": "Authenticate users"},
     {"name": "breaks", "description": "Operations for interacting with cookie breaks"},
     {
         "name": "claims",
@@ -100,6 +110,123 @@ app = FastAPI(
     },
     openapi_tags=tags_metadata,
 )
+
+SECRET_KEY = get_env_variable("SECRET_KEY")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+print(pwd_context.hash("secret"))
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+
+class User(BaseModel):
+    username: str
+    admin: bool
+
+
+class UserInDB(User):
+    hashed_password: str
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+test_users_db: dict = {}
+
+
+def get_user(db, username: str | None):
+    if username in db:
+        user_dict = db[username]
+        return UserInDB(**user_dict)
+
+
+def authenticate_user(fake_db, username: str, password: str):
+    user = get_user(fake_db, username)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str | None = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    user = get_user(test_users_db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def is_admin(current_user: Annotated[User, Depends(get_current_user)]):
+    print(current_user)
+    if not current_user.admin:
+        raise HTTPException(status_code=400, detail="Not an admin")
+    return current_user
+
+
+@app.post("/token", summary="Get an auth token", tags=["auth"])
+async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    user = authenticate_user(test_users_db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.get("/users/me", summary="Get current user", tags=["auth"])
+async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
+    return current_user
+
+
+@app.get("/users/admin", summary="Check if user is admin", tags=["auth"])
+async def check_if_admin(current_user: Annotated[User, Depends(is_admin)]):
+    return current_user
 
 
 @app.get(
@@ -159,8 +286,11 @@ async def reimburse_host(break_id: int, cost: float):
     summary="Get a list of claims",
     tags=["claims"],
 )
-async def request_claims(reimbursed: Optional[bool] = None):
-    return get_claims(ClaimFilters(reimbursed))
+async def request_claims(
+    token: Annotated[str, Depends(is_admin)], reimbursed: Optional[bool] = None
+):
+    claims = get_claims(ClaimFilters(reimbursed))
+    return list(map(claim_internal_to_external, claims))
 
 
 @app.post(
@@ -186,7 +316,7 @@ async def reimburse_admin(break_id: int):
     return list(map(claim_internal_to_external, get_claims()))
 
 
-@app.post("/test", response_model=List[Break], tags=["debug"])
+@app.post("/test", summary="Add test data", response_model=List[Break], tags=["debug"])
 async def add_test_data(num: int):
     now = arrow.now("Europe/London").replace(second=0, microsecond=0)
     break_location = os.getenv("BREAK_LOCATION")

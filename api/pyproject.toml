@@ -11,7 +11,6 @@ packages = []
 python = "^3.11"
 Jinja2 = "^3.1.2"
 PyYAML = "^6.0"
-types-PyYAML = "^6.0.12.10"
 psycopg-binary = "^3.1.9"
 arrow = "^1.2.3"
 icalendar = "^5.0.7"
@@ -19,11 +18,18 @@ fastapi = "^0.99.1"
 uvicorn = "^0.22.0"
 psycopg2 = "^2.9.6"
 python-dotenv = "^1.0.0"
+python-multipart = "^0.0.6"
+python-jose = { extras = ["cryptography"], version = "^3.3.0" }
+passlib = "^1.7.4"
+
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.4.1"
 black = "^23.3.0"
 flake8 = "^6.0.0"
+types-python-jose = "^3.3.4.8"
+types-passlib = "^1.7.7.12"
+types-PyYAML = "^6.0.12.10"
 
 [build-system]
 requires = ["poetry-core"]
