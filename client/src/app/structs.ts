@@ -18,10 +18,14 @@ export const getCookieBreakDate = (cb: CookieBreak) => {
         month: "long",
         timeZone: "Europe/London",
     })
+    return `${weekday} ${date} ${month}`
+}
+export const getCookieBreakTime = (cb: CookieBreak) => {
     let time = cb.datetime.toLocaleTimeString("en-GB", {
         timeStyle: "short",
         timeZone: "Europe/London",
     })
-
-    return `${weekday} ${date} ${month} @ ${time}`
+    return time
 }
+export const getFutureBreaks = (cbs: CookieBreak[]) =>
+    cbs.filter((cb) => cb.datetime.getTime() > Date.now())
