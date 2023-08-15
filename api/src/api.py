@@ -39,6 +39,7 @@ class Break:
     location: str
     holiday: bool
     host: Optional[str]
+    break_announced: Optional[datetime]
     cost: Optional[float]
     host_reimbursed: Optional[datetime]
     admin_claimed: Optional[datetime]
@@ -59,6 +60,7 @@ def break_internal_to_external(internal: BreakInternal) -> Break:
         internal.location,
         internal.holiday,
         internal.host,
+        arrow_to_datetime(internal.break_announced),
         internal.cost,
         arrow_to_datetime(internal.host_reimbursed),
         arrow_to_datetime(internal.admin_claimed),

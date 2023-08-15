@@ -16,6 +16,7 @@ class Break:
     location: str
     holiday: bool
     host: Optional[str] = None
+    break_announced: Optional[Arrow] = None
     cost: Optional[float] = None
     host_reimbursed: Optional[Arrow] = None
     admin_claimed: Optional[Arrow] = None

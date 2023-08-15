@@ -119,6 +119,7 @@ def rows_to_breaks(rows) -> List[Break]:
             host_reimbursed,
             admin_claimed,
             admin_reimbursed,
+            break_announced,
         ) = row
         timezone = "Europe/London"
         next_breaks.append(
@@ -128,6 +129,7 @@ def rows_to_breaks(rows) -> List[Break]:
                 break_location,
                 is_holiday,
                 break_host,
+                arrow_or_none(break_announced, timezone),
                 cost,
                 arrow_or_none(host_reimbursed, timezone),
                 arrow_or_none(admin_claimed, timezone),
