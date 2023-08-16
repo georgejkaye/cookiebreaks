@@ -6,9 +6,7 @@ from structs import BreakFilters, format_as_price
 
 def reimburse():
     config = parse_config()
-    chosen_break = select_break(
-        config, BreakFilters(hosted=True, host_reimbursed=False)
-    )
+    chosen_break = select_break(BreakFilters(hosted=True, host_reimbursed=False))
     if chosen_break is None:
         print("No choice made, exiting")
         exit(0)
@@ -30,7 +28,7 @@ def reimburse():
             print("Aborting...")
             exit(0)
         else:
-            reimburse_and_mask_host(config, chosen_break.id, cost)
+            reimburse_and_mask_host(chosen_break.id, cost)
 
 
 if __name__ == "__main__":

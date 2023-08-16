@@ -32,7 +32,7 @@ def claim():
             print("Aborting...")
             exit(0)
         else:
-            claim_for_breaks(config, list(map(lambda b: b.id, chosen_breaks)))
+            claim_for_breaks(list(map(lambda b: b.id, chosen_breaks)))
 
 
 if __name__ == "__main__":
