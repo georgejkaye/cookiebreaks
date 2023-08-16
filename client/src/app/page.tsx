@@ -112,11 +112,9 @@ export const Home = () => {
         <>
             <main className="w-content m-auto text-fg">
                 <h1 className="text-6xl text-center p-10">Cookie breaks</h1>
-                <table className="m-auto">
-                    {futureBreaks.map((cb) => (
-                        <BreakCard cb={cb} />
-                    ))}
-                </table>
+                {futureBreaks.map((cb) => (
+                    <BreakCard key={`${cb.id}`} cb={cb} />
+                ))}
             </main>
         </>
     )

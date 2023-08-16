@@ -11,7 +11,6 @@ export const getBreaks = async (
     let endpoint = `/api/breaks`
     let response = await axios.get(endpoint)
     let data = response.data
-    console.log(data)
     let breaks = data.map((b: any) => ({
         id: b.id,
         host: b.host,
@@ -23,6 +22,5 @@ export const getBreaks = async (
         claimed: dateOrUndefined(b.admin_claimed),
         success: dateOrUndefined(b.admin_reimbursed),
     }))
-    console.log(data)
     setBreaks(breaks)
 }

@@ -1,5 +1,4 @@
 export const getDatetimeText = (datetime: Date) => {
-    console.log(datetime)
     let isoString = datetime.toISOString()
     let date = isoString.substring(0, 10)
     let time = isoString.substring(11, 16)
