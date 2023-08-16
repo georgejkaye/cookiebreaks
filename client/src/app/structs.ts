@@ -1,8 +1,23 @@
+export const getDatetimeText = (datetime: Date) => {
+    console.log(datetime)
+    let isoString = datetime.toISOString()
+    let date = isoString.substring(0, 10)
+    let time = isoString.substring(11, 16)
+    return `${date} at ${time}`
+}
+
+export const dateInPast = (dt: Date) => dt.getTime() < Date.now()
+
 export interface CookieBreak {
     id: number
     host: string
     location: string
+    cost?: number
     datetime: Date
+    announced?: Date
+    reimbursed?: Date
+    claimed?: Date
+    success?: Date
 }
 
 export const getCookieBreakDate = (cb: CookieBreak) => {
@@ -28,4 +43,5 @@ export const getCookieBreakTime = (cb: CookieBreak) => {
     return time
 }
 export const getFutureBreaks = (cbs: CookieBreak[]) =>
-    cbs.filter((cb) => cb.datetime.getTime() > Date.now())
+    // cbs.filter((cb) => cb.datetime.getTime() > Date.now())
+    cbs
