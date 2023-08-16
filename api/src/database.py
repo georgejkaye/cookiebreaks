@@ -68,7 +68,7 @@ def reimburse_and_mask_host(break_id: int, cost: float) -> None:
     statement = """
         UPDATE break
         SET
-            break_host = '', break_cost = %(cost)s,
+            break_host = null, break_cost = %(cost)s,
             host_reimbursed = DATE_TRUNC('minute', NOW())
         WHERE break_id = %(id)s
     """
