@@ -6,7 +6,7 @@ from structs import BreakFilters
 
 def host():
     config = parse_config()
-    chosen_break = select_break(config, BreakFilters(past=False))
+    chosen_break = select_break(BreakFilters(past=False))
     if chosen_break is None:
         print("No choice made, exiting")
         exit(0)
@@ -33,7 +33,7 @@ def host():
         print("Aborting...")
         exit(0)
     else:
-        insert_host(config, host, chosen_break.id)
+        insert_host(host, chosen_break.id)
 
 
 if __name__ == "__main__":
