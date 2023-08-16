@@ -326,10 +326,18 @@ def get_claims(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
 
 def claim_reimbursed(claim_id: int) -> None:
     (conn, cur) = connect()
-    statement = """
+    claim_statement = """
         UPDATE claim
         SET claim_reimbursed = DATE_TRUNC('minute', NOW())
         WHERE claim_id = %(id)s
     """
-    cur.execute(statement, {"id": claim_id})
+    cur.execute(claim_statement, {"id": claim_id})
+    break_statement = """
+        UPDATE break
+        SET admin_reimbursed = DATE_TRUNC('minute', NOW())
+        WHERE break_id IN (
+            SELECT UNNEST(breaks_claimed) FROM claim WHERE claim.claim_id = %(id)s
+        )
+    """
+    cur.execute(break_statement, {"id": claim_id})
     disconnect(conn, cur)
