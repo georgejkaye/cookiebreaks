@@ -23,10 +23,10 @@ const BreakIcon = (props: {
         : `${props.doneText} on ${getDatetimeText(props.datetime)}`
     let opacity = !props.datetime ? 0.25 : 1
     return (
-        <div>
+        <div className="my-2 mx-2 desktop:mx-0">
             <Image
-                width={25}
-                height={25}
+                width={30}
+                height={30}
                 src={`/images/icons/${props.icon}.svg`}
                 title={titleText}
                 alt={titleText}
@@ -45,54 +45,53 @@ const BreakCard = (props: { cb: CookieBreak }) => {
                 : "Host required"
             : props.cb.host
     return (
-        <div className="flex border-4 m-5 p-1">
-            <div className="w-64 text-center px-5 font-bold">
-                {getCookieBreakDate(props.cb)}
-            </div>
-            <div className="w-24 text-center px-5 font-bold">
-                {getCookieBreakTime(props.cb)}
+        <div className="flex w-3/4 desktop:w-content tablet:w-tabletContent flex-wrap border-4 m-5 p-1 px-5 mx-auto">
+            <div className="w-full tablet:w-1/2 my-2 desktop:mx-0 desktop:w-1/3 text-center font-bold">
+                {getCookieBreakDate(props.cb)}, {getCookieBreakTime(props.cb)}
             </div>
             <div
-                className={`w-80 text-center px-5 ${
+                className={`w-full tablet:w-1/2 desktop:flex-1 my-2 desktop:mx-0 text-center px-5 ${
                     props.cb.host === null ? "italic text-sm" : "bold"
                 }`}
             >
                 {hostText}
             </div>
-            <BreakIcon
-                icon="announce"
-                doneText="Announced"
-                waitingText="Not announced yet"
-                datetime={props.cb.announced}
-            />
-            <BreakIcon
-                icon="cookie"
-                doneText="Break held"
-                waitingText="Break not held yet"
-                datetime={pastBreak ? props.cb.datetime : undefined}
-            />
-            <BreakIcon
-                icon="reimburse"
-                doneText={`Reimbursed host £${
-                    props.cb.cost
-                        ? ((props.cb.cost * 100) / 100).toFixed(2)
-                        : "0.00"
-                }`}
-                waitingText="Host not reimbursed yet"
-                datetime={props.cb.reimbursed}
-            />
-            <BreakIcon
-                icon="claim"
-                doneText="Claimed"
-                waitingText="Not claimed yet"
-                datetime={props.cb.claimed}
-            />
-            <BreakIcon
-                icon="success"
-                doneText="Admin reimbursed"
-                waitingText="Admin not reimbursed yet"
-                datetime={props.cb.success}
-            />
+            <div className="flex w-full desktop:w-1/6 justify-center desktop:justify-end d:w-auto">
+                <BreakIcon
+                    icon="announce"
+                    doneText="Announced"
+                    waitingText="Not announced yet"
+                    datetime={props.cb.announced}
+                />
+                <BreakIcon
+                    icon="cookie"
+                    doneText="Break held"
+                    waitingText="Break not held yet"
+                    datetime={pastBreak ? props.cb.datetime : undefined}
+                />
+                <BreakIcon
+                    icon="reimburse"
+                    doneText={`Reimbursed host £${
+                        props.cb.cost
+                            ? ((props.cb.cost * 100) / 100).toFixed(2)
+                            : "0.00"
+                    }`}
+                    waitingText="Host not reimbursed yet"
+                    datetime={props.cb.reimbursed}
+                />
+                <BreakIcon
+                    icon="claim"
+                    doneText="Claimed"
+                    waitingText="Not claimed yet"
+                    datetime={props.cb.claimed}
+                />
+                <BreakIcon
+                    icon="success"
+                    doneText="Admin reimbursed"
+                    waitingText="Admin not reimbursed yet"
+                    datetime={props.cb.success}
+                />
+            </div>
         </div>
     )
 }
@@ -110,7 +109,7 @@ export const Home = () => {
 
     return (
         <>
-            <main className="w-content m-auto text-fg">
+            <main className="text-fg">
                 <h1 className="text-6xl text-center p-10">Cookie breaks</h1>
                 {futureBreaks.map((cb) => (
                     <BreakCard key={`${cb.id}`} cb={cb} />
