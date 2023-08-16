@@ -22,7 +22,7 @@ def success():
             print("Aborting...")
             exit(0)
         else:
-            claim_reimbursed(config, chosen_claim.id)
+            claim_reimbursed(chosen_claim.id)
 
 
 if __name__ == "__main__":
