@@ -106,36 +106,38 @@ def arrow_or_none(candidate, timezone: str) -> Optional[Arrow]:
         return arrow.get(candidate, timezone)
 
 
+def row_to_break(row) -> Break:
+    (
+        id,
+        break_host,
+        datetime,
+        break_location,
+        is_holiday,
+        cost,
+        host_reimbursed,
+        admin_claimed,
+        admin_reimbursed,
+        break_announced,
+    ) = row
+    timezone = "Europe/London"
+    return Break(
+        id,
+        arrow.get(datetime, timezone),
+        break_location,
+        is_holiday,
+        break_host,
+        arrow_or_none(break_announced, timezone),
+        cost,
+        arrow_or_none(host_reimbursed, timezone),
+        arrow_or_none(admin_claimed, timezone),
+        arrow_or_none(admin_reimbursed, timezone),
+    )
+
+
 def rows_to_breaks(rows) -> List[Break]:
     next_breaks = []
     for row in rows:
-        (
-            id,
-            break_host,
-            datetime,
-            break_location,
-            is_holiday,
-            cost,
-            host_reimbursed,
-            admin_claimed,
-            admin_reimbursed,
-            break_announced,
-        ) = row
-        timezone = "Europe/London"
-        next_breaks.append(
-            Break(
-                id,
-                arrow.get(datetime, timezone),
-                break_location,
-                is_holiday,
-                break_host,
-                arrow_or_none(break_announced, timezone),
-                cost,
-                arrow_or_none(host_reimbursed, timezone),
-                arrow_or_none(admin_claimed, timezone),
-                arrow_or_none(admin_reimbursed, timezone),
-            )
-        )
+        next_breaks.append(row_to_break(row))
     return next_breaks
 
 
@@ -159,8 +161,7 @@ def rows_to_claims(rows) -> List[Claim]:
     return claims
 
 
-def get_break_dicts(filters: BreakFilters = BreakFilters()) -> List[dict]:
-    (conn, cur) = connect()
+def get_breaks_statement(filters) -> str:
     where_clauses = []
     if filters.past is not None:
         if filters.past:
@@ -195,6 +196,12 @@ def get_break_dicts(filters: BreakFilters = BreakFilters()) -> List[dict]:
         ORDER BY break_datetime ASC
         {limit_string}
     """
+    return statement
+
+
+def get_break_dicts(filters: BreakFilters = BreakFilters()) -> List[dict]:
+    (conn, cur) = connect()
+    statement = get_breaks_statement(filters)
     cur.execute(statement)
     rows = cur.fetchall()
     disconnect(conn, cur)
@@ -341,3 +348,19 @@ def claim_reimbursed(claim_id: int) -> None:
     """
     cur.execute(break_statement, {"id": claim_id})
     disconnect(conn, cur)
+
+
+def after_announced_break(
+    cookie_break: Break, filters: BreakFilters = BreakFilters()
+) -> Break:
+    (conn, cur) = connect()
+    statement = """
+        UPDATE break
+        SET break_announced = NOW()
+        WHERE break_id = %(id)s
+        RETURNING *
+    """
+    cur.execute(statement, {"id": cookie_break.id})
+    updated_break = cur.fetchall()[0]
+    conn.close()
+    return row_to_break(updated_break)
