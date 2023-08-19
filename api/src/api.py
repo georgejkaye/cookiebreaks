@@ -32,6 +32,7 @@ from structs import (
     Claim as ClaimInternal,
     ClaimFilters,
 )
+from tasks.announce import announce, announce_specific
 
 
 @dataclass
@@ -199,7 +200,6 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 async def is_admin(current_user: Annotated[User, Depends(get_current_user)]):
-    print(current_user)
     if not current_user.admin:
         raise HTTPException(status_code=400, detail="Not an admin")
     return current_user
@@ -231,6 +231,11 @@ async def check_if_admin(current_user: Annotated[User, Depends(is_admin)]):
     return current_user
 
 
+def get_breaks(filters: BreakFilters = BreakFilters()):
+    breaks = get_break_objects(filters)
+    return list(map(break_internal_to_external, breaks))
+
+
 @app.get(
     "/breaks",
     response_model=List[Break],
@@ -246,18 +251,16 @@ async def request_breaks(
     admin_claimed: Optional[bool] = None,
     admin_reimbursed: Optional[bool] = None,
 ):
-    breaks = get_break_objects(
-        BreakFilters(
-            number,
-            past,
-            hosted,
-            holiday,
-            host_reimbursed,
-            admin_claimed,
-            admin_reimbursed,
-        ),
+    break_filters = BreakFilters(
+        number,
+        past,
+        hosted,
+        holiday,
+        host_reimbursed,
+        admin_claimed,
+        admin_reimbursed,
     )
-    return list(map(break_internal_to_external, breaks))
+    return get_breaks(break_filters)
 
 
 @app.post(
@@ -295,6 +298,9 @@ async def request_claims(
     return list(map(claim_internal_to_external, claims))
 
 
+load_dotenv(Path(get_env_variable("CB_ROOT")) / "api" / ".env")
+
+
 @app.post(
     "/claim",
     response_model=list[Claim],
@@ -318,9 +324,19 @@ async def reimburse_admin(break_id: int):
     return list(map(claim_internal_to_external, get_claims()))
 
 
+@app.post(
+    "/announce", response_model=Break, summary="Announce a break", tags=["breaks"]
+)
+async def announce_break(id: int):
+    announced_break = announce_specific(id)
+    if announced_break is None:
+        raise HTTPException(400, "Break does not exist")
+    return break_internal_to_external(announced_break)
+
+
 @app.post("/test", summary="Add test data", response_model=List[Break], tags=["debug"])
 async def add_test_data(num: int):
-    now = arrow.now("Europe/London").replace(second=0, microsecond=0)
+    now = arrow.now("Europe/London").replace(day=+1, second=0, microsecond=0)
     break_location = os.getenv("BREAK_LOCATION")
     if break_location is None:
         print("BREAK_LOCATION not set")
