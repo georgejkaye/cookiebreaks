@@ -10,15 +10,14 @@ from typing import List, Tuple, Union
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from database import get_env_variable
 from event import create_calendar_event, get_cookiebreak_ics_filename
 
 from structs import Break
 from config import Config
 
 
-def write_email_template(
-    config: Config, cookie_break: Break, template_name: str
-) -> str:
+def write_email_template(cookie_break: Break, template_name: str) -> str:
     current_dir = Path(__file__).resolve().parent
     templates_dir = current_dir / "templates"
     env = Environment(
@@ -26,7 +25,9 @@ def write_email_template(
         autoescape=select_autoescape(["html", "xml"]),
     )
     template = env.get_template(template_name)
-    email = template.render(cookie_break=cookie_break, admin=config.admin)
+    email = template.render(
+        cookie_break=cookie_break, admin_name=get_env_variable("ADMIN_NAME")
+    )
     return email
 
 
@@ -92,16 +93,19 @@ def write_email(
     return message
 
 
-def write_announce_email(config: Config, next_break: Break) -> MIMEMultipart:
+def write_announce_email(next_break: Break) -> MIMEMultipart:
     announce_subject = get_announce_email_subject(next_break)
-    ics_content = create_calendar_event(config, next_break)
+    ics_content = create_calendar_event(next_break)
     ics_name = get_cookiebreak_ics_filename(next_break)
-    email_body = MIMEText(write_email_template(config, next_break, "announce.txt"))
+    email_body = MIMEText(write_email_template(next_break, "announce.txt"))
     (ics_text, ics_attachment) = write_calendar_mime_parts(ics_content, ics_name)
+    recipients = list(
+        map(lambda x: x.strip(), get_env_variable("MAILING_LISTS").split(","))
+    )
     return write_email(
-        sender_name=config.admin.fullname,
-        sender_email=config.admin.email,
-        recipients=config.mailing_lists,
+        sender_name=get_env_variable("ADMIN_FULLNAME"),
+        sender_email=get_env_variable("ADMIN_EMAIL"),
+        recipients=recipients,
         subject=announce_subject,
         content=[email_body, ics_text, ics_attachment],
     )
@@ -114,5 +118,5 @@ def send_email(email: MIMEMultipart):
     process.communicate(email.as_bytes())
 
 
-def send_announce_email(config: Config, email: MIMEMultipart):
+def send_announce_email(email: MIMEMultipart):
     send_email(email)

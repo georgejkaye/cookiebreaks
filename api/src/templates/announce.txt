@@ -5,4 +5,4 @@ This week's cookie break will take place on *{{ cookie_break.get_break_date() }}
 This week the break will be hosted by *{{ cookie_break.host }}*. If you would like to host a cookie break (you will be reimbursed for your troubles), please let me know!
 
 Best
-{{ admin.name }}
+{{ admin_name }}
