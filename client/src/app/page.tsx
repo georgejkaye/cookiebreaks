@@ -16,7 +16,7 @@ import {
     getFutureBreaks,
     User,
 } from "./structs"
-import { getBreaks, getToken as login } from "./api"
+import { announceBreak, getBreaks, getToken as login } from "./api"
 import Image from "next/image"
 
 const BreakIcon = (props: {
@@ -24,13 +24,24 @@ const BreakIcon = (props: {
     doneText: string
     waitingText: string
     datetime?: Date
+    onClick?: () => any
 }) => {
     let titleText = !props.datetime
         ? props.waitingText
         : `${props.doneText} on ${getDatetimeText(props.datetime)}`
     let opacity = !props.datetime ? 0.25 : 1
+    const onClickIcon = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (props.onClick) {
+            props.onClick()
+        }
+    }
     return (
-        <div className="my-2 mx-2 desktop:mx-0">
+        <div
+            className={`my-2 mx-2 desktop:mx-0 ${
+                props.onClick ? "cursor-pointer" : ""
+            }`}
+            onClick={onClickIcon}
+        >
             <Image
                 width={30}
                 height={30}
@@ -43,7 +54,12 @@ const BreakIcon = (props: {
     )
 }
 
-const BreakCard = (props: { cb: CookieBreak }) => {
+const BreakCard = (props: {
+    cb: CookieBreak
+    breaks: CookieBreak[]
+    token: string
+    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+}) => {
     let pastBreak = dateInPast(props.cb.datetime)
     let hostText =
         props.cb.host === null
@@ -69,6 +85,15 @@ const BreakCard = (props: { cb: CookieBreak }) => {
                     doneText="Announced"
                     waitingText="Not announced yet"
                     datetime={props.cb.announced}
+                    onClick={() => {
+                        console.log("About to announce break")
+                        announceBreak(
+                            props.token,
+                            props.cb.id,
+                            props.breaks,
+                            props.setBreaks
+                        )
+                    }}
                 />
                 <BreakIcon
                     icon="cookie"
@@ -196,7 +221,13 @@ export const Home = () => {
                 <h1 className="text-6xl text-center p-10">Cookie breaks</h1>
                 <LoginBox setToken={setToken} setUser={setUser} user={user} />
                 {futureBreaks.map((cb) => (
-                    <BreakCard key={`${cb.id}`} cb={cb} />
+                    <BreakCard
+                        token={token}
+                        key={`${cb.id}`}
+                        cb={cb}
+                        breaks={breaks}
+                        setBreaks={setBreaks}
+                    />
                 ))}
             </main>
         </>

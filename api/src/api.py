@@ -327,8 +327,10 @@ async def reimburse_admin(break_id: int):
 @app.post(
     "/announce", response_model=Break, summary="Announce a break", tags=["breaks"]
 )
-async def announce_break(current_user: Annotated[User, Depends(is_admin)], id: int):
-    announced_break = announce_specific(id)
+async def announce_break(
+    break_id: int, current_user: Annotated[User, Depends(is_admin)]
+):
+    announced_break = announce_specific(break_id)
     if announced_break is None:
         raise HTTPException(400, "Break does not exist")
     return break_internal_to_external(announced_break)
