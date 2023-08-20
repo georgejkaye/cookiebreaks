@@ -1,6 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, {
+    ChangeEventHandler,
+    Dispatch,
+    SetStateAction,
+    useEffect,
+    useState,
+} from "react"
 import {
     CookieBreak,
     dateInPast,
@@ -8,8 +14,9 @@ import {
     getCookieBreakTime,
     getDatetimeText,
     getFutureBreaks,
+    User,
 } from "./structs"
-import { getBreaks } from "./api"
+import { getBreaks, getToken as login } from "./api"
 import Image from "next/image"
 
 const BreakIcon = (props: {
@@ -96,9 +103,84 @@ const BreakCard = (props: { cb: CookieBreak }) => {
     )
 }
 
+const LoginBox = (props: {
+    setToken: Dispatch<SetStateAction<string>>
+    setUser: Dispatch<SetStateAction<User | undefined>>
+    user: User | undefined
+}) => {
+    const [userText, setUserText] = useState("")
+    const [passwordText, setPasswordText] = useState("")
+    const [status, setStatus] = useState("")
+    const onChangeUserText = (e: React.ChangeEvent<HTMLInputElement>) =>
+        setUserText(e.target.value)
+    const onChangePasswordText = (e: React.ChangeEvent<HTMLInputElement>) =>
+        setPasswordText(e.target.value)
+    const onClickSubmitButton = (e: React.MouseEvent<HTMLButtonElement>) =>
+        login(userText, passwordText, props.setToken, props.setUser, setStatus)
+    const onClickLogoutButton = (e: React.MouseEvent<HTMLButtonElement>) => {
+        props.setToken("")
+        props.setUser(undefined)
+    }
+    useEffect(() => {
+        if (props.user) {
+            if (props.user.admin) {
+                setStatus(`Logged in as admin ${props.user.user}`)
+            } else {
+                setStatus(`Logged in as ${props.user.user}`)
+            }
+        } else {
+            setStatus("")
+        }
+    }, [props.user])
+    return (
+        <div className="bg-bg2 text-fg2 border-4 p-5 mx-auto flex flex-col w-3/4 desktop:w-content tablet:w-tabletContent align-center justify-center">
+            {!props.user ? (
+                <>
+                    <div className="font-bold text-center pb-5">
+                        Admin login
+                    </div>
+                    <div className="m-auto flex justify-center">
+                        User
+                        <input
+                            className="mx-4 text-fg px-2 w-1/4"
+                            type="text"
+                            onChange={onChangeUserText}
+                        />
+                        Password
+                        <input
+                            className="mx-4 text-fg px-2 w-1/4"
+                            type="password"
+                            onChange={onChangePasswordText}
+                        />
+                        <button
+                            className="bg-fg2 text-fg px-5"
+                            onClick={onClickSubmitButton}
+                        >
+                            Submit
+                        </button>
+                    </div>
+                    <div className="text-center mt-5">{status}</div>
+                </>
+            ) : (
+                <div className="flex justify-center">
+                    <div className="text-center">{status}</div>
+                    <button
+                        className="bg-fg2 text-fg px-5 mx-5"
+                        onClick={onClickLogoutButton}
+                    >
+                        Log out
+                    </button>
+                </div>
+            )}
+        </div>
+    )
+}
+
 export const Home = () => {
     const [breaks, setBreaks] = useState<CookieBreak[]>([])
     const [futureBreaks, setFutureBreaks] = useState<CookieBreak[]>([])
+    const [token, setToken] = useState<string>("")
+    const [user, setUser] = useState<User | undefined>(undefined)
 
     useEffect(() => {
         getBreaks(setBreaks)
@@ -106,11 +188,13 @@ export const Home = () => {
     useEffect(() => {
         setFutureBreaks(getFutureBreaks(breaks))
     }, [breaks])
+    useEffect(() => {}, [token])
 
     return (
         <>
             <main className="text-fg">
                 <h1 className="text-6xl text-center p-10">Cookie breaks</h1>
+                <LoginBox setToken={setToken} setUser={setUser} user={user} />
                 {futureBreaks.map((cb) => (
                     <BreakCard key={`${cb.id}`} cb={cb} />
                 ))}

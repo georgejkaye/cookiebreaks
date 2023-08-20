@@ -1,9 +1,33 @@
 import axios from "axios"
 import { Dispatch, SetStateAction } from "react"
-import { CookieBreak } from "./structs"
+import { CookieBreak, User } from "./structs"
 
 const dateOrUndefined = (datetime: string | undefined) =>
     datetime ? new Date(datetime) : undefined
+
+export const getToken = async (
+    username: string,
+    password: string,
+    setToken: Dispatch<SetStateAction<string>>,
+    setUser: Dispatch<SetStateAction<User | undefined>>,
+    setStatus: Dispatch<SetStateAction<string>>
+) => {
+    let endpoint = `/api/token`
+    let data = new FormData()
+    data.append("username", username)
+    data.append("password", password)
+    data.append("grant_type", "")
+    data.append("client_id", "")
+    data.append("client_secret", "")
+    try {
+        let response = await axios.post(endpoint, data)
+        let responseData = response.data
+        setToken(responseData.access_token)
+        setUser({ user: username, admin: responseData.admin })
+    } catch (err) {
+        setStatus("Could not log in...")
+    }
+}
 
 export const getBreaks = async (
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
