@@ -21,6 +21,7 @@ from database import (
     get_break_objects,
     get_claims,
     get_env_variable,
+    get_user,
     insert_breaks,
     insert_host,
     reimburse_and_mask_host,
@@ -31,8 +32,9 @@ from structs import (
     BreakFilters,
     Claim as ClaimInternal,
     ClaimFilters,
+    User,
 )
-from tasks.announce import announce, announce_specific
+from tasks.announce import announce_specific
 
 
 @dataclass
@@ -65,11 +67,18 @@ class Claim:
     claim_reimbursed: Optional[datetime]
 
 
-def claim_internal_to_external(internal: ClaimInternal) -> Claim:
+def claim_internal_to_external(
+    internal: ClaimInternal, current_user: Optional[User]
+) -> Claim:
     return Claim(
         internal.id,
         internal.claim_date.datetime,
-        list(map(break_internal_to_external, internal.breaks_claimed)),
+        list(
+            map(
+                lambda b: break_internal_to_external(b, current_user),
+                internal.breaks_claimed,
+            )
+        ),
         internal.claim_amount,
         arrow_to_datetime(internal.claim_reimbursed),
     )
@@ -118,24 +127,13 @@ class TokenData(BaseModel):
     username: str | None = None
 
 
-class User(BaseModel):
-    username: str
-    admin: bool
-
-
-class UserInDB(User):
-    hashed_password: str
-
-
-def verify_password(plain_password, hashed_password):
+def verify_password(plain_password, hashed_password) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
-
-
-test_users_db: dict = {}
+def get_password_hash(password) -> str:
+    hashed_password = pwd_context.hash(password)
+    return hashed_password
 
 
 def break_internal_to_external(
@@ -167,14 +165,8 @@ def break_internal_to_external(
     )
 
 
-def get_user(db, username: str | None):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
-
-
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+def authenticate_user(username: str, password: str):
+    user = get_user(username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -205,13 +197,12 @@ async def get_current_user(token: Annotated[Optional[str], Depends(oauth2_scheme
             username: str | None = payload.get("sub")
             if username is None:
                 raise credentials_exception
-            token_data = TokenData(username=username)
+            user = get_user(username=username)
+            if user is None:
+                raise credentials_exception
+            return user
         except JWTError:
             raise credentials_exception
-        user = get_user(test_users_db, username=token_data.username)
-        if user is None:
-            raise credentials_exception
-        return user
     return None
 
 
@@ -222,19 +213,41 @@ async def is_admin(current_user: Annotated[User, Depends(get_current_user)]):
 
 
 @app.post("/token", summary="Get an auth token", tags=["auth"])
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = authenticate_user(test_users_db, form_data.username, form_data.password)
+async def login(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    number: Optional[int] = None,
+    past: Optional[bool] = None,
+    hosted: Optional[bool] = None,
+    holiday: Optional[bool] = None,
+    host_reimbursed: Optional[bool] = None,
+    admin_claimed: Optional[bool] = None,
+    admin_reimbursed: Optional[bool] = None,
+):
+    # Check the username and password
+    user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    # Create an access token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    breaks = get_breaks(current_user=user)
+    # We return the breaks again in case some details have changed
+    # e.g. higher privileges have been unlocked
+    break_filters = BreakFilters(
+        number,
+        past,
+        hosted,
+        holiday,
+        host_reimbursed,
+        admin_claimed,
+        admin_reimbursed,
+    )
+    breaks = get_breaks(current_user=user, filters=break_filters)
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -317,10 +330,10 @@ async def reimburse_host(break_id: int, cost: float):
     tags=["claims"],
 )
 async def request_claims(
-    token: Annotated[str, Depends(is_admin)], reimbursed: Optional[bool] = None
+    current_user: Annotated[User, Depends(is_admin)], reimbursed: Optional[bool] = None
 ):
     claims = get_claims(ClaimFilters(reimbursed))
-    return list(map(claim_internal_to_external, claims))
+    return list(map(lambda c: claim_internal_to_external(c, current_user), claims))
 
 
 load_dotenv(Path(get_env_variable("CB_ROOT")) / "api" / ".env")
@@ -332,10 +345,12 @@ load_dotenv(Path(get_env_variable("CB_ROOT")) / "api" / ".env")
     summary="Record a submitted expense claim",
     tags=["claims"],
 )
-async def claim_break(break_ids: list[int]):
+async def claim_break(
+    current_user: Annotated[User, Depends(is_admin)], break_ids: list[int]
+):
     claim_for_breaks(break_ids)
     claims = get_claims()
-    return list(map(claim_internal_to_external, claims))
+    return list(map(lambda c: claim_internal_to_external(c, current_user), claims))
 
 
 @app.post(
@@ -344,9 +359,13 @@ async def claim_break(break_ids: list[int]):
     summary="Record a successful expense claim",
     tags=["claims"],
 )
-async def reimburse_admin(break_id: int):
+async def reimburse_admin(
+    current_user: Annotated[User, Depends(is_admin)], break_id: int
+):
     claim_reimbursed(break_id)
-    return list(map(claim_internal_to_external, get_claims()))
+    return list(
+        map(lambda c: claim_internal_to_external(c, current_user), get_claims())
+    )
 
 
 @app.post(
@@ -358,7 +377,7 @@ async def announce_break(
     announced_break = announce_specific(break_id)
     if announced_break is None:
         raise HTTPException(400, "Break does not exist")
-    return break_internal_to_external(announced_break)
+    return break_internal_to_external(announced_break, current_user)
 
 
 @app.post("/test", summary="Add test data", response_model=List[Break], tags=["debug"])
@@ -374,7 +393,7 @@ async def add_test_data(num: int):
         insert_breaks(breaks)
         return list(
             map(
-                break_internal_to_external,
+                lambda b: break_internal_to_external(b, None),
                 get_break_objects(BreakFilters(host_reimbursed=False)),
             )
         )

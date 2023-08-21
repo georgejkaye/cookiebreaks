@@ -5,7 +5,7 @@ import arrow
 import psycopg2
 
 from config import Config
-from structs import Break, BreakFilters, Claim, ClaimFilters, Arrow
+from structs import Break, BreakFilters, Claim, ClaimFilters, Arrow, User
 
 
 def get_env_variable(name: str) -> str:
@@ -31,6 +31,22 @@ def connect() -> Tuple[Any, Any]:
 def disconnect(conn: Any, cur: Any) -> None:
     conn.close()
     cur.close()
+
+
+def get_user(username: str) -> Optional[User]:
+    (conn, cur) = connect()
+    statement = """
+        SELECT user_name, email, admin, hashed_password
+        FROM Host
+        WHERE user_name = %(username)s
+    """
+    cur.execute(statement, {"username": username})
+    rows = cur.fetchall()
+    disconnect(conn, cur)
+    if len(rows) != 1:
+        return None
+    row = rows[0]
+    return User(row[0], row[1], row[2], row[3])
 
 
 def insert_breaks(breaks: list[tuple[Arrow, str]]) -> None:

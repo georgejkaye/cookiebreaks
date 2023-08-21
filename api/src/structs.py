@@ -5,6 +5,14 @@ from unittest.mock import Base
 from arrow import Arrow
 
 
+@dataclass
+class User:
+    username: str
+    email: str
+    admin: bool
+    hashed_password: str
+
+
 def format_as_price(cost: float) -> str:
     return f"£{cost:.2f}"
 
