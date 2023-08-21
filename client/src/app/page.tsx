@@ -10,7 +10,12 @@ import {
     getFutureBreaks,
     User,
 } from "./structs"
-import { announceBreak, getBreaks, getToken as login } from "./api"
+import {
+    announceBreak,
+    getBreaks,
+    getToken as login,
+    reimburseBreak,
+} from "./api"
 import Image from "next/image"
 
 const BreakIcon = (props: {
@@ -108,6 +113,25 @@ const BreakCard = (props: {
                         }`}
                         waitingText="Host not reimbursed yet"
                         datetime={props.cb.reimbursed}
+                        onClick={() => {
+                            let cost = prompt("Break cost?")
+                            if (!cost) {
+                                alert("Invalid cost!")
+                            } else {
+                                let costFloat = parseFloat(cost)
+                                if (isNaN(costFloat)) {
+                                    alert("Invalid cost!")
+                                } else {
+                                    reimburseBreak(
+                                        props.token,
+                                        props.cb.id,
+                                        costFloat,
+                                        props.breaks,
+                                        props.setBreaks
+                                    )
+                                }
+                            }
+                        }}
                     />
                     <BreakIcon
                         icon="claim"

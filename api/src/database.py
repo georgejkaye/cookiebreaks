@@ -79,7 +79,7 @@ def insert_host(break_host: str, break_id: int) -> None:
     disconnect(conn, cur)
 
 
-def reimburse_and_mask_host(break_id: int, cost: float) -> None:
+def reimburse_and_mask_host(break_id: int, cost: float) -> Break:
     (conn, cur) = connect()
     statement = """
         UPDATE break
@@ -87,10 +87,13 @@ def reimburse_and_mask_host(break_id: int, cost: float) -> None:
             break_host = null, break_cost = %(cost)s,
             host_reimbursed = DATE_TRUNC('minute', NOW())
         WHERE break_id = %(id)s
+        RETURNING *
     """
     cur.execute(statement, {"id": break_id, "cost": cost})
+    row = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
+    return row_to_break(row)
 
 
 def get_exists_where_clause(

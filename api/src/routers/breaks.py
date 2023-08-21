@@ -61,11 +61,11 @@ async def announce_break(
 
 @router.post(
     "/reimburse",
-    response_model=list[Break],
+    response_model=Break,
     summary="Record the reimbursement of someone who hosted a cookie break",
 )
 async def reimburse_host(
     current_user: Annotated[User, Depends(is_admin)], break_id: int, cost: float
 ):
-    reimburse_and_mask_host(break_id, cost)
-    return get_breaks(BreakFilters(), current_user)
+    reimbursed_break = reimburse_and_mask_host(break_id, cost)
+    return break_internal_to_external(reimbursed_break, current_user)

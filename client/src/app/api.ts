@@ -58,6 +58,11 @@ export const getBreaks = async (
     setBreaks(breaks)
 }
 
+const headers = (token: string) => ({
+    accept: "application/json",
+    Authorization: `Bearer ${token}`,
+})
+
 export const announceBreak = async (
     token: string,
     id: number,
@@ -65,15 +70,31 @@ export const announceBreak = async (
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
 ) => {
     let endpoint = `/api/breaks/announce`
-    console.log(`Announcing ${id} with token ${token}`)
     let config = {
         params: {
             break_id: id,
         },
-        headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
+        headers: headers(token),
+    }
+    let response = await axios.post(endpoint, null, config)
+    let responseData = response.data
+    setBreaks(replaceBreaks(oldBreaks, [responseToBreak(responseData)]))
+}
+
+export const reimburseBreak = async (
+    token: string,
+    id: number,
+    cost: number,
+    oldBreaks: CookieBreak[],
+    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+) => {
+    let endpoint = `/api/breaks/reimburse`
+    let config = {
+        params: {
+            break_id: id,
+            cost,
         },
+        headers: headers(token),
     }
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
