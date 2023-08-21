@@ -10,12 +10,25 @@ const replaceBreaks = (oldBreaks: CookieBreak[], newBreaks: CookieBreak[]) =>
         (old) => newBreaks.find((newBreak) => newBreak.id === old.id) || old
     )
 
+const responseToBreak = (b: any) => ({
+    id: b.id,
+    host: b.host,
+    datetime: new Date(b.break_time),
+    location: b.location,
+    cost: b.cost,
+    announced: dateOrUndefined(b.break_announced),
+    reimbursed: dateOrUndefined(b.host_reimbursed),
+    claimed: dateOrUndefined(b.admin_claimed),
+    success: dateOrUndefined(b.admin_reimbursed),
+})
+
 export const getToken = async (
     username: string,
     password: string,
     setToken: Dispatch<SetStateAction<string>>,
     setUser: Dispatch<SetStateAction<User | undefined>>,
-    setStatus: Dispatch<SetStateAction<string>>
+    setStatus: Dispatch<SetStateAction<string>>,
+    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
 ) => {
     let endpoint = `/api/token`
     let data = new FormData()
@@ -29,22 +42,11 @@ export const getToken = async (
         let responseData = response.data
         setToken(responseData.access_token)
         setUser({ user: username, admin: responseData.admin })
+        setBreaks(responseData.breaks.map(responseToBreak))
     } catch (err) {
         setStatus("Could not log in...")
     }
 }
-
-const responseToBreak = (b: any) => ({
-    id: b.id,
-    host: b.host,
-    datetime: new Date(b.break_time),
-    location: b.location,
-    cost: b.cost,
-    announced: dateOrUndefined(b.break_announced),
-    reimbursed: dateOrUndefined(b.host_reimbursed),
-    claimed: dateOrUndefined(b.admin_claimed),
-    success: dateOrUndefined(b.admin_reimbursed),
-})
 
 export const getBreaks = async (
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>

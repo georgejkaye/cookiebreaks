@@ -1,12 +1,6 @@
 "use client"
 
-import React, {
-    ChangeEventHandler,
-    Dispatch,
-    SetStateAction,
-    useEffect,
-    useState,
-} from "react"
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react"
 import {
     CookieBreak,
     dateInPast,
@@ -55,6 +49,7 @@ const BreakIcon = (props: {
 }
 
 const BreakCard = (props: {
+    user: User | undefined
     cb: CookieBreak
     breaks: CookieBreak[]
     token: string
@@ -79,51 +74,55 @@ const BreakCard = (props: {
             >
                 {hostText}
             </div>
-            <div className="flex w-full desktop:w-1/6 justify-center desktop:justify-end d:w-auto">
-                <BreakIcon
-                    icon="announce"
-                    doneText="Announced"
-                    waitingText="Not announced yet"
-                    datetime={props.cb.announced}
-                    onClick={() => {
-                        console.log("About to announce break")
-                        announceBreak(
-                            props.token,
-                            props.cb.id,
-                            props.breaks,
-                            props.setBreaks
-                        )
-                    }}
-                />
-                <BreakIcon
-                    icon="cookie"
-                    doneText="Break held"
-                    waitingText="Break not held yet"
-                    datetime={pastBreak ? props.cb.datetime : undefined}
-                />
-                <BreakIcon
-                    icon="reimburse"
-                    doneText={`Reimbursed host £${
-                        props.cb.cost
-                            ? ((props.cb.cost * 100) / 100).toFixed(2)
-                            : "0.00"
-                    }`}
-                    waitingText="Host not reimbursed yet"
-                    datetime={props.cb.reimbursed}
-                />
-                <BreakIcon
-                    icon="claim"
-                    doneText="Claimed"
-                    waitingText="Not claimed yet"
-                    datetime={props.cb.claimed}
-                />
-                <BreakIcon
-                    icon="success"
-                    doneText="Admin reimbursed"
-                    waitingText="Admin not reimbursed yet"
-                    datetime={props.cb.success}
-                />
-            </div>
+            {props.user && props.user.admin ? (
+                <div className="flex w-full desktop:w-1/6 justify-center desktop:justify-end d:w-auto">
+                    <BreakIcon
+                        icon="announce"
+                        doneText="Announced"
+                        waitingText="Not announced yet"
+                        datetime={props.cb.announced}
+                        onClick={() => {
+                            console.log("About to announce break")
+                            announceBreak(
+                                props.token,
+                                props.cb.id,
+                                props.breaks,
+                                props.setBreaks
+                            )
+                        }}
+                    />
+                    <BreakIcon
+                        icon="cookie"
+                        doneText="Break held"
+                        waitingText="Break not held yet"
+                        datetime={pastBreak ? props.cb.datetime : undefined}
+                    />
+                    <BreakIcon
+                        icon="reimburse"
+                        doneText={`Reimbursed host £${
+                            props.cb.cost
+                                ? ((props.cb.cost * 100) / 100).toFixed(2)
+                                : "0.00"
+                        }`}
+                        waitingText="Host not reimbursed yet"
+                        datetime={props.cb.reimbursed}
+                    />
+                    <BreakIcon
+                        icon="claim"
+                        doneText="Claimed"
+                        waitingText="Not claimed yet"
+                        datetime={props.cb.claimed}
+                    />
+                    <BreakIcon
+                        icon="success"
+                        doneText="Admin reimbursed"
+                        waitingText="Admin not reimbursed yet"
+                        datetime={props.cb.success}
+                    />
+                </div>
+            ) : (
+                ""
+            )}
         </div>
     )
 }
@@ -131,6 +130,7 @@ const BreakCard = (props: {
 const LoginBox = (props: {
     setToken: Dispatch<SetStateAction<string>>
     setUser: Dispatch<SetStateAction<User | undefined>>
+    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
     user: User | undefined
 }) => {
     const [userText, setUserText] = useState("")
@@ -141,7 +141,14 @@ const LoginBox = (props: {
     const onChangePasswordText = (e: React.ChangeEvent<HTMLInputElement>) =>
         setPasswordText(e.target.value)
     const onClickSubmitButton = (e: React.MouseEvent<HTMLButtonElement>) =>
-        login(userText, passwordText, props.setToken, props.setUser, setStatus)
+        login(
+            userText,
+            passwordText,
+            props.setToken,
+            props.setUser,
+            setStatus,
+            props.setBreaks
+        )
     const onClickLogoutButton = (e: React.MouseEvent<HTMLButtonElement>) => {
         props.setToken("")
         props.setUser(undefined)
@@ -219,9 +226,15 @@ export const Home = () => {
         <>
             <main className="text-fg">
                 <h1 className="text-6xl text-center p-10">Cookie breaks</h1>
-                <LoginBox setToken={setToken} setUser={setUser} user={user} />
+                <LoginBox
+                    setToken={setToken}
+                    setUser={setUser}
+                    user={user}
+                    setBreaks={setBreaks}
+                />
                 {futureBreaks.map((cb) => (
                     <BreakCard
+                        user={user}
                         token={token}
                         key={`${cb.id}`}
                         cb={cb}
