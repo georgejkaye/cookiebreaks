@@ -30,7 +30,7 @@ export const getToken = async (
     setStatus: Dispatch<SetStateAction<string>>,
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
 ) => {
-    let endpoint = `/api/token`
+    let endpoint = `/api/users/token`
     let data = new FormData()
     data.append("username", username)
     data.append("password", password)
@@ -64,7 +64,7 @@ export const announceBreak = async (
     oldBreaks: CookieBreak[],
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
 ) => {
-    let endpoint = `/api/announce`
+    let endpoint = `/api/breaks/announce`
     console.log(`Announcing ${id} with token ${token}`)
     let config = {
         params: {
