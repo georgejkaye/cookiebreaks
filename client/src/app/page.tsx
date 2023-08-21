@@ -32,7 +32,9 @@ const BreakIcon = (props: {
     return (
         <div
             className={`my-2 mx-2 desktop:mx-0 ${
-                props.onClick ? "cursor-pointer" : ""
+                props.onClick
+                    ? "cursor-pointer hover:bg-gray-300 rounded-full bg-opacity-30 hover:"
+                    : ""
             }`}
             onClick={onClickIcon}
         >
