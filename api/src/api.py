@@ -56,21 +56,6 @@ def arrow_to_datetime(original: Arrow | None) -> datetime | None:
         return None
 
 
-def break_internal_to_external(internal: BreakInternal) -> Break:
-    return Break(
-        internal.id,
-        internal.break_time.datetime,
-        internal.location,
-        internal.holiday,
-        internal.host,
-        arrow_to_datetime(internal.break_announced),
-        internal.cost,
-        arrow_to_datetime(internal.host_reimbursed),
-        arrow_to_datetime(internal.admin_claimed),
-        arrow_to_datetime(internal.admin_reimbursed),
-    )
-
-
 @dataclass
 class Claim:
     id: int
@@ -153,6 +138,35 @@ def get_password_hash(password):
 test_users_db: dict = {}
 
 
+def break_internal_to_external(
+    internal: BreakInternal, current_user: Optional[User]
+) -> Break:
+    if current_user and current_user.admin:
+        break_announced = arrow_to_datetime(internal.break_announced)
+        cost = internal.cost
+        host_reimbursed = arrow_to_datetime(internal.host_reimbursed)
+        admin_claimed = arrow_to_datetime(internal.admin_claimed)
+        admin_reimbursed = arrow_to_datetime(internal.admin_reimbursed)
+    else:
+        break_announced = None
+        cost = None
+        host_reimbursed = None
+        admin_claimed = None
+        admin_reimbursed = None
+    return Break(
+        internal.id,
+        internal.break_time.datetime,
+        internal.location,
+        internal.holiday,
+        internal.host,
+        break_announced,
+        cost,
+        host_reimbursed,
+        admin_claimed,
+        admin_reimbursed,
+    )
+
+
 def get_user(db, username: str | None):
     if username in db:
         user_dict = db[username]
@@ -220,7 +234,13 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer", "admin": user.admin}
+    breaks = get_breaks(current_user=user)
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "admin": user.admin,
+        "breaks": breaks,
+    }
 
 
 @app.get("/users/me", summary="Get current user", tags=["auth"])
@@ -233,9 +253,11 @@ async def check_if_admin(current_user: Annotated[User, Depends(is_admin)]):
     return current_user
 
 
-def get_breaks(filters: BreakFilters = BreakFilters()):
+def get_breaks(
+    filters: BreakFilters = BreakFilters(), current_user: Optional[User] = None
+):
     breaks = get_break_objects(filters)
-    return list(map(break_internal_to_external, breaks))
+    return list(map(lambda b: break_internal_to_external(b, current_user), breaks))
 
 
 @app.get(
@@ -245,6 +267,7 @@ def get_breaks(filters: BreakFilters = BreakFilters()):
     tags=["breaks"],
 )
 async def request_breaks(
+    current_user: Annotated[User, Depends(get_current_user)],
     number: Optional[int] = None,
     past: Optional[bool] = None,
     hosted: Optional[bool] = None,
@@ -262,7 +285,7 @@ async def request_breaks(
         admin_claimed,
         admin_reimbursed,
     )
-    return get_breaks(break_filters)
+    return get_breaks(break_filters, current_user)
 
 
 @app.post(
