@@ -93,15 +93,12 @@ def write_email(
     return message
 
 
-def write_announce_email(next_break: Break) -> MIMEMultipart:
+def write_announce_email(next_break: Break, recipients: list[str]) -> MIMEMultipart:
     announce_subject = get_announce_email_subject(next_break)
-    ics_content = create_calendar_event(next_break)
+    ics_content = create_calendar_event(next_break, recipients)
     ics_name = get_cookiebreak_ics_filename(next_break)
     email_body = MIMEText(write_email_template(next_break, "announce.txt"))
     (ics_text, ics_attachment) = write_calendar_mime_parts(ics_content, ics_name)
-    recipients = list(
-        map(lambda x: x.strip(), get_env_variable("MAILING_LISTS").split(","))
-    )
     return write_email(
         sender_name=get_env_variable("ADMIN_FULLNAME"),
         sender_email=get_env_variable("ADMIN_EMAIL"),
@@ -112,6 +109,7 @@ def write_announce_email(next_break: Break) -> MIMEMultipart:
 
 
 def send_email(email: MIMEMultipart):
+    print(email)
     process = subprocess.Popen(
         ["msmtp", "--read-envelope-from", "--read-recipients"], stdin=subprocess.PIPE
     )

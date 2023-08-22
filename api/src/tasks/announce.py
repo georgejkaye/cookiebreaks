@@ -1,12 +1,21 @@
 from typing import Optional
 from structs import Break
 from compose import send_announce_email, write_announce_email
-from config import parse_config
-from database import after_announced_break, get_next_break, get_specific_breaks
+from database import (
+    after_announced_break,
+    get_env_variable,
+    get_next_break,
+    get_specific_breaks,
+)
+
+
+def get_participants():
+    return list(filter(len, get_env_variable("MAILING_LISTS").split(" ")))
 
 
 def announce_break(cookie_break: Break) -> Break:
-    email = write_announce_email(cookie_break)
+    participants = get_participants()
+    email = write_announce_email(cookie_break, participants)
     send_announce_email(email)
     return after_announced_break(cookie_break)
 
