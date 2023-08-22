@@ -23,6 +23,7 @@ const BreakIcon = (props: {
     doneText: string
     waitingText: string
     datetime?: Date
+    clickable?: boolean
     onClick?: () => any
 }) => {
     let titleText = !props.datetime
@@ -30,14 +31,14 @@ const BreakIcon = (props: {
         : `${props.doneText} on ${getDatetimeText(props.datetime)}`
     let opacity = !props.datetime ? 0.25 : 1
     const onClickIcon = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (props.onClick) {
+        if (props.clickable && props.onClick) {
             props.onClick()
         }
     }
     return (
         <div
             className={`my-2 mx-2 desktop:mx-0 ${
-                props.onClick
+                props.clickable
                     ? "cursor-pointer hover:bg-gray-300 rounded-full bg-opacity-30 hover:"
                     : ""
             }`}
@@ -88,6 +89,7 @@ const BreakCard = (props: {
                         doneText="Announced"
                         waitingText="Not announced yet"
                         datetime={props.cb.announced}
+                        clickable={props.cb.announced === undefined}
                         onClick={() => {
                             console.log("About to announce break")
                             announceBreak(
@@ -113,6 +115,7 @@ const BreakCard = (props: {
                         }`}
                         waitingText="Host not reimbursed yet"
                         datetime={props.cb.reimbursed}
+                        clickable={props.cb.reimbursed === undefined}
                         onClick={() => {
                             let cost = prompt("Break cost?")
                             if (!cost) {
