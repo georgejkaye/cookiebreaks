@@ -22,13 +22,14 @@ const responseToBreak = (b: any) => ({
     success: dateOrUndefined(b.admin_reimbursed),
 })
 
-export const getToken = async (
+export const login = async (
     username: string,
     password: string,
     setToken: Dispatch<SetStateAction<string>>,
     setUser: Dispatch<SetStateAction<User | undefined>>,
     setStatus: Dispatch<SetStateAction<string>>,
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>,
+    setLoading: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/users/token`
     let data = new FormData()
@@ -37,14 +38,23 @@ export const getToken = async (
     data.append("grant_type", "")
     data.append("client_id", "")
     data.append("client_secret", "")
-    try {
-        let response = await axios.post(endpoint, data)
-        let responseData = response.data
-        setToken(responseData.access_token)
-        setUser({ user: username, admin: responseData.admin })
-        setBreaks(responseData.breaks.map(responseToBreak))
-    } catch (err) {
-        setStatus("Could not log in...")
+    if (username === "") {
+        setStatus("Username cannot be empty")
+    } else if (password === "") {
+        setStatus("Password cannot be empty")
+    } else {
+        try {
+            setLoading(true)
+            let response = await axios.post(endpoint, data)
+            let responseData = response.data
+            setToken(responseData.access_token)
+            setUser({ user: username, admin: responseData.admin })
+            setBreaks(responseData.breaks.map(responseToBreak))
+        } catch (err) {
+            setStatus("Could not log in...")
+        } finally {
+            setLoading(false)
+        }
     }
 }
 
