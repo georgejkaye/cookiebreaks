@@ -82,7 +82,8 @@ export const announceBreak = async (
     user: User,
     id: number,
     oldBreaks: CookieBreak[],
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>,
+    setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/announce`
     let config = {
@@ -91,9 +92,11 @@ export const announceBreak = async (
         },
         headers: headers(user.token),
     }
+    setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
     setBreaks(replaceBreaks(oldBreaks, [responseToBreak(responseData)]))
+    setLoadingCard(false)
 }
 
 export const reimburseBreak = async (
@@ -101,7 +104,8 @@ export const reimburseBreak = async (
     id: number,
     cost: number,
     oldBreaks: CookieBreak[],
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>,
+    setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/reimburse`
     let config = {
@@ -111,7 +115,9 @@ export const reimburseBreak = async (
         },
         headers: headers(user.token),
     }
+    setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
     setBreaks(replaceBreaks(oldBreaks, [responseToBreak(responseData)]))
+    setLoadingCard(false)
 }
