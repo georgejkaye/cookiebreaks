@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from "react"
 import { CookieBreak, User } from "./structs"
 import { getBreaks } from "./api"
-import { LoginBox } from "./login"
+// import { LoginBox } from "./login"
 import { BreakCards } from "./breaks"
+import { TopBar } from "./bar"
 
 export const Home = () => {
     const [breaks, setBreaks] = useState<CookieBreak[]>([])
@@ -19,13 +20,7 @@ export const Home = () => {
     return (
         <>
             <main className="text-fg">
-                <h1 className="text-6xl text-center p-10">Cookie breaks</h1>
-                <LoginBox
-                    setToken={setToken}
-                    setUser={setUser}
-                    user={user}
-                    setBreaks={setBreaks}
-                />
+                <TopBar setUser={setUser} user={user} setBreaks={setBreaks} />
                 <BreakCards
                     user={user}
                     breaks={breaks}
