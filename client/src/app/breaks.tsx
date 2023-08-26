@@ -187,7 +187,9 @@ export const BreakCards = (props: {
         setRenderedBreaks(getFutureBreaks(props.breaks))
     }, [props.breaks])
     return props.isLoadingBreaks ? (
-        <Loader margin={5} />
+        <div className="m-10">
+            <Loader size={10} />
+        </div>
     ) : (
         renderedBreaks.map((cb) => (
             <BreakCard
