@@ -25,7 +25,6 @@ const responseToBreak = (b: any) => ({
 export const login = async (
     username: string,
     password: string,
-    setToken: Dispatch<SetStateAction<string>>,
     setUser: Dispatch<SetStateAction<User | undefined>>,
     setStatus: Dispatch<SetStateAction<string>>,
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>,
@@ -47,8 +46,11 @@ export const login = async (
             setLoading(true)
             let response = await axios.post(endpoint, data)
             let responseData = response.data
-            setToken(responseData.access_token)
-            setUser({ user: username, admin: responseData.admin })
+            setUser({
+                user: username,
+                admin: responseData.admin,
+                token: responseData.access_token,
+            })
             setBreaks(responseData.breaks.map(responseToBreak))
         } catch (err) {
             setStatus("Could not log in...")
@@ -74,7 +76,7 @@ const headers = (token: string) => ({
 })
 
 export const announceBreak = async (
-    token: string,
+    user: User,
     id: number,
     oldBreaks: CookieBreak[],
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
@@ -84,7 +86,7 @@ export const announceBreak = async (
         params: {
             break_id: id,
         },
-        headers: headers(token),
+        headers: headers(user.token),
     }
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
@@ -92,7 +94,7 @@ export const announceBreak = async (
 }
 
 export const reimburseBreak = async (
-    token: string,
+    user: User,
     id: number,
     cost: number,
     oldBreaks: CookieBreak[],
@@ -104,7 +106,7 @@ export const reimburseBreak = async (
             break_id: id,
             cost,
         },
-        headers: headers(token),
+        headers: headers(user.token),
     }
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data

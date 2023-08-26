@@ -37,7 +37,6 @@ export const LoginBox = (props: {
         login(
             userText,
             passwordText,
-            props.setToken,
             props.setUser,
             setStatus,
             props.setBreaks,

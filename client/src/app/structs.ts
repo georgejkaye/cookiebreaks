@@ -51,4 +51,5 @@ export const getFutureBreaks = (cbs: CookieBreak[]) =>
 export interface User {
     user: string
     admin: boolean
+    token: string
 }
