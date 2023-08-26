@@ -61,13 +61,16 @@ export const login = async (
 }
 
 export const getBreaks = async (
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>,
+    setLoadingBreaks: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks`
+    setLoadingBreaks(true)
     let response = await axios.get(endpoint)
     let data = response.data
     let breaks = data.map(responseToBreak)
     setBreaks(breaks)
+    setLoadingBreaks(false)
 }
 
 const headers = (token: string) => ({

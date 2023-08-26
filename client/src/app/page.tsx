@@ -10,9 +10,9 @@ export const Home = () => {
     const [breaks, setBreaks] = useState<CookieBreak[]>([])
     const [token, setToken] = useState<string>("")
     const [user, setUser] = useState<User | undefined>(undefined)
-
+    const [isLoadingBreaks, setLoadingBreaks] = useState(false)
     useEffect(() => {
-        getBreaks(setBreaks)
+        getBreaks(setBreaks, setLoadingBreaks)
     }, [])
     useEffect(() => {}, [token])
 
@@ -26,7 +26,12 @@ export const Home = () => {
                     user={user}
                     setBreaks={setBreaks}
                 />
-                <BreakCards user={user} breaks={breaks} setBreaks={setBreaks} />
+                <BreakCards
+                    user={user}
+                    breaks={breaks}
+                    setBreaks={setBreaks}
+                    isLoadingBreaks={isLoadingBreaks}
+                />
             </main>
         </>
     )

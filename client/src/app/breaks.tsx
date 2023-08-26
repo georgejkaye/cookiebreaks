@@ -10,6 +10,7 @@ import {
     getFutureBreaks,
 } from "./structs"
 import Image from "next/image"
+import Loader from "./loader"
 
 const BreakIcon = (props: {
     icon: string
@@ -155,18 +156,23 @@ export const BreakCards = (props: {
     user: User | undefined
     breaks: CookieBreak[]
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    isLoadingBreaks: boolean
 }) => {
     const [renderedBreaks, setRenderedBreaks] = useState<CookieBreak[]>([])
     useEffect(() => {
         setRenderedBreaks(getFutureBreaks(props.breaks))
     }, [props.breaks])
-    return renderedBreaks.map((cb) => (
-        <BreakCard
-            user={props.user}
-            key={`${cb.id}`}
-            cb={cb}
-            breaks={props.breaks}
-            setBreaks={props.setBreaks}
-        />
-    ))
+    return props.isLoadingBreaks ? (
+        <Loader margin={5} />
+    ) : (
+        renderedBreaks.map((cb) => (
+            <BreakCard
+                user={props.user}
+                key={`${cb.id}`}
+                cb={cb}
+                breaks={props.breaks}
+                setBreaks={props.setBreaks}
+            />
+        ))
+    )
 }
