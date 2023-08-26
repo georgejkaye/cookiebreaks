@@ -1,19 +1,19 @@
-#!/bin/python
 import argparse
-from pathlib import Path
 import sys
+
+from pathlib import Path
 from typing import Dict, Callable, Tuple
+from dotenv import load_dotenv
 
-from dotenv import find_dotenv, load_dotenv
-from database import get_env_variable
+from cookiebreaks.core.database import get_env_variable
 
-from tasks.announce import announce
-from tasks.claim import claim
-from tasks.holiday import holiday
-from tasks.host import host
-from tasks.reimburse import reimburse
-from tasks.success import success
-from tasks.update import update
+from cookiebreaks.tasks.announce import announce
+from cookiebreaks.tasks.claim import claim
+from cookiebreaks.tasks.holiday import holiday
+from cookiebreaks.tasks.host import host
+from cookiebreaks.tasks.reimburse import reimburse
+from cookiebreaks.tasks.success import success
+from cookiebreaks.tasks.update import update
 
 dotenv_path = Path(get_env_variable("CB_ROOT")) / "api" / ".env"
 load_dotenv(dotenv_path=dotenv_path)

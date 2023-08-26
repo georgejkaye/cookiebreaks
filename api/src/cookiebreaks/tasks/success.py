@@ -1,7 +1,8 @@
-from config import parse_config
-from database import claim_reimbursed
-from interactive import select_claim
-from structs import ClaimFilters, claim_list_date_string
+from cookiebreaks.core.config import parse_config
+from cookiebreaks.core.database import claim_reimbursed
+from cookiebreaks.core.structs import ClaimFilters, claim_list_date_string
+
+from cookiebreaks.cli.interactive import select_claim
 
 
 def success():

@@ -1,11 +1,10 @@
 [tool.poetry]
-name = "cookiebreak-scripts"
+name = "cookiebreaks"
 version = "1.0.0"
 description = "Suite for managing the cookie break"
 authors = ["George Kaye <georgejkaye@gmail.com>"]
 license = "GPL-v3.0-or-later"
 readme = "README.md"
-packages = []
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -30,6 +29,10 @@ flake8 = "^6.0.0"
 types-python-jose = "^3.3.4.8"
 types-passlib = "^1.7.7.12"
 types-PyYAML = "^6.0.12.10"
+
+[tool.poetry.scripts]
+start = "cookiebreaks.api.main:start"
+dev = "cookiebreaks.api.main:dev"
 
 [build-system]
 requires = ["poetry-core"]

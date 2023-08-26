@@ -1,5 +1,8 @@
 from fastapi import FastAPI
-from routers import users, breaks, claims, debug
+import uvicorn
+
+from cookiebreaks.api.routers import users, breaks, claims, debug
+from cookiebreaks.core.env import get_env_path, load_envs
 
 tags_metadata = [
     {"name": "users", "description": "Authenticate users"},
@@ -31,3 +34,13 @@ app.include_router(users.router)
 app.include_router(breaks.router)
 app.include_router(claims.router)
 app.include_router(debug.router)
+
+
+def start(reload: bool = False):
+    load_envs()
+    env_file = get_env_path()
+    uvicorn.run("cookiebreaks.api.main:app", env_file=env_file, reload=reload)
+
+
+def dev():
+    start(reload=True)

@@ -1,9 +1,12 @@
 import os
 import arrow
 from fastapi import APIRouter
-from database import get_break_objects, insert_breaks
-from routers.utils import BreakExternal as Break, break_internal_to_external
-from structs import BreakFilters
+from cookiebreaks.core.database import get_break_objects, insert_breaks
+from cookiebreaks.api.routers.utils import (
+    BreakExternal as Break,
+    break_internal_to_external,
+)
+from cookiebreaks.core.structs import BreakFilters
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 

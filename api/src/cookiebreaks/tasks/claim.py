@@ -1,7 +1,8 @@
-from config import parse_config
-from database import claim_for_breaks
-from interactive import select_multiple_breaks
-from structs import BreakFilters, format_as_price
+from cookiebreaks.core.config import parse_config
+from cookiebreaks.core.database import claim_for_breaks
+from cookiebreaks.core.structs import BreakFilters, format_as_price
+
+from cookiebreaks.cli.interactive import select_multiple_breaks
 
 
 def claim():

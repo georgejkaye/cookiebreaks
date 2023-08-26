@@ -2,8 +2,13 @@ from datetime import datetime
 from typing import Optional
 
 from arrow import Arrow
-from database import get_break_objects
-from structs import BreakFilters, User, Break as BreakInternal, Claim as ClaimInternal
+from cookiebreaks.core.database import get_break_objects
+from cookiebreaks.core.structs import (
+    BreakFilters,
+    User,
+    Break as BreakInternal,
+    Claim as ClaimInternal,
+)
 from dataclasses import dataclass
 
 

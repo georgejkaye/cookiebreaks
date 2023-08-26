@@ -1,7 +1,8 @@
 from typing import Optional
-from structs import Break
-from compose import send_announce_email, write_announce_email
-from database import (
+
+from cookiebreaks.core.structs import Break
+from cookiebreaks.core.compose import send_announce_email, write_announce_email
+from cookiebreaks.core.database import (
     after_announced_break,
     get_env_variable,
     get_next_break,

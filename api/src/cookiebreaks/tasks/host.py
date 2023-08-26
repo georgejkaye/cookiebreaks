@@ -1,7 +1,8 @@
-from config import parse_config
-from database import insert_host
-from interactive import select_break
-from structs import BreakFilters
+from cookiebreaks.core.config import parse_config
+from cookiebreaks.core.database import insert_host
+from cookiebreaks.core.structs import BreakFilters
+
+from cookiebreaks.cli.interactive import select_break
 
 
 def host():

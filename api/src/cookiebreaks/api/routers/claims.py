@@ -1,11 +1,12 @@
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends
 
-from routers.utils import ClaimExternal as Claim
-from database import claim_for_breaks, claim_reimbursed, get_claims
-from routers.users import is_admin
-from routers.utils import claim_internal_to_external
-from structs import ClaimFilters, User
+from cookiebreaks.core.database import claim_for_breaks, claim_reimbursed, get_claims
+from cookiebreaks.core.structs import ClaimFilters, User
+
+from cookiebreaks.api.routers.utils import ClaimExternal as Claim
+from cookiebreaks.api.routers.users import is_admin
+from cookiebreaks.api.routers.utils import claim_internal_to_external
 
 router = APIRouter(prefix="/claims", tags=["claims"])
 

@@ -1,12 +1,19 @@
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException
 
-from routers.utils import BreakExternal as Break, break_internal_to_external
-from database import get_break_objects, insert_host, reimburse_and_mask_host
-from routers.users import get_current_user, is_admin
-from routers.utils import get_breaks
-from structs import BreakFilters, User
-from tasks.announce import announce_specific
+from cookiebreaks.api.routers.utils import (
+    BreakExternal as Break,
+    break_internal_to_external,
+)
+from cookiebreaks.core.database import (
+    get_break_objects,
+    insert_host,
+    reimburse_and_mask_host,
+)
+from cookiebreaks.api.routers.users import get_current_user, is_admin
+from cookiebreaks.api.routers.utils import get_breaks
+from cookiebreaks.core.structs import BreakFilters, User
+from cookiebreaks.tasks.announce import announce_specific
 
 
 router = APIRouter(prefix="/breaks", tags=["breaks"])

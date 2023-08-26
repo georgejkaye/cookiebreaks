@@ -1,20 +1,18 @@
-import os
-from typing import Any, Optional, Tuple, List
 import arrow
-
 import psycopg2
 
-from config import Config
-from structs import Break, BreakFilters, Claim, ClaimFilters, Arrow, User
+from typing import Any, Optional, Tuple, List
 
-
-def get_env_variable(name: str) -> str:
-    var = os.getenv(name)
-    if var:
-        return var
-    else:
-        print(f"Environment variable {name} not set")
-        exit(1)
+from cookiebreaks.core.config import Config
+from cookiebreaks.core.env import get_env_variable
+from cookiebreaks.core.structs import (
+    Break,
+    BreakFilters,
+    Claim,
+    ClaimFilters,
+    Arrow,
+    User,
+)
 
 
 def connect() -> Tuple[Any, Any]:

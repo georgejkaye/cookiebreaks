@@ -6,14 +6,18 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-from database import get_env_variable, get_user
-from routers.utils import get_breaks
-from structs import BreakFilters, User
-
+from cookiebreaks.core.database import get_env_variable, get_user
+from cookiebreaks.api.routers.utils import get_breaks
+from cookiebreaks.core.env import load_envs
+from cookiebreaks.core.structs import BreakFilters, User
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-SECRET_KEY = get_env_variable("SECRET_KEY")
+
+def get_secret_key() -> str:
+    return get_env_variable("SECRET_KEY")
+
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -55,7 +59,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, get_secret_key(), algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -67,7 +71,7 @@ async def get_current_user(token: Annotated[Optional[str], Depends(oauth2_scheme
             headers={"WWW-Authenticate": "Bearer"},
         )
         try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            payload = jwt.decode(token, get_secret_key(), algorithms=[ALGORITHM])
             username: str | None = payload.get("sub")
             if username is None:
                 raise credentials_exception

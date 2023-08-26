@@ -1,7 +1,9 @@
 import arrow
-from database import get_env_variable
-from structs import Break
+
 from icalendar import Calendar, Event, vCalAddress, vText  # type: ignore
+
+from cookiebreaks.core.database import get_env_variable
+from cookiebreaks.core.structs import Break
 
 
 def get_cookiebreak_ics_filename(next_break: Break) -> str:

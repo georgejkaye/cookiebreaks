@@ -1,7 +1,8 @@
-from config import parse_config
-from database import set_holiday
-from interactive import select_break
-from structs import BreakFilters
+from cookiebreaks.core.config import parse_config
+from cookiebreaks.core.database import set_holiday
+from cookiebreaks.core.structs import BreakFilters
+
+from cookiebreaks.cli.interactive import select_break
 
 
 def holiday():

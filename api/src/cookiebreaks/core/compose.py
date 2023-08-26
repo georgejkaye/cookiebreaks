@@ -1,20 +1,21 @@
+import subprocess
+
 from email.encoders import encode_base64
 from email.message import Message
 from email.mime.base import MIMEBase
-import subprocess
-
 from email.utils import make_msgid, formataddr
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 from pathlib import Path
 from time import sleep
 from typing import List, Tuple, Union
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from database import get_env_variable
-from event import create_calendar_event, get_cookiebreak_ics_filename
 
-from structs import Break
-from config import Config
+from cookiebreaks.core.database import get_env_variable
+from cookiebreaks.core.event import create_calendar_event, get_cookiebreak_ics_filename
+from cookiebreaks.core.structs import Break
+from cookiebreaks.core.config import Config
 
 
 def write_email_template(cookie_break: Break, template_name: str) -> str:
