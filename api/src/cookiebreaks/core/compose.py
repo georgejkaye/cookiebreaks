@@ -19,8 +19,9 @@ from cookiebreaks.core.config import Config
 
 
 def write_email_template(cookie_break: Break, template_name: str) -> str:
-    current_dir = Path(__file__).resolve().parent
-    templates_dir = current_dir / "templates"
+    templates_dir = (
+        Path(get_env_variable("CB_ROOT")) / "api" / "src" / "cookiebreaks" / "templates"
+    )
     env = Environment(
         loader=FileSystemLoader(templates_dir),
         autoescape=select_autoescape(["html", "xml"]),
@@ -110,7 +111,6 @@ def write_announce_email(next_break: Break, recipients: list[str]) -> MIMEMultip
 
 
 def send_email(email: MIMEMultipart):
-    print(email)
     process = subprocess.Popen(
         ["msmtp", "--read-envelope-from", "--read-recipients"], stdin=subprocess.PIPE
     )
