@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-import uvicorn
 
 from cookiebreaks.api.routers import users, breaks, claims, debug
 from cookiebreaks.core.env import get_env_path, load_envs
@@ -35,12 +34,28 @@ app.include_router(breaks.router)
 app.include_router(claims.router)
 app.include_router(debug.router)
 
+import uvicorn
+
 
 def start(reload: bool = False):
     load_envs()
     env_file = get_env_path()
-    uvicorn.run("cookiebreaks.api.main:app", env_file=env_file, reload=reload)
+    uvicorn.run(
+        "cookiebreaks.api.main:app",
+        env_file=env_file,
+        host="0.0.0.0",
+        port=80,
+        reload=reload,
+    )
 
 
 def dev():
     start(reload=True)
+
+
+def deploy():
+    start()
+
+
+if __name__ == "__main__":
+    deploy()
