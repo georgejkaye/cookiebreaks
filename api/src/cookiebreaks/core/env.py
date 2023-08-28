@@ -14,7 +14,7 @@ def get_env_variable(name: str) -> str:
 
 
 def get_env_path() -> Path:
-    return Path(get_env_variable("CB_ROOT")) / "api" / ".env"
+    return Path(get_env_variable("CB_API_ROOT")) / ".env"
 
 
 def load_envs():

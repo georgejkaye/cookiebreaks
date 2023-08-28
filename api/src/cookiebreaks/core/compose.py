@@ -20,7 +20,7 @@ from cookiebreaks.core.config import Config
 
 def write_email_template(cookie_break: Break, template_name: str) -> str:
     templates_dir = (
-        Path(get_env_variable("CB_ROOT")) / "api" / "src" / "cookiebreaks" / "templates"
+        Path(get_env_variable("CB_API_ROOT")) / "src" / "cookiebreaks" / "templates"
     )
     env = Environment(
         loader=FileSystemLoader(templates_dir),

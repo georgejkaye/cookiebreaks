@@ -15,7 +15,7 @@ from cookiebreaks.tasks.reimburse import reimburse
 from cookiebreaks.tasks.success import success
 from cookiebreaks.tasks.update import update
 
-dotenv_path = Path(get_env_variable("CB_ROOT")) / "api" / ".env"
+dotenv_path = Path(get_env_variable("CB_API_ROOT")) / ".env"
 load_dotenv(dotenv_path=dotenv_path)
 
 

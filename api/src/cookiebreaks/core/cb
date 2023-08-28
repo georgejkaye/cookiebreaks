@@ -3,5 +3,5 @@
 
 MODE=$1
 
-cd $CB_ROOT/api
-poetry run python src/main.py $MODE
+cd $CB_API_ROOT
+poetry run python src/cookiebreaks/cli/main.py $MODE
