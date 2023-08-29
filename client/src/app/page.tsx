@@ -7,7 +7,7 @@ import { getBreaks } from "./api"
 import { BreakCards } from "./breaks"
 import { TopBar } from "./bar"
 
-export const Home = () => {
+const Home = () => {
     const [breaks, setBreaks] = useState<CookieBreak[]>([])
     const [token, setToken] = useState<string>("")
     const [user, setUser] = useState<User | undefined>(undefined)
