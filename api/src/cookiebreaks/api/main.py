@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from cookiebreaks.api.routers import users, breaks, claims, debug
-from cookiebreaks.core.env import get_env_path, load_envs
+from cookiebreaks.core.env import get_env_path, get_env_variable, load_envs
 
 tags_metadata = [
     {"name": "users", "description": "Authenticate users"},
@@ -44,7 +44,7 @@ def start(reload: bool = False):
         "cookiebreaks.api.main:app",
         env_file=env_file,
         host="0.0.0.0",
-        port=80,
+        port=int(get_env_variable("API_PORT")),
         reload=reload,
     )
 
