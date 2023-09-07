@@ -163,7 +163,7 @@ const BreakCard = (props: {
                 {getCookieBreakDate(props.cb)}, {getCookieBreakTime(props.cb)}
             </div>
             <div
-                className={`w-full tablet:w-1/2 desktop:flex-1 my-2 desktop:mx-0 text-center px-5 ${
+                className={`flex-1 my-2 desktop:mx-0 text-center px-5 ${
                     props.cb.host === null ? "italic text-sm" : "bold"
                 }`}
             >
