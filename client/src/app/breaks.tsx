@@ -31,11 +31,11 @@ const BreakIcon = (props: {
     }
     return (
         <Image
-            className={
+            className={`my-2 desktop:m-0 ${
                 props.clickable
                     ? "cursor-pointer hover:bg-gray-300 rounded-full bg-opacity-30 hover:"
                     : ""
-            }
+            }`}
             onClick={onClickIcon}
             width={30}
             height={30}
@@ -56,7 +56,11 @@ const BreakIcons = (props: {
 }) => {
     const [isLoadingCard, setLoadingCard] = useState(false)
     return (
-        <div className="flex w-full desktop:w-1/6">
+        <div
+            className={`flex ${
+                props.user?.admin ? "w-full desktop:w-1/6" : ""
+            } items-center justify-center`}
+        >
             {isLoadingCard ? (
                 <Loader size={10} />
             ) : props.user && props.user.admin ? (
