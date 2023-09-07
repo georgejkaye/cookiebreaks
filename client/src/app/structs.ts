@@ -45,8 +45,9 @@ export const getCookieBreakDate = (cb: CookieBreak) =>
 export const getCookieBreakTime = (cb: CookieBreak) =>
     getTimeString(cb.datetime)
 export const getFutureBreaks = (cbs: CookieBreak[]) =>
-    // cbs.filter((cb) => cb.datetime.getTime() > Date.now())
-    cbs
+    cbs.filter((cb) => cb.datetime.getTime() > Date.now())
+export const getOutstandingBreaks = (cbs: CookieBreak[]) =>
+    cbs.filter((cb) => !cb.success && cb.datetime.getTime() <= Date.now())
 
 export interface User {
     user: string
