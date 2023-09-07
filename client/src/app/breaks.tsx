@@ -181,28 +181,34 @@ const BreakCard = (props: {
 }
 
 export const BreakCards = (props: {
+    title: string
     user: User | undefined
     breaks: CookieBreak[]
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
     isLoadingBreaks: boolean
 }) => {
-    const [renderedBreaks, setRenderedBreaks] = useState<CookieBreak[]>([])
-    useEffect(() => {
-        setRenderedBreaks(getFutureBreaks(props.breaks))
-    }, [props.breaks])
-    return props.isLoadingBreaks ? (
-        <div className="m-10">
-            <Loader size={10} />
-        </div>
-    ) : (
-        renderedBreaks.map((cb) => (
-            <BreakCard
-                user={props.user}
-                key={`${cb.id}`}
-                cb={cb}
-                breaks={props.breaks}
-                setBreaks={props.setBreaks}
-            />
-        ))
+    return (
+        <>
+            <div className="text-xl font-bold text-center m-5">
+                {props.title}
+            </div>
+            {props.isLoadingBreaks ? (
+                <div className="m-10">
+                    <Loader size={10} />
+                </div>
+            ) : (
+                <>
+                    {props.breaks.map((cb) => (
+                        <BreakCard
+                            user={props.user}
+                            key={`${cb.id}`}
+                            cb={cb}
+                            breaks={props.breaks}
+                            setBreaks={props.setBreaks}
+                        />
+                    ))}
+                </>
+            )}
+        </>
     )
 }
