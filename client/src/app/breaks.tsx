@@ -186,7 +186,9 @@ export const BreakCards = (props: {
     breaks: CookieBreak[]
     setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
     isLoadingBreaks: boolean
+    reverseBreaks: boolean
 }) => {
+    const breakList = props.reverseBreaks ? props.breaks.reverse() : props.breaks
     return (
         <>
             <div className="text-xl font-bold text-center m-5">
@@ -198,7 +200,7 @@ export const BreakCards = (props: {
                 </div>
             ) : (
                 <>
-                    {props.breaks.map((cb) => (
+                    {breakList.map((cb) => (
                         <BreakCard
                             user={props.user}
                             key={`${cb.id}`}
