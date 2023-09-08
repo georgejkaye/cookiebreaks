@@ -40,6 +40,7 @@ const Home = () => {
                     breaks={upcomingBreaks}
                     setBreaks={setBreaks}
                     isLoadingBreaks={isLoadingBreaks}
+                    reverseBreaks=false
                 />
                 {!user?.admin ? (
                     ""
@@ -50,6 +51,7 @@ const Home = () => {
                         breaks={outstandingBreaks}
                         setBreaks={setBreaks}
                         isLoadingBreaks={isLoadingBreaks}
+                        reverseBreaks=true
                     />
                 )}
             </main>
