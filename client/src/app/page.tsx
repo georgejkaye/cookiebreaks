@@ -54,6 +54,10 @@ const Home = () => {
                         reverseBreaks={true}
                     />
                 )}
+                <div className="text-center">
+		    This tool is in <span className="text-red-600 font-bold">beta</span>!
+                    Please report any bugs or suggestions on <a className="text-blue-600 font-bold" href="https://github.com/georgejkaye/cookiebreaks/issues" title="GitHub issues page">GitHub</a>.
+		</div>
             </main>
         </>
     )
