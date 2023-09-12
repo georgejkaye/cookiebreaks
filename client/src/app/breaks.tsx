@@ -49,8 +49,7 @@ const BreakIcon = (props: {
 
 const BreakIcons = (props: {
     cb: CookieBreak
-    breaks: CookieBreak[]
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    updateBreaks: (breaks: CookieBreak[]) => void
     user: User | undefined
     pastBreak: boolean
 }) => {
@@ -76,8 +75,7 @@ const BreakIcons = (props: {
                                 ? announceBreak(
                                       props.user,
                                       props.cb.id,
-                                      props.breaks,
-                                      props.setBreaks,
+                                      props.updateBreaks,
                                       setLoadingCard
                                   )
                                 : undefined
@@ -115,8 +113,7 @@ const BreakIcons = (props: {
                                               props.user,
                                               props.cb.id,
                                               costFloat,
-                                              props.breaks,
-                                              props.setBreaks,
+                                              props.updateBreaks,
                                               setLoadingCard
                                           )
                                         : undefined
@@ -147,8 +144,7 @@ const BreakIcons = (props: {
 const BreakCard = (props: {
     user: User | undefined
     cb: CookieBreak
-    breaks: CookieBreak[]
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    updateBreaks: (breaks: CookieBreak[]) => void
 }) => {
     let pastBreak = dateInPast(props.cb.datetime)
     let hostText =
@@ -171,8 +167,7 @@ const BreakCard = (props: {
             </div>
             <BreakIcons
                 cb={props.cb}
-                breaks={props.breaks}
-                setBreaks={props.setBreaks}
+                updateBreaks={props.updateBreaks}
                 user={props.user}
                 pastBreak={pastBreak}
             />
@@ -184,11 +179,13 @@ export const BreakCards = (props: {
     title: string
     user: User | undefined
     breaks: CookieBreak[]
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    updateBreaks: (breaks: CookieBreak[]) => void
     isLoadingBreaks: boolean
     reverseBreaks: boolean
 }) => {
-    const breakList = props.reverseBreaks ? props.breaks.reverse() : props.breaks
+    const breakList = props.reverseBreaks
+        ? props.breaks.reverse()
+        : props.breaks
     return (
         <>
             <div className="text-xl font-bold text-center m-5">
@@ -205,8 +202,7 @@ export const BreakCards = (props: {
                             user={props.user}
                             key={`${cb.id}`}
                             cb={cb}
-                            breaks={props.breaks}
-                            setBreaks={props.setBreaks}
+                            updateBreaks={props.updateBreaks}
                         />
                     ))}
                 </>

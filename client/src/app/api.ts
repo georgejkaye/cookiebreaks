@@ -5,11 +5,6 @@ import { CookieBreak, User } from "./structs"
 const dateOrUndefined = (datetime: string | undefined) =>
     datetime ? new Date(datetime) : undefined
 
-const replaceBreaks = (oldBreaks: CookieBreak[], newBreaks: CookieBreak[]) =>
-    oldBreaks.map(
-        (old) => newBreaks.find((newBreak) => newBreak.id === old.id) || old
-    )
-
 const responseToBreak = (b: any) => ({
     id: b.id,
     host: b.host,
@@ -81,8 +76,7 @@ const headers = (token: string) => ({
 export const announceBreak = async (
     user: User,
     id: number,
-    oldBreaks: CookieBreak[],
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>,
+    updateBreaks: (breaks: CookieBreak[]) => void,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/announce`
@@ -95,7 +89,7 @@ export const announceBreak = async (
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
-    setBreaks(replaceBreaks(oldBreaks, [responseToBreak(responseData)]))
+    updateBreaks([responseToBreak(responseData)])
     setLoadingCard(false)
 }
 
@@ -103,8 +97,7 @@ export const reimburseBreak = async (
     user: User,
     id: number,
     cost: number,
-    oldBreaks: CookieBreak[],
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>,
+    updateBreaks: (breaks: CookieBreak[]) => void,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/reimburse`
@@ -118,6 +111,6 @@ export const reimburseBreak = async (
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
-    setBreaks(replaceBreaks(oldBreaks, [responseToBreak(responseData)]))
+    updateBreaks([responseToBreak(responseData)])
     setLoadingCard(false)
 }

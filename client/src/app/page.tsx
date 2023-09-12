@@ -6,6 +6,7 @@ import {
     User,
     getFutureBreaks,
     getOutstandingBreaks,
+    replaceBreaks,
 } from "./structs"
 import { getBreaks } from "./api"
 // import { LoginBox } from "./login"
@@ -29,7 +30,8 @@ const Home = () => {
         setUpcomingBreaks(getFutureBreaks(breaks))
         setOutstandingBreaks(getOutstandingBreaks(breaks))
     }, [breaks])
-
+    const updateBreaks = (newBreaks: CookieBreak[]) =>
+        setBreaks(replaceBreaks(breaks, newBreaks))
     return (
         <>
             <main className="text-fg">
@@ -38,7 +40,7 @@ const Home = () => {
                     title="Upcoming"
                     user={user}
                     breaks={upcomingBreaks}
-                    setBreaks={setBreaks}
+                    updateBreaks={updateBreaks}
                     isLoadingBreaks={isLoadingBreaks}
                     reverseBreaks={false}
                 />
@@ -49,15 +51,24 @@ const Home = () => {
                         title="Outstanding"
                         user={user}
                         breaks={outstandingBreaks}
-                        setBreaks={setBreaks}
+                        updateBreaks={updateBreaks}
                         isLoadingBreaks={isLoadingBreaks}
                         reverseBreaks={true}
                     />
                 )}
                 <div className="text-center">
-		    This tool is in <span className="text-red-600 font-bold">beta</span>!
-                    Please report any bugs or suggestions on <a className="text-blue-600 font-bold" href="https://github.com/georgejkaye/cookiebreaks/issues" title="GitHub issues page">GitHub</a>.
-		</div>
+                    This tool is in{" "}
+                    <span className="text-red-600 font-bold">beta</span>! Please
+                    report any bugs or suggestions on{" "}
+                    <a
+                        className="text-blue-600 font-bold"
+                        href="https://github.com/georgejkaye/cookiebreaks/issues"
+                        title="GitHub issues page"
+                    >
+                        GitHub
+                    </a>
+                    .
+                </div>
             </main>
         </>
     )

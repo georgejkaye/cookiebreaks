@@ -18,6 +18,14 @@ export interface CookieBreak {
     success?: Date
 }
 
+export const replaceBreaks = (
+    oldBreaks: CookieBreak[],
+    newBreaks: CookieBreak[]
+) =>
+    oldBreaks.map(
+        (old) => newBreaks.find((newBreak) => newBreak.id === old.id) || old
+    )
+
 export const getDateString = (datetime: Date) => {
     let weekday = datetime.toLocaleDateString("en-GB", {
         weekday: "long",
