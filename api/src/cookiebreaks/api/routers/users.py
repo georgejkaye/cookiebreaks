@@ -22,7 +22,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/token", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token", auto_error=False)
 
 
 class Token(BaseModel):
