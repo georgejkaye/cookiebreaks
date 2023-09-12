@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react"
+import { useState } from "react"
 import { announceBreak, reimburseBreak } from "./api"
 import {
     getDatetimeText,
@@ -7,7 +7,6 @@ import {
     dateInPast,
     getCookieBreakDate,
     getCookieBreakTime,
-    getFutureBreaks,
 } from "./structs"
 import Image from "next/image"
 import Loader from "./loader"

@@ -9,7 +9,6 @@ import {
     replaceBreaks,
 } from "./structs"
 import { getBreaks } from "./api"
-// import { LoginBox } from "./login"
 import { BreakCards } from "./breaks"
 import { TopBar } from "./bar"
 
@@ -19,13 +18,11 @@ const Home = () => {
     const [outstandingBreaks, setOutstandingBreaks] = useState<CookieBreak[]>(
         []
     )
-    const [token, setToken] = useState<string>("")
     const [user, setUser] = useState<User | undefined>(undefined)
     const [isLoadingBreaks, setLoadingBreaks] = useState(false)
     useEffect(() => {
         getBreaks(setBreaks, setLoadingBreaks)
     }, [])
-    useEffect(() => {}, [token])
     useEffect(() => {
         setUpcomingBreaks(getFutureBreaks(breaks))
         setOutstandingBreaks(getOutstandingBreaks(breaks))
