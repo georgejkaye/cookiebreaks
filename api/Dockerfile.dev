@@ -1,0 +1,26 @@
+# Build image
+FROM python:3.11-buster as builder
+
+ENV POETRY_VERSION=1.5.1
+
+RUN pip install poetry==${POETRY_VERSION}
+RUN apt update
+RUN apt install libpq-dev -y
+
+WORKDIR /app
+COPY pyproject.toml poetry.lock ./
+# Poetry complains without a readme
+RUN touch README.md
+RUN poetry install --no-root
+
+COPY src ./src
+RUN poetry install
+
+COPY .env .
+
+EXPOSE ${API_PORT}
+
+ENV CB_API_ROOT /app
+ENV API_ENV dev
+
+ENTRYPOINT ["poetry", "run", "python", "src/cookiebreaks/api/main.py"]

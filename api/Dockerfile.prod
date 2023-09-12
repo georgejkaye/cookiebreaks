@@ -36,7 +36,8 @@ COPY src ./app/src
 COPY .env ./app/.env
 
 ENV CB_API_ROOT="/app" \
-    PYTHONPATH="/app/src:$PYTHONPATH"
+    PYTHONPATH="/app/src:$PYTHONPATH" \
+    API_ENV="prod"
 
 WORKDIR /app/src
 

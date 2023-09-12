@@ -37,8 +37,15 @@ app.include_router(debug.router)
 import uvicorn
 
 
-def start(reload: bool = False):
+def start():
     load_envs()
+    if get_env_variable("API_ENV") == "prod":
+        reload = False
+    elif get_env_variable("API_ENV") == "dev":
+        reload = True
+    else:
+        print("Invalid environment set")
+        exit(1)
     env_file = get_env_path()
     uvicorn.run(
         "cookiebreaks.api.main:app",
@@ -49,13 +56,5 @@ def start(reload: bool = False):
     )
 
 
-def dev():
-    start(reload=True)
-
-
-def deploy():
-    start()
-
-
 if __name__ == "__main__":
-    deploy()
+    start()

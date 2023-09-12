@@ -8,7 +8,9 @@ networks:
 
 services:
   api:
-    build: api
+    build:
+      context: api
+      dockerfile: Dockerfile
     ports:
       - "${API_PORT}:${API_PORT}"
     env_file:
@@ -17,7 +19,7 @@ services:
       API_PORT: "${API_PORT}"
       SECRET_KEY: /run/secrets/api_secret
     labels:
-      - "traefik.enabel=true"
+      - "traefik.enable=true"
       - "traefik.http.routers.cookies_api.rule=Host(`${API_HOST}`)"
       - "traefik.http.routers.cookies_api.tls=true"
       - "traefik.http.routers.cookies_api.tls.certresolver=lets-encrypt"
@@ -50,4 +52,4 @@ services:
 
 secrets:
   api_secret:
-      file: api-secret.txt
+    file: api-secret.txt
