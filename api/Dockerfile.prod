@@ -1,13 +1,55 @@
 # Build image
-FROM python:3.11-buster as builder
+FROM python:3.11-bookworm as builder
 
-ENV POETRY_VERSION=1.5.1 \
-    POETRY_NO_INTERACTION=1 \
+ARG POETRY_VERSION
+ARG MAILCTL_VERSION
+
+ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR=/tmp/poetry_cache
 
+RUN apt update
+RUN apt install xz-utils libgnutls28-dev gettext -y
+RUN pip install pyyaml
+
 RUN pip install poetry==${POETRY_VERSION}
+
+# Get mailctl
+ARG MAILCTL_VERSION
+RUN curl -L https://github.com/pdobsan/mailctl/releases/download/${MAILCTL_VERSION}/mailctl-${MAILCTL_VERSION}-Linux-x86_64.tgz > mailctl.tgz;
+RUN tar -xzf mailctl.tgz; mv mailctl-${MAILCTL_VERSION}-Linux-x86_64/mailctl /usr/local/bin/
+
+# Get msmtp, we will build it in the runtime image
+ARG MSMTP_VERSION
+RUN curl -L https://marlam.de/msmtp/releases/msmtp-${MSMTP_VERSION}.tar.xz > msmtp.tar.xz
+RUN tar -xf msmtp.tar.xz; cd msmtp-${MSMTP_VERSION}; autoreconf -i; ./configure; make; make install
+
+# Get glibc 2.34
+RUN curl -L https://ftp.gnu.org/gnu/glibc/glibc-2.34.tar.bz2 > glibc.tar.bz2
+RUN tar -xf glibc.tar.bz2
+
+# Generate mail configs
+ENV MAILCTL_CONFIG_FILE=/app/mail/config.yaml \
+    MAILCTL_SERVICES_FILE=/app/mail/services.yaml \
+    MAILCTL_OAUTH_DIR=/app/mail/oauth \
+    MSMTP_CONFIG_FILE=/app/mail/msmtprc \
+    MSMTP_EVAL_SCRIPT=/app/mail/get_token.py
+
+COPY scripts /app/mail
+
+ARG KEY_ID
+ARG MSMTP_HOST
+ARG MSMTP_PORT
+ARG MSMTP_AUTH
+ARG MSMTP_FROM
+ARG MSMTP_USER
+
+ARG MAILCTL_SERVICES
+COPY ${MAILCTL_SERVICES} ${MAILCTL_SERVICES_FILE}
+
+RUN python /app/mail/gen_mailctl_config.py ${KEY_ID} ${MAILCTL_CONFIG_FILE} ${MAILCTL_SERVICES_FILE} ${MAILCTL_OAUTH_DIR}
+RUN python /app/mail/gen_msmtprc.py ${MSMTP_CONFIG_FILE} ${MSMTP_HOST} ${MSMTP_PORT} ${MSMTP_AUTH} ${MSMTP_FROM} ${MSMTP_USER} ${MSMTP_EVAL_SCRIPT}
 
 WORKDIR /app
 
@@ -18,19 +60,43 @@ RUN touch README.md
 RUN poetry install --without dev --no-root && rm -rf ${POETRY_CACHE_DIR}
 
 # Runtime image
-FROM python:3.11-slim-buster as runtime
+FROM python:3.11-slim-bookworm as runtime
 
 RUN apt update
-RUN apt install libpq-dev -y
+RUN apt install gawk bison binutils pkg-config make gcc expect gpg libpq-dev -y
+
+ARG MSMTP_VERSION
+
+# COPY --from=builder glibc-2.34 glibc-2.34
+# RUN mkdir glibc-build; cd glibc-build; ../glibc-2.34/configure --prefix=/usr; make
+
 
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH" \
     API_PORT=8000
 
+ARG KEY_ID
+
+RUN --mount=type=secret,id=gpg_private,required gpg --import /run/secrets/gpg_private
+RUN  expect -c "spawn gpg --edit-key ${KEY_ID} trust quit; send "5\\ry\\r"; expect eof"
+
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 COPY --from=builder /app/pyproject.toml ./app/pyproject.toml
+COPY --from=builder /usr/local/bin/mailctl /usr/local/bin/
+COPY --from=builder /usr/local/bin/msmtp /usr/local/bin/
+COPY --from=builder /app/mail/config.yaml /app/mail/config.yaml
+COPY --from=builder /app/mail/msmtprc /app/mail/msmtprc
+COPY --from=builder /app/mail/get_token.py /app/mail/get_token.py
+COPY --from=builder /app/mail/services.yaml /app/mail/services.yaml
+
+ENV MSMTP_EVAL_SCRIPT=/app/mail/get_token.py \
+    MSMTP_CONFIG_FILE=/app/mail/msmtprc \
+    MAILCTL_SERVICES_FILE=/app/mail/services.yaml
+
+RUN chmod +x ${MSMTP_EVAL_SCRIPT}
 
 RUN touch ./app/README.md
+RUN mkdir /app/mail/oauth
 
 COPY src ./app/src
 COPY .env ./app/.env
@@ -39,8 +105,10 @@ ENV CB_API_ROOT="/app" \
     PYTHONPATH="/app/src:$PYTHONPATH" \
     API_ENV="prod"
 
-WORKDIR /app/src
+WORKDIR /app
 
 EXPOSE ${API_PORT}
 
-ENTRYPOINT ["python", "cookiebreaks/api/main.py"]
+RUN apt remove binutils gcc gawk bison pkg-config make tcc expect -y
+
+ENTRYPOINT ["python", "src/cookiebreaks/api/main.py"]
