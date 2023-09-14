@@ -112,7 +112,13 @@ def write_announce_email(next_break: Break, recipients: list[str]) -> MIMEMultip
 
 def send_email(email: MIMEMultipart):
     process = subprocess.Popen(
-        ["msmtp", "--read-envelope-from", "--read-recipients"], stdin=subprocess.PIPE
+        [
+            "msmtp",
+            f"--file={get_env_variable('MSMTP_CONFIG_FILE')}",
+            "--read-envelope-from",
+            "--read-recipients",
+        ],
+        stdin=subprocess.PIPE,
     )
     process.communicate(email.as_bytes())
 

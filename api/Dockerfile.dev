@@ -1,11 +1,24 @@
 # Build image
-FROM python:3.11-buster as builder
+FROM python:3.11-bookworm as builder
 
-ENV POETRY_VERSION=1.5.1
-
-RUN pip install poetry==${POETRY_VERSION}
 RUN apt update
-RUN apt install libpq-dev -y
+RUN apt install expect libgnutls28-dev gettext -y
+RUN pip install pyyaml
+
+ARG MAILCTL_VERSION
+
+# Get mailctl
+RUN curl -L https://github.com/pdobsan/mailctl/releases/download/${MAILCTL_VERSION}/mailctl-${MAILCTL_VERSION}-Linux-x86_64.tgz > mailctl.tgz;
+RUN tar -xzf mailctl.tgz; mv mailctl-${MAILCTL_VERSION}-Linux-x86_64/mailctl /usr/local/bin/
+
+ARG MSMTP_VERSION
+
+# Get msmtp
+RUN curl -L https://marlam.de/msmtp/releases/msmtp-${MSMTP_VERSION}.tar.xz > msmtp.tar.xz;
+RUN tar -xf msmtp.tar.xz; cd msmtp-${MSMTP_VERSION}; autoreconf -i; ./configure; make; make install
+
+ARG POETRY_VERSION
+RUN pip install poetry==${POETRY_VERSION}
 
 WORKDIR /app
 COPY pyproject.toml poetry.lock ./
@@ -15,6 +28,36 @@ RUN poetry install --no-root
 
 COPY src ./src
 RUN poetry install
+
+ARG PRIVATE_KEY
+ARG KEY_ID
+
+RUN --mount=type=secret,id=gpg_private,required gpg --import /run/secrets/gpg_private
+RUN  expect -c "spawn gpg --edit-key ${KEY_ID} trust quit; send "5\\ry\\r"; expect eof"
+
+COPY scripts /app/mail
+
+RUN mkdir /app/mail/oauth
+
+ENV MAILCTL_CONFIG_FILE=/app/mail/config.yaml \
+    MAILCTL_SERVICES_FILE=/app/mail/services.yaml \
+    MAILCTL_OAUTH_DIR=/app/mail/oauth \
+    MSMTP_CONFIG_FILE=/app/mail/msmtprc \
+    MSMTP_EVAL_SCRIPT=/app/mail/get_token.py
+
+ARG MAILCTL_SERVICES
+COPY ${MAILCTL_SERVICES} ${MAILCTL_SERVICES_FILE}
+
+ARG KEY_ID
+ARG MSMTP_HOST
+ARG MSMTP_PORT
+ARG MSMTP_AUTH
+ARG MSMTP_FROM
+ARG MSMTP_USER
+
+RUN python /app/mail/gen_mailctl_config.py ${KEY_ID} ${MAILCTL_CONFIG_FILE} ${MAILCTL_SERVICES_FILE} ${MAILCTL_OAUTH_DIR}
+RUN python /app/mail/gen_msmtprc.py ${MSMTP_CONFIG_FILE} ${MSMTP_HOST} ${MSMTP_PORT} ${MSMTP_AUTH} ${MSMTP_FROM} ${MSMTP_USER} ${MSMTP_EVAL_SCRIPT}
+RUN chmod +x ${MSMTP_EVAL_SCRIPT}
 
 COPY .env .
 

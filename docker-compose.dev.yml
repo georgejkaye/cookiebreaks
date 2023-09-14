@@ -1,19 +1,36 @@
-version: "3.9"
-
 services:
   api:
     build:
       context: api
       dockerfile: Dockerfile.dev
+      args:
+        POETRY_VERSION: ${POETRY_VERSION}
+        MAILCTL_VERSION: ${MAILCTL_VERSION}
+        MSMTP_VERSION: ${MSMTP_VERSION}
+        MAILCTL_SERVICES: ${MAILCTL_SERVICES}
+        MAILCTL_ACCOUNT: ${MAILCTL_ACCOUNT}
+        KEY_ID: ${KEY_ID}
+        PRIVATE_KEY: /run/secrets/gpg_private
+        MSMTP_HOST: ${MSMTP_HOST}
+        MSMTP_PORT: ${MSMTP_PORT}
+        MSMTP_AUTH: ${MSMTP_AUTH}
+        MSMTP_FROM: ${MSMTP_FROM}
+        MSMTP_USER: ${MSMTP_USER}
+        MSMTP_EVAL: ${MSMTP_EVAL}
+      secrets:
+        - gpg_private
     ports:
       - "${API_PORT}:${API_PORT}"
     environment:
       API_PORT: "${API_PORT}"
       SECRET_KEY: /run/secrets/api_secret
+      MAILCTL_TOKEN: ${MAILCTL_TOKEN}
     secrets:
       - api_secret
+      - gpg_private
     volumes:
       - ./api/src:/app/src
+      - ${MAILCTL_TOKEN}:/app/mail/token.auth
   client:
     build:
       context: client
@@ -32,4 +49,6 @@ services:
 
 secrets:
   api_secret:
-    file: api-secret.txt
+    file: ${API_SECRET}
+  gpg_private:
+    file: ${GPG_SECRET_KEY}
