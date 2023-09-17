@@ -59,7 +59,9 @@ const BreakIcons = (props: {
                 props.user?.admin ? "w-full desktop:w-1/6" : ""
             } items-center justify-center`}
         >
-            {isLoadingCard ? (
+            {props.cb.holiday ? (
+                ""
+            ) : isLoadingCard ? (
                 <Loader size={10} />
             ) : props.user && props.user.admin ? (
                 <>
@@ -146,23 +148,27 @@ const BreakCard = (props: {
     updateBreaks: (breaks: CookieBreak[]) => void
 }) => {
     let pastBreak = dateInPast(props.cb.datetime)
-    let hostText =
-        props.cb.host === null
-            ? pastBreak
-                ? "Host reimbursed"
-                : "Host required"
-            : props.cb.host
+    let contentText = props.cb.holiday
+        ? props.cb.holiday
+        : props.cb.host === null
+        ? pastBreak
+            ? "Host reimbursed"
+            : "Host required"
+        : props.cb.host
+    let cardColour = props.cb.holiday ? "bg-gray-300" : "bg-white"
+    let contentTextStyle =
+        props.cb.holiday || props.cb.host === null ? "italic text-sm" : "bold"
     return (
-        <div className="flex w-3/4 desktop:w-content tablet:w-tabletContent flex-wrap border-4 m-5 p-1 px-5 mx-auto items-center justify-center">
+        <div
+            className={`flex w-3/4 desktop:w-content tablet:w-tabletContent flex-wrap border-4 m-5 p-1 px-5 mx-auto items-center justify-center ${cardColour}`}
+        >
             <div className="w-full tablet:w-1/2 my-2 desktop:mx-0 desktop:w-1/3 text-center font-bold">
                 {getCookieBreakDate(props.cb)}, {getCookieBreakTime(props.cb)}
             </div>
             <div
-                className={`flex-1 my-2 desktop:mx-0 text-center px-5 ${
-                    props.cb.host === null ? "italic text-sm" : "bold"
-                }`}
+                className={`flex-1 my-2 desktop:mx-0 text-center px-5 ${contentTextStyle}`}
             >
-                {hostText}
+                {contentText}
             </div>
             <BreakIcons
                 cb={props.cb}
