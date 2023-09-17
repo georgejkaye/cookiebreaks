@@ -1,4 +1,3 @@
-from cookiebreaks.core.config import parse_config
 from cookiebreaks.core.database import claim_for_breaks
 from cookiebreaks.core.structs import BreakFilters, format_as_price
 
@@ -6,9 +5,8 @@ from cookiebreaks.cli.interactive import select_multiple_breaks
 
 
 def claim():
-    config = parse_config()
     chosen_breaks = select_multiple_breaks(
-        config, BreakFilters(past=True, hosted=True, admin_claimed=False)
+        BreakFilters(past=True, hosted=True, admin_claimed=False)
     )
     if len(chosen_breaks) == 0:
         print("No choice made, exiting")

@@ -1,12 +1,9 @@
-from cookiebreaks.core.config import parse_config
 from cookiebreaks.core.database import reimburse_and_mask_host
 from cookiebreaks.core.structs import BreakFilters, format_as_price
-
 from cookiebreaks.cli.interactive import select_break
 
 
 def reimburse():
-    config = parse_config()
     chosen_break = select_break(BreakFilters(hosted=True, host_reimbursed=False))
     if chosen_break is None:
         print("No choice made, exiting")

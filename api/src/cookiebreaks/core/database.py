@@ -3,7 +3,6 @@ import psycopg2
 
 from typing import Any, Optional, Tuple, List
 
-from cookiebreaks.core.config import Config
 from cookiebreaks.core.env import get_env_variable
 from cookiebreaks.core.structs import (
     Break,
@@ -241,7 +240,7 @@ def to_postgres_day(day: int) -> int:
         return day + 1
 
 
-def insert_missing_breaks(config: Config) -> None:
+def insert_missing_breaks() -> None:
     (conn, cur) = connect()
     statement = f"""
         INSERT INTO break (break_datetime, break_location) (
@@ -261,17 +260,17 @@ def insert_missing_breaks(config: Config) -> None:
     cur.execute(
         statement,
         {
-            "location": config.breaks.location,
-            "time": config.breaks.time.time(),
-            "max": config.breaks.maximum,
-            "day": to_postgres_day(config.breaks.day),
+            "location": get_env_variable("BREAK_LOCATION"),
+            "time": get_env_variable("BREAK_TIME"),
+            "max": get_env_variable("BREAK_MAX"),
+            "day": get_env_variable("BREAK_DAY"),
         },
     )
     conn.commit()
     disconnect(conn, cur)
 
 
-def set_holiday(config: Config, break_id: int, holiday: bool) -> None:
+def set_holiday(break_id: int, holiday: bool) -> None:
     (conn, cur) = connect()
     if holiday:
         statement = f"""
