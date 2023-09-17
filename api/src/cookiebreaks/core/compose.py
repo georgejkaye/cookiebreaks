@@ -15,7 +15,6 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from cookiebreaks.core.database import get_env_variable
 from cookiebreaks.core.event import create_calendar_event, get_cookiebreak_ics_filename
 from cookiebreaks.core.structs import Break
-from cookiebreaks.core.config import Config
 
 
 def write_email_template(cookie_break: Break, template_name: str) -> str:
@@ -43,14 +42,12 @@ def handle_str_or_bytes(obj: Union[str, bytes]) -> str:
     return obj
 
 
-def prepare_email_in_thunderbird(
-    config: Config, next_break: Break, body: str, ics: str
-):
+def prepare_email_in_thunderbird(next_break: Break, body: str, ics: str):
     subject = get_announce_email_subject(next_break)
     subject_item = f"subject='{subject}'"
-    emails = ", ".join(config.mailing_lists)
+    emails = ", ".join(get_env_variable("MAILING_LISTS").split(" "))
     to_item = f"to='{emails}'"
-    from_item = f"from={config.admin.email}"
+    from_item = f"from={get_env_variable('ADMIN_EMAIL')}"
     body_item = f"body='{body}'"
     attachment_item = f"attachment='{ics}'"
     plain_text_item = "format=2"

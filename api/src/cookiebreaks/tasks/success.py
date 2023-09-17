@@ -1,13 +1,10 @@
-from cookiebreaks.core.config import parse_config
 from cookiebreaks.core.database import claim_reimbursed
 from cookiebreaks.core.structs import ClaimFilters, claim_list_date_string
-
 from cookiebreaks.cli.interactive import select_claim
 
 
 def success():
-    config = parse_config()
-    chosen_claim = select_claim(config, ClaimFilters(reimbursed=False))
+    chosen_claim = select_claim(ClaimFilters(reimbursed=False))
     if chosen_claim is None:
         print("No choice made, exiting")
         exit(0)
