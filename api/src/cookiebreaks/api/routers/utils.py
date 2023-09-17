@@ -17,7 +17,7 @@ class BreakExternal:
     id: int
     break_time: datetime
     location: str
-    holiday: bool
+    holiday: Optional[str]
     host: Optional[str]
     break_announced: Optional[datetime]
     cost: Optional[float]

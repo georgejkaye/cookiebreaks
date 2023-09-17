@@ -10,6 +10,7 @@ export interface CookieBreak {
     id: number
     host: string
     location: string
+    holiday?: string
     cost?: number
     datetime: Date
     announced?: Date

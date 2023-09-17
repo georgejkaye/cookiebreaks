@@ -9,23 +9,11 @@ def holiday():
         print("No choice made, exiting")
         exit(0)
     else:
-        if chosen_break.holiday:
-            choice = input(
-                f"Make {chosen_break.get_break_datetime()} a non-holiday? (y/N) "
-            )
-            if choice == "y":
-                holiday = False
-            else:
-                exit(0)
+        reason = input(f"Reason for holiday on {chosen_break.get_break_datetime()}? ")
+        if reason == "":
+            set_holiday(chosen_break.id)
         else:
-            choice = input(
-                f"Make {chosen_break.get_break_datetime()} a holiday? (y/N) "
-            )
-            if choice == "y":
-                holiday = True
-            else:
-                exit(0)
-        set_holiday(chosen_break.id, holiday)
+            set_holiday(chosen_break.id, reason)
 
 
 if __name__ == "__main__":
