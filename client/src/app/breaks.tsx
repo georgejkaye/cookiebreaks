@@ -157,7 +157,7 @@ const BreakCard = (props: {
         : props.cb.host
     let cardColour = props.cb.holiday ? "bg-gray-300" : "bg-white"
     let contentTextStyle =
-        props.cb.holiday || props.cb.host === null ? "italic text-sm" : "bold"
+        props.cb.holiday || props.cb.host === null ? "text-sm" : "bold"
     return (
         <div
             className={`flex w-3/4 desktop:w-content tablet:w-tabletContent flex-wrap border-4 m-5 p-1 px-5 mx-auto items-center justify-center ${cardColour}`}

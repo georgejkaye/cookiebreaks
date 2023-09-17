@@ -11,6 +11,14 @@ import {
 import { getBreaks } from "./api"
 import { BreakCards } from "./breaks"
 import { TopBar } from "./bar"
+import { Manrope } from "next/font/google"
+
+const manrope = Manrope({
+    weight: ["400", "700"],
+    style: ["normal"],
+    subsets: ["latin"],
+    display: "swap",
+})
 
 const Home = () => {
     const [breaks, setBreaks] = useState<CookieBreak[]>([])
@@ -31,7 +39,7 @@ const Home = () => {
         setBreaks(replaceBreaks(breaks, newBreaks))
     return (
         <>
-            <main className="text-fg">
+            <main className={`text-fg ${manrope.className}`}>
                 <TopBar setUser={setUser} user={user} setBreaks={setBreaks} />
                 <BreakCards
                     title="Upcoming"
