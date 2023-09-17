@@ -193,7 +193,7 @@ def get_breaks_statement(filters) -> str:
             op = "="
             var = ""
         where_clauses.append(f"(break_host {op} '' OR host_reimbursed IS{var} NULL)")
-    get_boolean_where_clause(where_clauses, filters.holiday, "is_holiday")
+    get_exists_where_clause(where_clauses, filters.holiday, "holiday_text")
     get_exists_where_clause(where_clauses, filters.host_reimbursed, "host_reimbursed")
     get_exists_where_clause(where_clauses, filters.admin_claimed, "admin_claimed")
     get_exists_where_clause(where_clauses, filters.admin_reimbursed, "admin_reimbursed")
@@ -270,23 +270,29 @@ def insert_missing_breaks() -> None:
     disconnect(conn, cur)
 
 
-def set_holiday(break_id: int, holiday: bool) -> None:
+def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
     (conn, cur) = connect()
-    if holiday:
+    if reason:
         statement = f"""
             UPDATE break
-            SET is_holiday = true, break_host = NULL
+            SET holiday_text = %(text)s, break_host = NULL
             WHERE break_id = %(id)s
+            RETURNING *
         """
+        reason_text = reason
     else:
         statement = f"""
             UPDATE break
-            SET is_holiday = false
+            SET holiday_text = NULL
             WHERE break_id = %(id)s
+            RETURNING *
         """
-    cur.execute(statement, {"id": break_id})
+        reason_text = ""
+    cur.execute(statement, {"id": break_id, "text": reason_text})
+    row = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
+    return row_to_break(row)
 
 
 def claim_for_breaks(break_ids: List[int]) -> None:
@@ -309,9 +315,6 @@ def claim_for_breaks(break_ids: List[int]) -> None:
     cur.execute(claim_table_statement, {"breaks": break_ids, "amount": amount})
     conn.commit()
     disconnect(conn, cur)
-
-
-1
 
 
 def get_claims(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
