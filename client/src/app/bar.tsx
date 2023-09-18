@@ -2,6 +2,7 @@ import React, { Dispatch, SetStateAction, useState } from "react"
 import { User, CookieBreak } from "./structs"
 import Loader from "./loader"
 import { login } from "./api"
+import { LoginModal, LogoutModal } from "./modals/login"
 
 const InputBox = (props: {
     type: string
@@ -46,40 +47,32 @@ const LoginButton = (props: {
         )
         setPasswordText("")
     }
-    return isActive ? (
-        <div className="flex items-center justify-end">
-            <InputBox
-                type="text"
-                placeholder="User"
-                text={userText}
-                setText={setUserText}
-            />
-            <InputBox
-                type="password"
-                placeholder="Password"
-                text={passwordText}
-                setText={setPasswordText}
-            />
-            <div
-                className="hover:underline cursor-pointer px-2"
-                onClick={clickLoginButton}
-            >
-                Login
-            </div>
+    return (
+        <>
             <div
                 className="hover:underline cursor-pointer px-2"
                 onClick={toggleLoginButton}
             >
-                Cancel
+                {!props.user ? "Login" : props.user.user}
             </div>
-        </div>
-    ) : (
-        <div
-            className="hover:underline cursor-pointer px-2"
-            onClick={toggleLoginButton}
-        >
-            Login
-        </div>
+            {!props.user ? (
+                <LoginModal
+                    isOpen={isActive}
+                    setOpen={setActive}
+                    setUser={props.setUser}
+                    setBreaks={props.setBreaks}
+                    setLoading={props.setLoadingLogin}
+                    setStatus={setStatus}
+                />
+            ) : (
+                <LogoutModal
+                    isOpen={isActive}
+                    user={props.user}
+                    setOpen={setActive}
+                    setUser={props.setUser}
+                />
+            )}
+        </>
     )
 }
 
@@ -93,8 +86,6 @@ const LoginBar = (props: {
         <div className="ml-auto">
             {isLoadingLogin ? (
                 <Loader size={10} />
-            ) : props.user ? (
-                <div>{props.user.user}</div>
             ) : (
                 <LoginButton
                     user={props.user}
