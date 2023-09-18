@@ -381,5 +381,6 @@ def after_announced_break(
     """
     cur.execute(statement, {"id": cookie_break.id})
     updated_break = cur.fetchall()[0]
-    conn.close()
+    conn.commit()
+    disconnect(conn, cur)
     return row_to_break(updated_break)
