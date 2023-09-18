@@ -32,7 +32,7 @@ RUN tar -xf glibc.tar.bz2
 # Generate mail configs
 ENV MAILCTL_CONFIG_FILE=/app/mail/config.yaml \
     MAILCTL_SERVICES_FILE=/app/mail/services.yaml \
-    MAILCTL_OAUTH_DIR=/app/mail \
+    MAILCTL_OAUTH_DIR=/app/mail/oauth \
     MSMTP_CONFIG_FILE=/app/mail/msmtprc \
     MSMTP_EVAL_SCRIPT=/app/mail/get_token.py
 
@@ -67,10 +67,6 @@ RUN apt install gawk bison binutils pkg-config make gcc expect gpg libpq-dev -y
 
 ARG MSMTP_VERSION
 
-# COPY --from=builder glibc-2.34 glibc-2.34
-# RUN mkdir glibc-build; cd glibc-build; ../glibc-2.34/configure --prefix=/usr; make
-
-
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH" \
     API_PORT=8000
@@ -79,6 +75,7 @@ ARG KEY_ID
 
 RUN --mount=type=secret,id=gpg_private,required gpg --import /run/secrets/gpg_private
 RUN  expect -c "spawn gpg --edit-key ${KEY_ID} trust quit; send "5\\ry\\r"; expect eof"
+RUN gpg --list-keys
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 COPY --from=builder /app/pyproject.toml ./app/pyproject.toml
@@ -91,12 +88,13 @@ COPY --from=builder /app/mail/services.yaml /app/mail/services.yaml
 
 ENV MSMTP_EVAL_SCRIPT=/app/mail/get_token.py \
     MSMTP_CONFIG_FILE=/app/mail/msmtprc \
-    MAILCTL_SERVICES_FILE=/app/mail/services.yaml
+    MAILCTL_SERVICES_FILE=/app/mail/services.yaml \
+    MAILCTL_OAUTH_DIR=/app/mail/oauth
 
 RUN chmod +x ${MSMTP_EVAL_SCRIPT}
 
 RUN touch ./app/README.md
-RUN mkdir /app/mail/oauth
+RUN mkdir ${MAILCTL_OAUTH_DIR}
 
 COPY src ./app/src
 COPY .env ./app/.env

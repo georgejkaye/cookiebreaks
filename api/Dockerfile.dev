@@ -34,16 +34,17 @@ ARG KEY_ID
 
 RUN --mount=type=secret,id=gpg_private,required gpg --import /run/secrets/gpg_private
 RUN  expect -c "spawn gpg --edit-key ${KEY_ID} trust quit; send "5\\ry\\r"; expect eof"
+RUN gpg --list-keys
 
 COPY scripts /app/mail
 
-RUN mkdir /app/mail/oauth
-
 ENV MAILCTL_CONFIG_FILE=/app/mail/config.yaml \
     MAILCTL_SERVICES_FILE=/app/mail/services.yaml \
-    MAILCTL_OAUTH_DIR=/app/mail \
+    MAILCTL_OAUTH_DIR=/app/mail/oauth \
     MSMTP_CONFIG_FILE=/app/mail/msmtprc \
     MSMTP_EVAL_SCRIPT=/app/mail/get_token.py
+
+RUN mkdir ${MAILCTL_OAUTH_DIR}
 
 ARG MAILCTL_SERVICES
 COPY ${MAILCTL_SERVICES} ${MAILCTL_SERVICES_FILE}
