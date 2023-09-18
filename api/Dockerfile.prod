@@ -32,7 +32,7 @@ RUN tar -xf glibc.tar.bz2
 # Generate mail configs
 ENV MAILCTL_CONFIG_FILE=/app/mail/config.yaml \
     MAILCTL_SERVICES_FILE=/app/mail/services.yaml \
-    MAILCTL_OAUTH_DIR=/app/mail/oauth \
+    MAILCTL_OAUTH_DIR=/app/mail \
     MSMTP_CONFIG_FILE=/app/mail/msmtprc \
     MSMTP_EVAL_SCRIPT=/app/mail/get_token.py
 
