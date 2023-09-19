@@ -45,16 +45,18 @@ async def request_breaks(
 
 @router.post(
     "/host",
-    response_model=list[Break],
+    response_model=Break,
     summary="Set the host of a cookie break",
 )
 async def set_host(
     current_user: Annotated[User, Depends(is_admin)],
     break_id: int,
-    host_name: str,
+    host_name: Optional[str] = None,
 ):
-    insert_host(host_name, break_id)
-    return get_breaks(BreakFilters(past=False), current_user)
+    hosted_break = insert_host(host_name, break_id)
+    if hosted_break is None:
+        raise HTTPException(400, "Break does not exist")
+    return break_internal_to_external(hosted_break, current_user)
 
 
 @router.post("/announce", response_model=Break, summary="Announce a cookie break")
@@ -82,7 +84,7 @@ async def reimburse_host(
 @router.post(
     "/holiday",
     response_model=Break,
-    summary="Record the reimbursement of someone who hosted a cookie break",
+    summary="Set a cookie break to be a holiday with a specified reason",
 )
 async def post_holiday(
     current_user: Annotated[User, Depends(is_admin)], break_id: int, reason: str
