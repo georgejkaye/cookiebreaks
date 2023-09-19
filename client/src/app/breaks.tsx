@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { announceBreak, reimburseBreak } from "./api"
+import React, { useRef, useState } from "react"
+import { announceBreak, reimburseBreak, setHoliday, setHost } from "./api"
 import {
     getDatetimeText,
     User,
@@ -163,17 +163,67 @@ const BreakCard = (props: {
     cb: CookieBreak
     updateBreaks: (breaks: CookieBreak[]) => void
 }) => {
-    let pastBreak = dateInPast(props.cb.datetime)
-    let contentText = props.cb.holiday
+    let hasPassed = dateInPast(props.cb.datetime)
+    let isHoliday = props.cb.holiday !== null
+    let hasHost = props.cb.host !== null
+    let isAdmin = props.user?.admin
+
+    const [contentLoading, setContentLoading] = useState(false)
+    const [editingText, setEditingText] = useState(false)
+    const contentTextRef = useRef<HTMLInputElement | null>(null)
+
+    let contentText = isHoliday
         ? props.cb.holiday
-        : props.cb.host === null
-        ? pastBreak
+        : !hasHost
+        ? hasPassed
             ? "Host reimbursed"
             : "Host required"
         : props.cb.host
-    let cardColour = props.cb.holiday ? "bg-gray-300" : "bg-white"
+    let cardColour = isHoliday ? "bg-gray-300" : "bg-white"
+
     let contentTextStyle =
-        props.cb.holiday || props.cb.host === null ? "text-sm" : "bold"
+        isHoliday || !hasHost ? "text-sm" : editingText ? "" : "font-bold"
+    let clickable = isAdmin && !dateInPast(props.cb.datetime)
+    let clickableStyle = clickable
+        ? "cursor-pointer hover:bg-gray-300/50 rounded-md"
+        : ""
+
+    const onClickText = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (clickable) {
+            setEditingText(true)
+        }
+    }
+    const discardContentText = () => {
+        setEditingText(false)
+    }
+    const submitContentText = () => {
+        if (props.user && contentTextRef.current) {
+            let request = isHoliday ? setHoliday : setHost
+            request(
+                props.user,
+                props.cb.id,
+                contentTextRef.current.value,
+                props.updateBreaks,
+                setContentLoading
+            )
+        }
+        setEditingText(false)
+    }
+    const onClickCloseText = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation()
+        discardContentText()
+    }
+    const onClickConfirmText = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation()
+        submitContentText()
+    }
+    const onKeyDownContentText = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            submitContentText()
+        } else if (e.key === "Escape") {
+            discardContentText()
+        }
+    }
     return (
         <div
             className={`flex w-3/4 desktop:w-content tablet:w-tabletContent flex-wrap border-4 m-5 p-1 px-5 mx-auto items-center justify-center ${cardColour}`}
@@ -182,15 +232,49 @@ const BreakCard = (props: {
                 {getCookieBreakDate(props.cb)}, {getCookieBreakTime(props.cb)}
             </div>
             <div
-                className={`flex-1 my-2 desktop:mx-0 text-center px-5 ${contentTextStyle}`}
+                className={`flex-1 desktop:mx-0 text-center px-5`}
+                onClick={onClickText}
             >
-                {contentText}
+                {contentLoading ? (
+                    <Loader size={10} />
+                ) : !editingText ? (
+                    <span
+                        className={`p-2 ${clickableStyle} ${contentTextStyle}`}
+                    >
+                        {contentText}
+                    </span>
+                ) : (
+                    <div className="flex flex-row">
+                        <SmallIcon
+                            icon="cross"
+                            styles=""
+                            title="Close"
+                            alt="cross"
+                            onClick={onClickCloseText}
+                        />
+                        <input
+                            ref={contentTextRef}
+                            autoFocus
+                            type="text"
+                            className="w-full text-center mx-2"
+                            placeholder="Host required"
+                            onKeyDown={onKeyDownContentText}
+                        />
+                        <SmallIcon
+                            icon="tick"
+                            styles=""
+                            title="Confirm"
+                            alt="tick"
+                            onClick={onClickConfirmText}
+                        />
+                    </div>
+                )}
             </div>
             <BreakIcons
                 cb={props.cb}
                 updateBreaks={props.updateBreaks}
                 user={props.user}
-                pastBreak={pastBreak}
+                pastBreak={hasPassed}
             />
         </div>
     )

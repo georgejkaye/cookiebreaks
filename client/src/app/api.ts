@@ -115,3 +115,50 @@ export const reimburseBreak = async (
     updateBreaks([responseToBreak(responseData)])
     setLoadingCard(false)
 }
+
+export const setHost = async (
+    user: User,
+    id: number,
+    host: string,
+    updateBreaks: (breaks: CookieBreak[]) => void,
+    setLoadingCard: Dispatch<SetStateAction<boolean>>
+) => {
+    let actualHost = host === "" ? undefined : host
+    let endpoint = `/api/breaks/host`
+    let config = {
+        params: {
+            break_id: id,
+            host_name: actualHost,
+        },
+        headers: headers(user.token),
+    }
+    setLoadingCard(true)
+    let response = await axios.post(endpoint, null, config)
+    let responseData = response.data
+    console.log(responseData)
+    updateBreaks([responseToBreak(responseData)])
+    setLoadingCard(false)
+}
+
+export const setHoliday = async (
+    user: User,
+    id: number,
+    reason: string,
+    updateBreaks: (breaks: CookieBreak[]) => void,
+    setLoadingCard: Dispatch<SetStateAction<boolean>>
+) => {
+    let endpoint = `/api/breaks/holiday`
+    let config = {
+        params: {
+            break_id: id,
+            reason,
+        },
+        headers: headers(user.token),
+    }
+    setLoadingCard(true)
+    let response = await axios.post(endpoint, null, config)
+    let responseData = response.data
+    console.log(responseData)
+    updateBreaks([responseToBreak(responseData)])
+    setLoadingCard(false)
+}
