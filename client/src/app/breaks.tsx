@@ -11,6 +11,29 @@ import {
 import Image from "next/image"
 import Loader from "./loader"
 
+const SmallIcon = (props: {
+    icon: string
+    styles: string
+    title: string
+    alt: string
+    onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+}) => {
+    let style = `${props.styles}  ${
+        props.onClick ? " cursor-pointer hover:bg-gray-300 rounded-full" : ""
+    }`
+    return (
+        <Image
+            className={style}
+            onClick={props.onClick}
+            width={30}
+            height={30}
+            src={`/images/icons/${props.icon}.svg`}
+            title={props.title}
+            alt={props.title}
+        />
+    )
+}
+
 const BreakIcon = (props: {
     icon: string
     doneText: string
@@ -22,26 +45,19 @@ const BreakIcon = (props: {
     let titleText = !props.datetime
         ? props.waitingText
         : `${props.doneText} on ${getDatetimeText(props.datetime)}`
-    let opacity = !props.datetime ? 0.25 : 1
+    let opacity = !props.datetime ? "25" : "100"
     const onClickIcon = (e: React.MouseEvent<HTMLDivElement>) => {
         if (props.clickable && props.onClick) {
             props.onClick()
         }
     }
     return (
-        <Image
-            className={`my-2 desktop:m-0 ${
-                props.clickable
-                    ? "cursor-pointer hover:bg-gray-300 rounded-full bg-opacity-30 hover:"
-                    : ""
-            }`}
+        <SmallIcon
+            styles={`my-2 desktop:m-0 opacity-${opacity}`}
             onClick={onClickIcon}
-            width={30}
-            height={30}
-            src={`/images/icons/${props.icon}.svg`}
+            icon={props.icon}
             title={titleText}
             alt={titleText}
-            style={{ opacity: opacity }}
         />
     )
 }
