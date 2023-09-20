@@ -45,16 +45,14 @@ const BreakIcon = (props: {
     let titleText = !props.datetime
         ? props.waitingText
         : `${props.doneText} on ${getDatetimeText(props.datetime)}`
-    let opacity = !props.datetime ? "25" : "100"
-    const onClickIcon = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (props.clickable && props.onClick) {
-            props.onClick()
-        }
-    }
+    let opacity = props.datetime && dateInPast(props.datetime) ? "100" : "25"
+    let style = `my-2 desktop:m-0 opacity-${opacity}`
     return (
         <SmallIcon
-            styles={`my-2 desktop:m-0 opacity-${opacity}`}
-            onClick={onClickIcon}
+            styles={style}
+            onClick={
+                props.onClick && props.clickable ? props.onClick : undefined
+            }
             icon={props.icon}
             title={titleText}
             alt={titleText}
