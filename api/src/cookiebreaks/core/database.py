@@ -82,14 +82,28 @@ def insert_host(break_host: str | None, break_id: int) -> None:
 def reimburse_host(break_id: int, cost: float) -> Break:
     (conn, cur) = connect()
     statement = """
-        UPDATE break
-        SET
+        UPDATE break SET
             break_cost = %(cost)s,
             host_reimbursed = DATE_TRUNC('minute', NOW())
         WHERE break_id = %(id)s
         RETURNING *
     """
     cur.execute(statement, {"id": break_id, "cost": cost})
+    row = cur.fetchall()[0]
+    conn.commit()
+    disconnect(conn, cur)
+    return row_to_break(row)
+
+
+def mask_host(break_id: int) -> Break:
+    (conn, cur) = connect()
+    statement = """
+        UPDATE break
+        SET break_host = null
+        WHERE break_id = %(is)s
+        RETURNING *
+    """
+    cur.execute(statement, {"id": break_id})
     row = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
