@@ -401,3 +401,13 @@ def after_announced_break(
     conn.commit()
     disconnect(conn, cur)
     return row_to_break(updated_break)
+
+
+def remove_break(break_id: int) -> None:
+    (conn, cur) = connect()
+    statement = """
+        DELETE FROM break WHERE break_id = %(id)s
+    """
+    cur.execute(statement, {"id": break_id})
+    conn.commit()
+    disconnect(conn, cur)
