@@ -77,7 +77,10 @@ const headers = (token: string) => ({
 export const announceBreak = async (
     user: User,
     id: number,
-    updateBreaks: (breaks: CookieBreak[]) => void,
+    updateBreaks: (
+        breaksToAdd: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => void,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/announce`
@@ -90,7 +93,7 @@ export const announceBreak = async (
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
-    updateBreaks([responseToBreak(responseData)])
+    updateBreaks([responseToBreak(responseData)], [])
     setLoadingCard(false)
 }
 
@@ -98,7 +101,10 @@ export const reimburseBreak = async (
     user: User,
     id: number,
     cost: number,
-    updateBreaks: (breaks: CookieBreak[]) => void,
+    updateBreaks: (
+        breaksToAdd: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => void,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/reimburse`
@@ -112,7 +118,7 @@ export const reimburseBreak = async (
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
-    updateBreaks([responseToBreak(responseData)])
+    updateBreaks([responseToBreak(responseData)], [])
     setLoadingCard(false)
 }
 
@@ -120,7 +126,10 @@ export const setHost = async (
     user: User,
     id: number,
     host: string,
-    updateBreaks: (breaks: CookieBreak[]) => void,
+    updateBreaks: (
+        breaksToAdd: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => void,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let actualHost = host === "" ? undefined : host
@@ -136,15 +145,18 @@ export const setHost = async (
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
     console.log(responseData)
-    updateBreaks([responseToBreak(responseData)])
+    updateBreaks([responseToBreak(responseData)], [])
     setLoadingCard(false)
 }
 
 export const setHoliday = async (
     user: User,
     id: number,
-    reason: string,
-    updateBreaks: (breaks: CookieBreak[]) => void,
+    reason: string | undefined,
+    updateBreaks: (
+        breaksToAdd: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => void,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/holiday`
@@ -159,6 +171,24 @@ export const setHoliday = async (
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
     console.log(responseData)
-    updateBreaks([responseToBreak(responseData)])
+    updateBreaks([responseToBreak(responseData)], [])
     setLoadingCard(false)
+}
+
+export const deleteBreak = async (
+    user: User,
+    cb: CookieBreak,
+    updateBreaks: (
+        breaksToAdd: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => void,
+    setLoadingCard: Dispatch<SetStateAction<boolean>>
+) => {
+    let endpoint = `/api/breaks/${cb.id}`
+    let config = {
+        headers: headers(user.token),
+    }
+    setLoadingCard(true)
+    await axios.delete(endpoint, config)
+    updateBreaks([], [cb])
 }

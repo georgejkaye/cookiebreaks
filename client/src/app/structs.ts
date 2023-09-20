@@ -21,11 +21,14 @@ export interface CookieBreak {
 
 export const replaceBreaks = (
     oldBreaks: CookieBreak[],
-    newBreaks: CookieBreak[]
+    newBreaks: CookieBreak[],
+    breaksToRemove: CookieBreak[]
 ) =>
-    oldBreaks.map(
-        (old) => newBreaks.find((newBreak) => newBreak.id === old.id) || old
-    )
+    oldBreaks
+        .map(
+            (old) => newBreaks.find((newBreak) => newBreak.id === old.id) || old
+        )
+        .filter((cb) => !breaksToRemove.includes(cb))
 
 export const getDateString = (datetime: Date) => {
     let weekday = datetime.toLocaleDateString("en-GB", {

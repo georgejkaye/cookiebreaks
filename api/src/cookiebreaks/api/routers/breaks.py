@@ -10,6 +10,7 @@ from cookiebreaks.core.database import (
     insert_host,
     mask_host,
     reimburse_host,
+    remove_break,
     set_holiday,
 )
 from cookiebreaks.api.routers.users import get_current_user, is_admin
@@ -100,7 +101,17 @@ async def reimburse_break(
     summary="Set a cookie break to be a holiday with a specified reason",
 )
 async def post_holiday(
-    current_user: Annotated[User, Depends(is_admin)], break_id: int, reason: str
+    current_user: Annotated[User, Depends(is_admin)],
+    break_id: int,
+    reason: Optional[str] = None,
 ):
     changed_break = set_holiday(break_id, reason)
     return break_internal_to_external(changed_break, current_user)
+
+
+@router.delete("/{break_id}", response_model=None, summary="Delete a cookie break")
+async def delete_break(
+    current_user: Annotated[User, Depends(is_admin)],
+    break_id: int,
+):
+    remove_break(break_id)
