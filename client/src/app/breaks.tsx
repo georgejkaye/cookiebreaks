@@ -1,5 +1,11 @@
-import React, { useRef, useState } from "react"
-import { announceBreak, reimburseBreak, setHoliday, setHost } from "./api"
+import React, { Dispatch, SetStateAction, useRef, useState } from "react"
+import {
+    announceBreak,
+    deleteBreak,
+    reimburseBreak,
+    setHoliday,
+    setHost,
+} from "./api"
 import {
     getDatetimeText,
     User,
@@ -13,12 +19,12 @@ import Loader from "./loader"
 
 const SmallIcon = (props: {
     icon: string
-    styles: string
+    styles?: string
     title: string
     alt: string
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
 }) => {
-    let style = `${props.styles}  ${
+    let style = `${props.styles ? props.styles : ""} ${
         props.onClick ? " cursor-pointer hover:bg-gray-300 rounded-full" : ""
     }`
     return (
@@ -62,16 +68,20 @@ const BreakIcon = (props: {
 
 const BreakIcons = (props: {
     cb: CookieBreak
-    updateBreaks: (breaks: CookieBreak[]) => void
+    updateBreaks: (
+        breaksToAdd: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => void
     user: User | undefined
     pastBreak: boolean
+    setLoadingCard: Dispatch<SetStateAction<boolean>>
 }) => {
     const [isLoadingCard, setLoadingCard] = useState(false)
     return (
         <div
             className={`flex ${
-                props.user?.admin ? "w-full desktop:w-1/6" : ""
-            } items-center justify-center`}
+                props.user?.admin ? "w-full desktop:w-1/5" : ""
+            }`}
         >
             {props.cb.holiday ? (
                 ""
@@ -159,7 +169,10 @@ const BreakIcons = (props: {
 const BreakCard = (props: {
     user: User | undefined
     cb: CookieBreak
-    updateBreaks: (breaks: CookieBreak[]) => void
+    updateBreaks: (
+        breaksToAdd: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => void
 }) => {
     let hasPassed = dateInPast(props.cb.datetime)
     let isHoliday = props.cb.holiday !== null
@@ -222,15 +235,37 @@ const BreakCard = (props: {
             discardContentText()
         }
     }
+    const onClickHoliday = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (props.user) {
+            let reason = props.cb.holiday ? undefined : "Holiday"
+            setHoliday(
+                props.user,
+                props.cb.id,
+                reason,
+                props.updateBreaks,
+                setContentLoading
+            )
+        }
+    }
+    const onClickDelete = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (props.user) {
+            deleteBreak(
+                props.user,
+                props.cb,
+                props.updateBreaks,
+                setContentLoading
+            )
+        }
+    }
     return (
         <div
-            className={`flex w-3/4 desktop:w-content tablet:w-tabletContent flex-wrap border-4 m-5 p-1 px-5 mx-auto items-center justify-center ${cardColour}`}
+            className={`flex w-3/4 desktop:w-content tablet:w-tabletContent flex-wrap border-4 m-5 p-1 px-2 mx-auto items-center justify-center ${cardColour}`}
         >
             <div className="w-full tablet:w-1/2 my-2 desktop:mx-0 desktop:w-1/3 text-center font-bold">
                 {getCookieBreakDate(props.cb)}, {getCookieBreakTime(props.cb)}
             </div>
             <div
-                className={`flex-1 desktop:mx-0 text-center px-5`}
+                className={`flex-1 desktop:mx-0 text-center px-2`}
                 onClick={onClickText}
             >
                 {contentLoading ? (
@@ -273,7 +308,34 @@ const BreakCard = (props: {
                 updateBreaks={props.updateBreaks}
                 user={props.user}
                 pastBreak={hasPassed}
+                setLoadingCard={setContentLoading}
             />
+            {!props.user?.admin ? (
+                ""
+            ) : (
+                <div className="ml-auto flex flex-row w-16 justify-end">
+                    {dateInPast(props.cb.datetime) ? (
+                        ""
+                    ) : (
+                        <SmallIcon
+                            icon={props.cb.holiday ? "landing" : "takeoff"}
+                            title={
+                                props.cb.holiday
+                                    ? "Unset holiday"
+                                    : "Set holiday"
+                            }
+                            alt="Beach umbrella"
+                            onClick={onClickHoliday}
+                        />
+                    )}
+                    <SmallIcon
+                        icon="bin"
+                        title="Delete break"
+                        alt="Bin"
+                        onClick={onClickDelete}
+                    />
+                </div>
+            )}
         </div>
     )
 }
@@ -282,7 +344,10 @@ export const BreakCards = (props: {
     title: string
     user: User | undefined
     breaks: CookieBreak[]
-    updateBreaks: (breaks: CookieBreak[]) => void
+    updateBreaks: (
+        breaksToAdd: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => void
     isLoadingBreaks: boolean
     reverseBreaks: boolean
 }) => {

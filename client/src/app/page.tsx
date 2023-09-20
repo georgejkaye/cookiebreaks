@@ -35,8 +35,10 @@ const Home = () => {
         setUpcomingBreaks(getFutureBreaks(breaks))
         setOutstandingBreaks(getOutstandingBreaks(breaks))
     }, [breaks])
-    const updateBreaks = (newBreaks: CookieBreak[]) =>
-        setBreaks(replaceBreaks(breaks, newBreaks))
+    const updateBreaks = (
+        newBreaks: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => setBreaks(replaceBreaks(breaks, newBreaks, breaksToRemove))
     return (
         <>
             <main className={`text-fg ${manrope.className}`}>
