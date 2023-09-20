@@ -79,12 +79,12 @@ def insert_host(break_host: str | None, break_id: int) -> None:
     return row_to_break(row)
 
 
-def reimburse_and_mask_host(break_id: int, cost: float) -> Break:
+def reimburse_host(break_id: int, cost: float) -> Break:
     (conn, cur) = connect()
     statement = """
         UPDATE break
         SET
-            break_host = null, break_cost = %(cost)s,
+            break_cost = %(cost)s,
             host_reimbursed = DATE_TRUNC('minute', NOW())
         WHERE break_id = %(id)s
         RETURNING *

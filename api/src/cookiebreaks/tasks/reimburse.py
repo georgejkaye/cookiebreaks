@@ -1,4 +1,4 @@
-from cookiebreaks.core.database import reimburse_and_mask_host
+from cookiebreaks.core.database import reimburse_host
 from cookiebreaks.core.structs import BreakFilters, format_as_price
 from cookiebreaks.cli.interactive import select_break
 
@@ -26,7 +26,7 @@ def reimburse():
             print("Aborting...")
             exit(0)
         else:
-            reimburse_and_mask_host(chosen_break.id, cost)
+            reimburse_host(chosen_break.id, cost)
 
 
 if __name__ == "__main__":

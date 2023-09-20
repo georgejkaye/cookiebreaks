@@ -8,7 +8,7 @@ from cookiebreaks.api.routers.utils import (
 from cookiebreaks.core.database import (
     get_break_objects,
     insert_host,
-    reimburse_and_mask_host,
+    reimburse_host,
     set_holiday,
 )
 from cookiebreaks.api.routers.users import get_current_user, is_admin
@@ -77,7 +77,7 @@ async def announce_break(
 async def reimburse_host(
     current_user: Annotated[User, Depends(is_admin)], break_id: int, cost: float
 ):
-    reimbursed_break = reimburse_and_mask_host(break_id, cost)
+    reimbursed_break = reimburse_host(break_id, cost)
     return break_internal_to_external(reimbursed_break, current_user)
 
 
