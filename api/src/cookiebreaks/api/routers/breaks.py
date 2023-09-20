@@ -100,7 +100,9 @@ async def reimburse_break(
     summary="Set a cookie break to be a holiday with a specified reason",
 )
 async def post_holiday(
-    current_user: Annotated[User, Depends(is_admin)], break_id: int, reason: str
+    current_user: Annotated[User, Depends(is_admin)],
+    break_id: int,
+    reason: Optional[str] = None,
 ):
     changed_break = set_holiday(break_id, reason)
     return break_internal_to_external(changed_break, current_user)
