@@ -266,7 +266,7 @@ def insert_missing_breaks() -> None:
                 SELECT days
                 FROM generate_series(
                     CURRENT_DATE + TIME %(time)s,
-                    CURRENT_DATE + TIME %(time)s + INTERVAL '%(max)s weeks',
+                    CURRENT_DATE + TIME %(time)s + INTERVAL %(max)s,
                     '1 day'
                 ) AS days
                 WHERE EXTRACT(DOW from days) = %(day)s
@@ -279,8 +279,8 @@ def insert_missing_breaks() -> None:
         {
             "location": get_env_variable("BREAK_LOCATION"),
             "time": get_env_variable("BREAK_TIME"),
-            "max": get_env_variable("BREAK_MAX"),
-            "day": get_env_variable("BREAK_DAY"),
+            "max": f"{get_env_variable('BREAK_MAX')} weeks",
+            "day": int(get_env_variable("BREAK_DAY")) + 1,
         },
     )
     conn.commit()
