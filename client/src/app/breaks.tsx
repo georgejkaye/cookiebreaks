@@ -289,7 +289,7 @@ const BreakCard = (props: {
                             ref={contentTextRef}
                             autoFocus
                             type="text"
-                            className="w-full text-center mx-2"
+                            className="w-full text-center mx-2 text-sm"
                             placeholder={placeholderText}
                             onKeyDown={onKeyDownContentText}
                         />
