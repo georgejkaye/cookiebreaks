@@ -198,7 +198,7 @@ const BreakCard = (props: {
     let clickableStyle = clickable
         ? "cursor-pointer hover:bg-gray-300/50 rounded-md"
         : ""
-
+    let placeholderText = isHoliday ? "Holiday" : "Host required"
     const onClickText = (e: React.MouseEvent<HTMLDivElement>) => {
         if (clickable) {
             setEditingText(true)
@@ -290,7 +290,7 @@ const BreakCard = (props: {
                             autoFocus
                             type="text"
                             className="w-full text-center mx-2"
-                            placeholder="Host required"
+                            placeholder={placeholderText}
                             onKeyDown={onKeyDownContentText}
                         />
                         <SmallIcon
