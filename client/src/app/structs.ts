@@ -59,8 +59,6 @@ export const getCookieBreakTime = (cb: CookieBreak) =>
 export const getFutureBreaks = (cbs: CookieBreak[]) => {
     let date = new Date()
     date.setHours(0, 0, 0, 0)
-    console.log(cbs)
-    console.log(date)
     return cbs.filter((cb) => cb.datetime.getTime() > date.getTime())
 }
 export const getOutstandingBreaks = (cbs: CookieBreak[]) =>

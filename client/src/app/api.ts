@@ -144,7 +144,6 @@ export const setHost = async (
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
-    console.log(responseData)
     updateBreaks([responseToBreak(responseData)], [])
     setLoadingCard(false)
 }
@@ -170,7 +169,6 @@ export const setHoliday = async (
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
-    console.log(responseData)
     updateBreaks([responseToBreak(responseData)], [])
     setLoadingCard(false)
 }
