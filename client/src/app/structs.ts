@@ -19,6 +19,13 @@ export interface CookieBreak {
     success?: Date
 }
 
+export const breakInPast = (cb : CookieBreak) => dateInPast(cb.datetime)
+
+export type UpdateBreaksFn = (
+    breaksToAdd: CookieBreak[],
+    breaksToRemove: CookieBreak[]
+) => void
+
 export const replaceBreaks = (
     oldBreaks: CookieBreak[],
     newBreaks: CookieBreak[],
