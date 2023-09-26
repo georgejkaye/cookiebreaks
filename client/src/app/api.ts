@@ -1,6 +1,6 @@
 import axios from "axios"
 import { Dispatch, SetStateAction } from "react"
-import { CookieBreak, User } from "./structs"
+import { CookieBreak, UpdateBreaksFn, User } from "./structs"
 
 const dateOrUndefined = (datetime: string | undefined) =>
     datetime ? new Date(datetime) : undefined
@@ -77,10 +77,7 @@ const headers = (token: string) => ({
 export const announceBreak = async (
     user: User,
     id: number,
-    updateBreaks: (
-        breaksToAdd: CookieBreak[],
-        breaksToRemove: CookieBreak[]
-    ) => void,
+    updateBreaks: UpdateBreaksFn,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/announce`
@@ -101,10 +98,7 @@ export const reimburseBreak = async (
     user: User,
     id: number,
     cost: number,
-    updateBreaks: (
-        breaksToAdd: CookieBreak[],
-        breaksToRemove: CookieBreak[]
-    ) => void,
+    updateBreaks: UpdateBreaksFn,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/reimburse`
@@ -126,10 +120,7 @@ export const setHost = async (
     user: User,
     id: number,
     host: string,
-    updateBreaks: (
-        breaksToAdd: CookieBreak[],
-        breaksToRemove: CookieBreak[]
-    ) => void,
+    updateBreaks: UpdateBreaksFn,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let actualHost = host === "" ? undefined : host
@@ -152,10 +143,7 @@ export const setHoliday = async (
     user: User,
     id: number,
     reason: string | undefined,
-    updateBreaks: (
-        breaksToAdd: CookieBreak[],
-        breaksToRemove: CookieBreak[]
-    ) => void,
+    updateBreaks: UpdateBreaksFn,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/holiday`
@@ -176,10 +164,7 @@ export const setHoliday = async (
 export const deleteBreak = async (
     user: User,
     cb: CookieBreak,
-    updateBreaks: (
-        breaksToAdd: CookieBreak[],
-        breaksToRemove: CookieBreak[]
-    ) => void,
+    updateBreaks: UpdateBreaksFn,
     setLoadingCard: Dispatch<SetStateAction<boolean>>
 ) => {
     let endpoint = `/api/breaks/${cb.id}`

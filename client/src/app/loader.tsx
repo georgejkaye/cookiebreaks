@@ -11,10 +11,8 @@ export const Loader = (props: { margin?: number; size?: number }) => {
                 border: `${size} solid ${colour}`,
                 borderTop: `${size} solid ${colourSpin}`,
                 borderRadius: "50%",
-                width: size,
-                height: size,
             }}
-            className={`${styles.loader} mx-auto`}
+            className={`${styles.loader} p-2 m-2 mx-auto h-${size}`}
         />
     )
 }
