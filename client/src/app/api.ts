@@ -66,7 +66,7 @@ export const getBreaks = async (
     let data = response.data
     let breaks = data.map(responseToBreak)
     setBreaks(breaks)
-    setLoadingBreaks(false)
+    setTimeout(() => setLoadingBreaks(false), 1)
 }
 
 const headers = (token: string) => ({
@@ -91,7 +91,7 @@ export const announceBreak = async (
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
     updateBreaks([responseToBreak(responseData)], [])
-    setLoadingCard(false)
+    setTimeout(() => setLoadingCard(false), 1)
 }
 
 export const reimburseBreak = async (
@@ -113,7 +113,7 @@ export const reimburseBreak = async (
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
     updateBreaks([responseToBreak(responseData)], [])
-    setLoadingCard(false)
+    setTimeout(() => setLoadingCard(false), 1)
 }
 
 export const setHost = async (
@@ -136,7 +136,7 @@ export const setHost = async (
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
     updateBreaks([responseToBreak(responseData)], [])
-    setLoadingCard(false)
+    setTimeout(() => setLoadingCard(false), 1)
 }
 
 export const setHoliday = async (
@@ -158,7 +158,7 @@ export const setHoliday = async (
     let response = await axios.post(endpoint, null, config)
     let responseData = response.data
     updateBreaks([responseToBreak(responseData)], [])
-    setLoadingCard(false)
+    setTimeout(() => setLoadingCard(false), 1)
 }
 
 export const deleteBreak = async (
@@ -174,4 +174,5 @@ export const deleteBreak = async (
     setLoadingCard(true)
     await axios.delete(endpoint, config)
     updateBreaks([], [cb])
+    setTimeout(() => setLoadingCard(false), 1)
 }
