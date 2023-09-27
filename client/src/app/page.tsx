@@ -63,7 +63,7 @@ const Home = () => {
                         reverseBreaks={true}
                     />
                 )}
-                <div className="text-center">
+                <div className="text-center m-5">
                     This tool is in{" "}
                     <span className="text-red-600 font-bold">beta</span>! Please
                     report any bugs or suggestions on{" "}

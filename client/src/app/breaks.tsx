@@ -142,8 +142,7 @@ const BreakContent = (props: {
             setEditingText(true)
         }
     }
-    let breakContentStyle =
-        "w-full m-2 flex flex-row justify-center items-center"
+    let breakContentStyle = "w-full flex flex-row justify-center items-center"
     return (
         <div className={breakContentStyle}>
             {!editingText ? (
@@ -168,7 +167,7 @@ const BreakContent = (props: {
 
 const BreakDate = (props: { cb: CookieBreak }) => {
     let dateStyle =
-        "w-full tablet:w-2/3 my-2 desktop:mx-0 text-center font-bold"
+        "w-full tablet:w-2/3 desktop:my-2 desktop:mx-0 text-center font-bold"
     return (
         <div className={dateStyle}>
             {getCookieBreakDate(props.cb)}, {getCookieBreakTime(props.cb)}
@@ -183,7 +182,7 @@ const BreakDetails = (props: {
     setCardLoading: SetStateBoolean
 }) => {
     let detailsStyle =
-        "flex flex-col tablet:flex-row justify-center " +
+        "flex flex-col tablet:flex-row " +
         "items-center flex-1 w-full desktop:w-2/3"
     return (
         <div className={detailsStyle}>
@@ -224,16 +223,18 @@ const AdminIcons = (props: {
 }
 
 const BreakCard = (props: {
+    index: number
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
 }) => {
-    let cardColour = props.cb.holiday ? "bg-gray-300" : "bg-white"
-    let cardHeight = props.user?.admin ? "h-40 desktop:h-16" : "desktop:h-16"
+    let cardColour = props.cb.holiday ? "bg-gray-200" : "bg-white"
+    let cardHeight = props.user?.admin ? "h-36 desktop:h-16" : "desktop:h-16"
+    let border = props.index === 0 ? "border-y-2" : "border-b-2"
     let cardStyle =
         `flex w-3/4 desktop:w-content flex-col desktop:flex-row ` +
-        `tablet:w-tabletContent border-4 m-5 p-1 px-2 mx-auto align-center ` +
-        `items-center ${cardColour} ${cardHeight}`
+        `tablet:w-tabletContent py-4 px-2 mx-auto align-center ` +
+        `items-center ${cardColour} ${cardHeight} ${border}`
     const [contentLoading, setCardLoading] = useState(false)
     return (
         <div className={cardStyle}>
@@ -281,8 +282,9 @@ export const BreakCards = (props: {
                     <Loader size={10} />
                 </div>
             ) : (
-                props.breaks.map((cb) => (
+                props.breaks.map((cb, i) => (
                     <BreakCard
+                        index={i}
                         user={props.user}
                         key={cb.id}
                         cb={cb}
