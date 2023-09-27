@@ -19,7 +19,7 @@ export interface CookieBreak {
     success?: Date
 }
 
-export const breakInPast = (cb : CookieBreak) => dateInPast(cb.datetime)
+export const breakInPast = (cb: CookieBreak) => dateInPast(cb.datetime)
 
 export type UpdateBreaksFn = (
     breaksToAdd: CookieBreak[],
@@ -68,8 +68,13 @@ export const getFutureBreaks = (cbs: CookieBreak[]) => {
     date.setHours(0, 0, 0, 0)
     return cbs.filter((cb) => cb.datetime.getTime() > date.getTime())
 }
-export const getOutstandingBreaks = (cbs: CookieBreak[]) =>
-    cbs.filter((cb) => !cb.success && cb.datetime.getTime() <= Date.now())
+export const getOutstandingBreaks = (cbs: CookieBreak[]) => {
+    let date = new Date()
+    date.setHours(0, 0, 0, 0)
+    return cbs.filter(
+        (cb) => !cb.success && cb.datetime.getTime() < date.getTime()
+    )
+}
 
 export interface User {
     user: string
