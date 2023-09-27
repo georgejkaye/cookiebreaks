@@ -96,8 +96,10 @@ export const BreakControlIcons = (props: {
             )
         }
     }
+    let iconStyle =
+        "flex flex-row desktop:ml-auto w-16 desktop:justify-end justify-center"
     return (
-        <div className="flex flex-row desktop:ml-auto w-16 desktop:justify-end">
+        <div className={iconStyle}>
             {dateInPast(props.cb.datetime) ? (
                 ""
             ) : (
@@ -110,7 +112,6 @@ export const BreakControlIcons = (props: {
                 />
             )}
             <SmallIcon
-                styles="ml-auto"
                 icon="bin"
                 title="Delete break"
                 alt="Bin"
