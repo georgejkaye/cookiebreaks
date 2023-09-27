@@ -143,7 +143,7 @@ const BreakContent = (props: {
         }
     }
     let breakContentStyle =
-        "w-full m-2 h-8 flex flex-row justify-center items-center"
+        "w-full m-2 flex flex-row justify-center items-center"
     return (
         <div className={breakContentStyle}>
             {!editingText ? (
@@ -232,14 +232,13 @@ const BreakCard = (props: {
     let cardColour = props.cb.holiday ? "bg-gray-300" : "bg-white"
     let cardStyle =
         `flex w-3/4 desktop:w-content flex-col desktop:flex-row ` +
-        `tablet:w-tabletContent border-4 m-5 p-1 px-2 mx-auto align-center ` +
+        `tablet:w-tabletContent border-4 m-5 p-1 px-2 mx-auto align-center h-16 ` +
         `items-center ${cardColour}`
-
     const [contentLoading, setCardLoading] = useState(false)
     return (
         <div className={cardStyle}>
             {contentLoading ? (
-                <Loader size={8} />
+                <Loader size={10} />
             ) : (
                 <>
                     <BreakDetails
