@@ -1,18 +1,18 @@
 import styles from "./loader.module.css"
 
-export const Loader = (props: { margin?: number; size?: number }) => {
-    let size = `${props.size ? props.size : 25}px`
-    let margin = props.margin ? `m-${props.margin}` : ""
+export const Loader = (props: { size?: number }) => {
     let colour = "#f3f3f3"
     let colourSpin = "#3498db"
     return (
         <div
             style={{
-                border: `${size} solid ${colour}`,
-                borderTop: `${size} solid ${colourSpin}`,
+                border: `5px solid ${colour}`,
+                borderTop: `5px solid ${colourSpin}`,
                 borderRadius: "50%",
+                width: props.size ? props.size : 10,
+                height: props.size ? props.size : 10,
             }}
-            className={`${styles.loader} p-2 m-2 mx-auto h-${size}`}
+            className={`${styles.loader} p-2 m-2 mx-auto`}
         />
     )
 }
