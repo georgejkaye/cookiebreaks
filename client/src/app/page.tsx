@@ -33,7 +33,7 @@ const Home = () => {
     }, [])
     useEffect(() => {
         setUpcomingBreaks(getFutureBreaks(breaks))
-        setOutstandingBreaks(getOutstandingBreaks(breaks))
+        setOutstandingBreaks(getOutstandingBreaks(breaks).reverse())
     }, [breaks])
     const updateBreaks = (
         newBreaks: CookieBreak[],

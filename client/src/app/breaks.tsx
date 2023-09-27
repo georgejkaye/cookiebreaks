@@ -271,9 +271,6 @@ export const BreakCards = (props: {
     isLoadingBreaks: boolean
     reverseBreaks: boolean
 }) => {
-    const breakList = props.reverseBreaks
-        ? props.breaks.reverse()
-        : props.breaks
     return (
         <>
             <div className="text-xl font-bold text-center m-5">
@@ -284,10 +281,10 @@ export const BreakCards = (props: {
                     <Loader size={10} />
                 </div>
             ) : (
-                breakList.map((cb) => (
+                props.breaks.map((cb) => (
                     <BreakCard
                         user={props.user}
-                        key={`${cb.id}`}
+                        key={cb.id}
                         cb={cb}
                         updateBreaks={props.updateBreaks}
                     />
