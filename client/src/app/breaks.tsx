@@ -204,8 +204,7 @@ const AdminIcons = (props: {
     updateBreaks: UpdateBreaksFn
     setCardLoading: SetStateBoolean
 }) => {
-    let adminIconsStyle =
-        "my-2 desktop:my-0 desktop:w-1/4 flex flex-row flex-end"
+    let adminIconsStyle = "desktop:my-0 desktop:w-1/4 flex flex-row flex-end"
     return (
         <div className={adminIconsStyle}>
             <BreakStatusIcons
@@ -230,10 +229,11 @@ const BreakCard = (props: {
     updateBreaks: UpdateBreaksFn
 }) => {
     let cardColour = props.cb.holiday ? "bg-gray-300" : "bg-white"
+    let cardHeight = props.user?.admin ? "h-40 desktop:h-16" : "desktop:h-16"
     let cardStyle =
         `flex w-3/4 desktop:w-content flex-col desktop:flex-row ` +
-        `tablet:w-tabletContent border-4 m-5 p-1 px-2 mx-auto align-center h-16 ` +
-        `items-center ${cardColour}`
+        `tablet:w-tabletContent border-4 m-5 p-1 px-2 mx-auto align-center ` +
+        `items-center ${cardColour} ${cardHeight}`
     const [contentLoading, setCardLoading] = useState(false)
     return (
         <div className={cardStyle}>
