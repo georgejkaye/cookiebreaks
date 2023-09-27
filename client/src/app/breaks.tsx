@@ -147,7 +147,7 @@ const BreakContent = (props: {
         <div className={breakContentStyle}>
             {!editingText ? (
                 <span
-                    className={`p-2 ${clickableStyle} ${contentTextStyle}`}
+                    className={`p-2 m-1 ${clickableStyle} ${contentTextStyle}`}
                     onClick={onClickText}
                 >
                     {contentText}
@@ -182,7 +182,7 @@ const BreakDetails = (props: {
     setCardLoading: SetStateBoolean
 }) => {
     let detailsStyle =
-        "flex flex-col tablet:flex-row " +
+        "flex flex-col justify-around tablet:flex-row " +
         "items-center flex-1 w-full desktop:w-2/3"
     return (
         <div className={detailsStyle}>
