@@ -53,7 +53,7 @@ export const TickCrossInputBox = (props: {
         }
     }
     const divStyle = `flex-1 flex flex-row items-center ${props.divStyle}`
-    const inputStyle = `flex-1 text-center mx-2 py-2 ${props.inputStyle}`
+    const inputStyle = `flex-1 text-center m-2 py-2 ${props.inputStyle}`
     return (
         <div className={divStyle}>
             <SmallIcon
@@ -212,7 +212,7 @@ const AdminIcons = (props: {
     setCardLoading: SetState<boolean>
 }) => {
     let adminIconsStyle =
-        "h-12 desktop:my-0 desktop:w-1/4 flex flex-row flex-end"
+        "h-12 desktop:my-0 w-full justify-center items-center desktop:w-1/4 flex flex-row desktop:flex-end"
     return (
         <div className={adminIconsStyle}>
             <BreakStatusIcons

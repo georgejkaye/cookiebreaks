@@ -7,9 +7,9 @@ import {
     dateInPast,
     getDatetimeText,
 } from "./structs"
-import { Dispatch, SetStateAction, useState } from "react"
+import { Dispatch, SetStateAction, useRef, useState } from "react"
 import { setHoliday, deleteBreak, announceBreak, reimburseBreak } from "./api"
-import { SetState } from "./breaks"
+import { SetState, TickCrossInputBox } from "./breaks"
 
 export const SmallIcon = (props: {
     icon: string
@@ -52,7 +52,7 @@ export const BreakIcon = (props: {
         props.datetime && dateInPast(props.datetime)
             ? "opacity-100"
             : "opacity-25"
-    let style = `my-2 desktop:m-0 ${opacity}`
+    let style = `desktop:m-0 ${opacity}`
     return (
         <SmallIcon
             styles={style}
@@ -96,8 +96,7 @@ export const BreakControlIcons = (props: {
             )
         }
     }
-    let iconStyle =
-        "flex flex-row desktop:ml-auto w-16 desktop:justify-end justify-center"
+    let iconStyle = "flex flex-row w-16 desktop:justify-end justify-center"
     return (
         <div className={iconStyle}>
             {dateInPast(props.cb.datetime) ? (
@@ -167,28 +166,11 @@ const ReimburseIcon = (props: {
     cb: CookieBreak
     user: User | undefined
     updateBreaks: UpdateBreaksFn
-    setCardLoading: Dispatch<SetStateAction<boolean>>
+    setCardLoading: SetState<boolean>
+    setReimbursing: () => void
 }) => {
     const onClickReimburse = () => {
-        let cost = prompt("Break cost?")
-        if (!cost) {
-            alert("Invalid cost!")
-        } else {
-            let costFloat = parseFloat(cost)
-            if (isNaN(costFloat)) {
-                alert("Invalid cost!")
-            } else {
-                props.user
-                    ? reimburseBreak(
-                          props.user,
-                          props.cb.id,
-                          costFloat,
-                          props.updateBreaks,
-                          props.setCardLoading
-                      )
-                    : undefined
-            }
-        }
+        props.setReimbursing()
     }
     return (
         <BreakIcon
@@ -229,18 +211,59 @@ const SuccessIcon = (props: { cb: CookieBreak }) => {
     )
 }
 
+const ReimburseHostBox = (props: {
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    user: User | undefined
+    setCardLoading: SetState<boolean>
+    setMode: SetState<StatusIconsMode>
+}) => {
+    const onClickConfirmReimburse = (text: string) => {
+        if (props.user) {
+            let amount = parseFloat(text)
+            reimburseBreak(
+                props.user,
+                props.cb.id,
+                amount,
+                props.updateBreaks,
+                props.setCardLoading
+            )
+        }
+        props.setMode(StatusIconsMode.Normal)
+    }
+    const onClickCloseReimburse = (text: string) => {
+        props.setMode(StatusIconsMode.Normal)
+    }
+    return (
+        <TickCrossInputBox
+            onClickClose={onClickCloseReimburse}
+            onClickConfirm={onClickConfirmReimburse}
+            divStyle=""
+            inputStyle="text-sm h-5"
+            placeholder={"Cost"}
+            size={7}
+        />
+    )
+}
+
+enum StatusIconsMode {
+    Normal,
+    Reimburse,
+}
+
 export const BreakStatusIcons = (props: {
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     user: User | undefined
     setCardLoading: Dispatch<SetStateAction<boolean>>
 }) => {
-    let iconBoxStyle = `flex ${!props.cb.holiday ? "mr-4 desktop:mr-auto" : ""}`
+    let iconBoxStyle = `flex mr-4 w-40 h-10 justify-center`
+    const [mode, setMode] = useState(StatusIconsMode.Normal)
     return (
         <div className={iconBoxStyle}>
             {props.cb.holiday || !props.user?.admin ? (
                 ""
-            ) : (
+            ) : mode === StatusIconsMode.Normal ? (
                 <>
                     <AnnounceIcon
                         cb={props.cb}
@@ -254,10 +277,21 @@ export const BreakStatusIcons = (props: {
                         updateBreaks={props.updateBreaks}
                         user={props.user}
                         setCardLoading={props.setCardLoading}
+                        setReimbursing={() =>
+                            setMode(StatusIconsMode.Reimburse)
+                        }
                     />
                     <ClaimIcon cb={props.cb} />
                     <SuccessIcon cb={props.cb} />
                 </>
+            ) : (
+                <ReimburseHostBox
+                    user={props.user}
+                    cb={props.cb}
+                    setMode={setMode}
+                    setCardLoading={props.setCardLoading}
+                    updateBreaks={props.updateBreaks}
+                />
             )}
         </div>
     )
