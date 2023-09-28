@@ -19,26 +19,36 @@ import {
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
 export const TickCrossInputBox = (props: {
-    onClickClose: () => void
-    onClickConfirm: () => void
+    onClickClose: (text: string) => void
+    onClickConfirm: (text: string) => void
     divStyle: string
     inputStyle: string
-    inputRef: React.MutableRefObject<HTMLInputElement | null>
     placeholder: string
 }) => {
+    const inputRef = useRef<HTMLInputElement | null>(null)
+    const closeText = () => {
+        if (inputRef.current) {
+            props.onClickClose(inputRef.current.value)
+        }
+    }
+    const confirmText = () => {
+        if (inputRef.current) {
+            props.onClickConfirm(inputRef.current.value)
+        }
+    }
     const onClickCloseText = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation()
-        props.onClickClose()
+        closeText()
     }
     const onClickConfirmText = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation()
-        props.onClickConfirm()
+        confirmText()
     }
     const onKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
-            props.onClickConfirm()
+            confirmText()
         } else if (e.key === "Escape") {
-            props.onClickClose()
+            closeText()
         }
     }
     const divStyle = `flex-1 flex flex-row items-center ${props.divStyle}`
@@ -53,7 +63,7 @@ export const TickCrossInputBox = (props: {
                 onClick={onClickCloseText}
             />
             <input
-                ref={props.inputRef}
+                ref={inputRef}
                 className={inputStyle}
                 autoFocus
                 type="text"
@@ -71,36 +81,6 @@ export const TickCrossInputBox = (props: {
     )
 }
 
-const BreakContentInput = (props: {
-    contentRef: React.MutableRefObject<HTMLInputElement | null>
-    user: User | undefined
-    cb: CookieBreak
-    setEditingText: SetState<boolean>
-    setCardLoading: SetState<boolean>
-    updateBreaks: UpdateBreaksFn
-    submitContentText: () => void
-    discardContentText: () => void
-}) => {
-    let placeholderText = props.cb.holiday ? "Holiday" : "Host required"
-    const onKeyDownContentText = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-            props.submitContentText()
-        } else if (e.key === "Escape") {
-            props.discardContentText()
-        }
-    }
-    return (
-        <input
-            ref={props.contentRef}
-            className="flex-1 text-center mx-2 text-sm py-2"
-            autoFocus
-            type="text"
-            placeholder={placeholderText}
-            onKeyDown={onKeyDownContentText}
-        />
-    )
-}
-
 const BreakContentEditor = (props: {
     user: User | undefined
     cb: CookieBreak
@@ -108,16 +88,14 @@ const BreakContentEditor = (props: {
     setEditingText: SetState<boolean>
     setCardLoading: SetState<boolean>
 }) => {
-    const contentTextRef = useRef<HTMLInputElement | null>(null)
     const discardContentText = () => {
         props.setEditingText(false)
     }
-    const submitContentText = () => {
-        if (props.user && contentTextRef.current) {
+    const submitContentText = (text: string) => {
+        if (props.user) {
             let request = props.cb.holiday ? setHoliday : setHost
-            let currentText = contentTextRef.current.value
             let currentValue =
-                props.cb.holiday && currentText === "" ? "Holiday" : currentText
+                props.cb.holiday && text === "" ? "Holiday" : text
             request(
                 props.user,
                 props.cb.id,
@@ -134,7 +112,6 @@ const BreakContentEditor = (props: {
             onClickConfirm={submitContentText}
             divStyle="h=10"
             inputStyle="text-sm"
-            inputRef={contentTextRef}
             placeholder={props.cb.holiday ? "Holiday" : "Host required"}
         />
     )
