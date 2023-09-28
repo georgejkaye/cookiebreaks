@@ -18,6 +18,59 @@ import {
 
 export type SetStateBoolean = React.Dispatch<React.SetStateAction<boolean>>
 
+export const TickCrossInputBox = (props: {
+    onClickClose: () => void
+    onClickConfirm: () => void
+    divStyle: string
+    inputStyle: string
+    inputRef: React.MutableRefObject<HTMLInputElement | null>
+    placeholder: string
+}) => {
+    const onClickCloseText = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation()
+        props.onClickClose()
+    }
+    const onClickConfirmText = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation()
+        props.onClickConfirm()
+    }
+    const onKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            props.onClickConfirm()
+        } else if (e.key === "Escape") {
+            props.onClickClose()
+        }
+    }
+    const divStyle = `flex-1 flex flex-row items-center ${props.divStyle}`
+    const inputStyle = `flex-1 text-center mx-2 py-2 ${props.inputStyle}`
+    return (
+        <div className={divStyle}>
+            <SmallIcon
+                icon="cross"
+                styles=""
+                title="Close"
+                alt="cross"
+                onClick={onClickCloseText}
+            />
+            <input
+                ref={props.inputRef}
+                className={inputStyle}
+                autoFocus
+                type="text"
+                placeholder={props.placeholder}
+                onKeyDown={onKeyDownInput}
+            />
+            <SmallIcon
+                icon="tick"
+                styles=""
+                title="Confirm"
+                alt="tick"
+                onClick={onClickConfirmText}
+            />
+        </div>
+    )
+}
+
 const BreakContentInput = (props: {
     contentRef: React.MutableRefObject<HTMLInputElement | null>
     user: User | undefined
@@ -75,41 +128,15 @@ const BreakContentEditor = (props: {
         }
         props.setEditingText(false)
     }
-    const onClickCloseText = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation()
-        discardContentText()
-    }
-    const onClickConfirmText = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation()
-        submitContentText()
-    }
     return (
-        <div className="flex-1 flex flex-row h-10 items-center">
-            <SmallIcon
-                icon="cross"
-                styles=""
-                title="Close"
-                alt="cross"
-                onClick={onClickCloseText}
-            />
-            <BreakContentInput
-                contentRef={contentTextRef}
-                user={props.user}
-                cb={props.cb}
-                setEditingText={props.setEditingText}
-                setCardLoading={props.setCardLoading}
-                updateBreaks={props.updateBreaks}
-                submitContentText={submitContentText}
-                discardContentText={discardContentText}
-            />
-            <SmallIcon
-                icon="tick"
-                styles=""
-                title="Confirm"
-                alt="tick"
-                onClick={onClickConfirmText}
-            />
-        </div>
+        <TickCrossInputBox
+            onClickClose={discardContentText}
+            onClickConfirm={submitContentText}
+            divStyle="h=10"
+            inputStyle="text-sm"
+            inputRef={contentTextRef}
+            placeholder={props.cb.holiday ? "Holiday" : "Host required"}
+        />
     )
 }
 
