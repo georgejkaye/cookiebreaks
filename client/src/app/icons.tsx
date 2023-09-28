@@ -7,9 +7,9 @@ import {
     dateInPast,
     getDatetimeText,
 } from "./structs"
-import { Dispatch, SetStateAction } from "react"
+import { Dispatch, SetStateAction, useState } from "react"
 import { setHoliday, deleteBreak, announceBreak, reimburseBreak } from "./api"
-import { SetStateBoolean } from "./breaks"
+import { SetState } from "./breaks"
 
 export const SmallIcon = (props: {
     icon: string
@@ -71,7 +71,7 @@ export const BreakControlIcons = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetStateBoolean
+    setCardLoading: SetState<boolean>
 }) => {
     let hoverColour = getHoverColour(props.cb)
     const onClickHoliday = (e: React.MouseEvent<HTMLDivElement>) => {

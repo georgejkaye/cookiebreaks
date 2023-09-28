@@ -1,7 +1,8 @@
-import { SetStateAction, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Modal from "./modal"
 import { login } from "../api"
 import { CookieBreak, User } from "../structs"
+import { SetState } from "../breaks"
 
 export interface LoginData {
     user: string
@@ -15,11 +16,11 @@ const initialLoginFormState = {
 
 export const LoginModal = (props: {
     isOpen: boolean
-    setOpen: React.Dispatch<SetStateAction<boolean>>
-    setUser: React.Dispatch<SetStateAction<User | undefined>>
-    setStatus: React.Dispatch<SetStateAction<string>>
-    setBreaks: React.Dispatch<SetStateAction<CookieBreak[]>>
-    setLoading: React.Dispatch<SetStateAction<boolean>>
+    setOpen: SetState<boolean>
+    setUser: SetState<User | undefined>
+    setStatus: SetState<string>
+    setBreaks: SetState<CookieBreak[]>
+    setLoading: SetState<boolean>
 }) => {
     const focusInputRef = useRef<HTMLInputElement | null>(null)
     const [formState, setFormState] = useState<LoginData>(initialLoginFormState)
@@ -114,9 +115,9 @@ export const LoginModal = (props: {
 
 export const LogoutModal = (props: {
     isOpen: boolean
-    setOpen: React.Dispatch<SetStateAction<boolean>>
+    setOpen: SetState<boolean>
     user: User
-    setUser: React.Dispatch<SetStateAction<User | undefined>>
+    setUser: SetState<User | undefined>
 }) => {
     const onClickLogoutButton = (e: React.MouseEvent<HTMLButtonElement>) => {
         props.setUser(undefined)

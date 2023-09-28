@@ -16,7 +16,7 @@ import {
     getHoverColour,
 } from "./icons"
 
-export type SetStateBoolean = React.Dispatch<React.SetStateAction<boolean>>
+export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
 export const TickCrossInputBox = (props: {
     onClickClose: () => void
@@ -75,8 +75,8 @@ const BreakContentInput = (props: {
     contentRef: React.MutableRefObject<HTMLInputElement | null>
     user: User | undefined
     cb: CookieBreak
-    setEditingText: SetStateBoolean
-    setCardLoading: SetStateBoolean
+    setEditingText: SetState<boolean>
+    setCardLoading: SetState<boolean>
     updateBreaks: UpdateBreaksFn
     submitContentText: () => void
     discardContentText: () => void
@@ -105,8 +105,8 @@ const BreakContentEditor = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setEditingText: SetStateBoolean
-    setCardLoading: SetStateBoolean
+    setEditingText: SetState<boolean>
+    setCardLoading: SetState<boolean>
 }) => {
     const contentTextRef = useRef<HTMLInputElement | null>(null)
     const discardContentText = () => {
@@ -144,7 +144,7 @@ const BreakContent = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetStateBoolean
+    setCardLoading: SetState<boolean>
 }) => {
     const [editingText, setEditingText] = useState(false)
     let isHoliday = props.cb.holiday
@@ -206,7 +206,7 @@ const BreakDetails = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetStateBoolean
+    setCardLoading: SetState<boolean>
 }) => {
     let detailsStyle =
         "flex flex-col justify-around tablet:flex-row " +
@@ -228,7 +228,7 @@ const AdminIcons = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetStateBoolean
+    setCardLoading: SetState<boolean>
 }) => {
     let adminIconsStyle = "desktop:my-0 desktop:w-1/4 flex flex-row flex-end"
     return (
