@@ -1,4 +1,5 @@
-import { SetStateAction, useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
+import { SetState } from "../breaks"
 
 export const Modal = (props: {
     isOpen: boolean
