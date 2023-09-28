@@ -2,7 +2,7 @@ import { SetStateAction, useEffect, useRef, useState } from "react"
 
 export const Modal = (props: {
     isOpen: boolean
-    setOpen: React.Dispatch<SetStateAction<boolean>>
+    setOpen: SetState<boolean>
     style: string
     children: JSX.Element
 }) => {

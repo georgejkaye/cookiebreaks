@@ -16,75 +16,46 @@ import {
     getHoverColour,
 } from "./icons"
 
-export type SetStateBoolean = React.Dispatch<React.SetStateAction<boolean>>
+export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
-const BreakContentInput = (props: {
-    contentRef: React.MutableRefObject<HTMLInputElement | null>
-    user: User | undefined
-    cb: CookieBreak
-    setEditingText: SetStateBoolean
-    setCardLoading: SetStateBoolean
-    updateBreaks: UpdateBreaksFn
-    submitContentText: () => void
-    discardContentText: () => void
+export const TickCrossInputBox = (props: {
+    onClickClose: (text: string) => void
+    onClickConfirm: (text: string) => void
+    divStyle: string
+    inputStyle: string
+    placeholder: string
+    size: number
 }) => {
-    let placeholderText = props.cb.holiday ? "Holiday" : "Host required"
-    const onKeyDownContentText = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-            props.submitContentText()
-        } else if (e.key === "Escape") {
-            props.discardContentText()
+    const inputRef = useRef<HTMLInputElement | null>(null)
+    const closeText = () => {
+        if (inputRef.current) {
+            props.onClickClose(inputRef.current.value)
         }
     }
-    return (
-        <input
-            ref={props.contentRef}
-            className="flex-1 text-center mx-2 text-sm py-2"
-            autoFocus
-            type="text"
-            placeholder={placeholderText}
-            onKeyDown={onKeyDownContentText}
-        />
-    )
-}
-
-const BreakContentEditor = (props: {
-    user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
-    setEditingText: SetStateBoolean
-    setCardLoading: SetStateBoolean
-}) => {
-    const contentTextRef = useRef<HTMLInputElement | null>(null)
-    const discardContentText = () => {
-        props.setEditingText(false)
-    }
-    const submitContentText = () => {
-        if (props.user && contentTextRef.current) {
-            let request = props.cb.holiday ? setHoliday : setHost
-            let currentText = contentTextRef.current.value
-            let currentValue =
-                props.cb.holiday && currentText === "" ? "Holiday" : currentText
-            request(
-                props.user,
-                props.cb.id,
-                currentValue,
-                props.updateBreaks,
-                props.setCardLoading
-            )
+    const confirmText = () => {
+        if (inputRef.current) {
+            props.onClickConfirm(inputRef.current.value)
         }
-        props.setEditingText(false)
     }
     const onClickCloseText = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation()
-        discardContentText()
+        closeText()
     }
     const onClickConfirmText = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation()
-        submitContentText()
+        confirmText()
     }
+    const onKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            confirmText()
+        } else if (e.key === "Escape") {
+            closeText()
+        }
+    }
+    const divStyle = `flex-1 flex flex-row items-center ${props.divStyle}`
+    const inputStyle = `flex-1 text-center m-2 py-2 ${props.inputStyle}`
     return (
-        <div className="flex-1 flex flex-row h-10 items-center">
+        <div className={divStyle}>
             <SmallIcon
                 icon="cross"
                 styles=""
@@ -92,15 +63,14 @@ const BreakContentEditor = (props: {
                 alt="cross"
                 onClick={onClickCloseText}
             />
-            <BreakContentInput
-                contentRef={contentTextRef}
-                user={props.user}
-                cb={props.cb}
-                setEditingText={props.setEditingText}
-                setCardLoading={props.setCardLoading}
-                updateBreaks={props.updateBreaks}
-                submitContentText={submitContentText}
-                discardContentText={discardContentText}
+            <input
+                ref={inputRef}
+                className={inputStyle}
+                autoFocus
+                type="text"
+                placeholder={props.placeholder}
+                onKeyDown={onKeyDownInput}
+                size={props.size}
             />
             <SmallIcon
                 icon="tick"
@@ -113,11 +83,48 @@ const BreakContentEditor = (props: {
     )
 }
 
+const BreakContentEditor = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setEditingText: SetState<boolean>
+    setCardLoading: SetState<boolean>
+}) => {
+    const discardContentText = () => {
+        props.setEditingText(false)
+    }
+    const submitContentText = (text: string) => {
+        if (props.user) {
+            let request = props.cb.holiday ? setHoliday : setHost
+            let currentValue =
+                props.cb.holiday && text === "" ? "Holiday" : text
+            request(
+                props.user,
+                props.cb.id,
+                currentValue,
+                props.updateBreaks,
+                props.setCardLoading
+            )
+        }
+        props.setEditingText(false)
+    }
+    return (
+        <TickCrossInputBox
+            onClickClose={discardContentText}
+            onClickConfirm={submitContentText}
+            divStyle="h=10"
+            inputStyle="text-sm"
+            placeholder={props.cb.holiday ? "Holiday" : "Host required"}
+            size={16}
+        />
+    )
+}
+
 const BreakContent = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetStateBoolean
+    setCardLoading: SetState<boolean>
 }) => {
     const [editingText, setEditingText] = useState(false)
     let isHoliday = props.cb.holiday
@@ -142,7 +149,8 @@ const BreakContent = (props: {
             setEditingText(true)
         }
     }
-    let breakContentStyle = "w-full flex flex-row justify-center items-center"
+    let breakContentStyle =
+        "w-full flex flex-row justify-center items-center mx-4"
     return (
         <div className={breakContentStyle}>
             {!editingText ? (
@@ -179,7 +187,7 @@ const BreakDetails = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetStateBoolean
+    setCardLoading: SetState<boolean>
 }) => {
     let detailsStyle =
         "flex flex-col justify-around tablet:flex-row " +
@@ -201,9 +209,10 @@ const AdminIcons = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetStateBoolean
+    setCardLoading: SetState<boolean>
 }) => {
-    let adminIconsStyle = "desktop:my-0 desktop:w-1/4 flex flex-row flex-end"
+    let adminIconsStyle =
+        "h-12 desktop:my-0 w-full justify-center items-center desktop:w-1/4 flex flex-row desktop:flex-end"
     return (
         <div className={adminIconsStyle}>
             <BreakStatusIcons
