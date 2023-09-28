@@ -24,6 +24,7 @@ export const TickCrossInputBox = (props: {
     divStyle: string
     inputStyle: string
     placeholder: string
+    size: number
 }) => {
     const inputRef = useRef<HTMLInputElement | null>(null)
     const closeText = () => {
@@ -69,6 +70,7 @@ export const TickCrossInputBox = (props: {
                 type="text"
                 placeholder={props.placeholder}
                 onKeyDown={onKeyDownInput}
+                size={props.size}
             />
             <SmallIcon
                 icon="tick"
@@ -113,6 +115,7 @@ const BreakContentEditor = (props: {
             divStyle="h=10"
             inputStyle="text-sm"
             placeholder={props.cb.holiday ? "Holiday" : "Host required"}
+            size={16}
         />
     )
 }
@@ -146,7 +149,8 @@ const BreakContent = (props: {
             setEditingText(true)
         }
     }
-    let breakContentStyle = "w-full flex flex-row justify-center items-center"
+    let breakContentStyle =
+        "w-full flex flex-row justify-center items-center mx-4"
     return (
         <div className={breakContentStyle}>
             {!editingText ? (
@@ -207,7 +211,8 @@ const AdminIcons = (props: {
     updateBreaks: UpdateBreaksFn
     setCardLoading: SetState<boolean>
 }) => {
-    let adminIconsStyle = "desktop:my-0 desktop:w-1/4 flex flex-row flex-end"
+    let adminIconsStyle =
+        "h-12 desktop:my-0 desktop:w-1/4 flex flex-row flex-end"
     return (
         <div className={adminIconsStyle}>
             <BreakStatusIcons
