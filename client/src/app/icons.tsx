@@ -257,7 +257,7 @@ export const BreakStatusIcons = (props: {
     user: User | undefined
     setCardLoading: Dispatch<SetStateAction<boolean>>
 }) => {
-    let iconBoxStyle = `flex mr-4 w-40 h-10 justify-center`
+    let iconBoxStyle = `flex mr-4 desktop:w-40 h-10 justify-center`
     const [mode, setMode] = useState(StatusIconsMode.Normal)
     return (
         <div className={iconBoxStyle}>
