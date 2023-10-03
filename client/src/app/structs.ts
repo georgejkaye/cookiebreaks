@@ -75,6 +75,12 @@ export const getOutstandingBreaks = (cbs: CookieBreak[]) => {
         (cb) => !cb.success && cb.datetime.getTime() < date.getTime()
     )
 }
+export const getBreaksToReimburse = (cbs: CookieBreak[]) =>
+    cbs.filter((cb) => breakInPast(cb) && cb.host && !cb.reimbursed)
+export const getBreaksToClaim = (cbs: CookieBreak[]) =>
+    cbs.filter((cb) => cb.reimbursed && !cb.claimed)
+export const getBreaksToComplete = (cbs: CookieBreak[]) =>
+    cbs.filter((cb) => cb.claimed && !cb.success)
 
 export interface User {
     user: string
