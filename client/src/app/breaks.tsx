@@ -263,7 +263,7 @@ const BreakCard = (props: {
     return (
         <div className={cardStyle} onClick={onSelect}>
             {contentLoading ? (
-                <Loader size={10} />
+                <Loader size={2} styles="h-10 my-1" />
             ) : (
                 <>
                     <BreakDetails
@@ -333,9 +333,7 @@ export const BreakCards = (props: {
                 </div>
             )}
             {props.isLoadingBreaks ? (
-                <div className="m-10">
-                    <Loader size={10} />
-                </div>
+                <Loader size={10} />
             ) : (
                 props.breaks.map((cb, i) => (
                     <BreakCard
