@@ -174,8 +174,7 @@ const BreakContent = (props: {
 }
 
 const BreakDate = (props: { cb: CookieBreak }) => {
-    let dateStyle =
-        "w-full tablet:w-2/3 desktop:my-2 desktop:mx-0 text-center font-bold"
+    let dateStyle = "w-full desktop:my-2 text-center font-bold"
     return (
         <div className={dateStyle}>
             {getCookieBreakDate(props.cb)}, {getCookieBreakTime(props.cb)}
@@ -236,17 +235,33 @@ const BreakCard = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
+    selectable: boolean
+    selected: boolean
+    toggleSelected?: (cb: CookieBreak) => void
 }) => {
-    let cardColour = props.cb.holiday ? "bg-gray-200" : "bg-white"
-    let cardHeight = props.user?.admin ? "h-36 desktop:h-16" : "desktop:h-16"
     let border = props.index === 0 ? "border-y-2" : "border-b-2"
+    let selectableStyles = props.selectable
+        ? "cursor-pointer hover:bg-gray-50"
+        : ""
+    let cardColour = props.cb.holiday
+        ? "bg-gray-200"
+        : props.selected
+        ? "bg-gray-100"
+        : "bg-white"
     let cardStyle =
-        `flex w-3/4 desktop:w-content flex-col desktop:flex-row ` +
-        `tablet:w-tabletContent py-4 px-2 mx-auto align-center ` +
-        `items-center ${cardColour} ${cardHeight} ${border}`
+        `flex w-mobileContent desktop:w-content flex-col desktop:flex-row ` +
+        `tablet:w-tabletContent py-2 px-2 mx-auto align-center ` +
+        `items-center ${cardColour} ${border} ${selectableStyles}`
     const [contentLoading, setCardLoading] = useState(false)
+    const onSelect = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (props.selectable) {
+            if (props.toggleSelected) {
+                props.toggleSelected(props.cb)
+            }
+        }
+    }
     return (
-        <div className={cardStyle}>
+        <div className={cardStyle} onClick={onSelect}>
             {contentLoading ? (
                 <Loader size={10} />
             ) : (
@@ -273,6 +288,11 @@ const BreakCard = (props: {
     )
 }
 
+export interface BreakCardSelector {
+    buttonName: string
+    submitSelection: (cb: CookieBreak[]) => void
+}
+
 export const BreakCards = (props: {
     title: string
     user: User | undefined
@@ -280,12 +300,38 @@ export const BreakCards = (props: {
     updateBreaks: UpdateBreaksFn
     isLoadingBreaks: boolean
     reverseBreaks: boolean
+    buttons?: BreakCardSelector[]
 }) => {
-    return (
+    const [selectedCards, setSelectedCards] = useState<CookieBreak[]>([])
+    const toggleSelected = (cb: CookieBreak) =>
+        selectedCards.includes(cb)
+            ? setSelectedCards(selectedCards.filter((cb1) => cb1 !== cb))
+            : setSelectedCards([...selectedCards, cb])
+    return !props.isLoadingBreaks && props.breaks.length === 0 ? (
+        ""
+    ) : (
         <>
-            <div className="text-xl font-bold text-center m-5">
+            <div className="text-xl font-bold m-5 mb-4 my-10 text-center">
                 {props.title}
             </div>
+            {selectedCards.length === 0 || !props.buttons ? (
+                ""
+            ) : (
+                <div className="text-center">
+                    {props.buttons.map((button) => (
+                        <div>
+                            <button
+                                className="bg-bg2 text-fg2 font-bold p-2 mb-4"
+                                onClick={(e) =>
+                                    button.submitSelection(selectedCards)
+                                }
+                            >
+                                {button.buttonName}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
             {props.isLoadingBreaks ? (
                 <div className="m-10">
                     <Loader size={10} />
@@ -298,6 +344,12 @@ export const BreakCards = (props: {
                         key={cb.id}
                         cb={cb}
                         updateBreaks={props.updateBreaks}
+                        selectable={
+                            props.buttons !== undefined &&
+                            props.buttons.length > 0
+                        }
+                        selected={selectedCards.includes(cb)}
+                        toggleSelected={toggleSelected}
                     />
                 ))
             )}
