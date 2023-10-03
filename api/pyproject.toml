@@ -13,13 +13,13 @@ PyYAML = "^6.0"
 psycopg-binary = "^3.1.9"
 arrow = "^1.2.3"
 icalendar = "^5.0.7"
-fastapi = "^0.99.1"
 uvicorn = "^0.22.0"
 psycopg2 = "^2.9.6"
 python-dotenv = "^1.0.0"
 python-multipart = "^0.0.6"
 python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 passlib = { extras = ["bcrypt"], version = "^1.7.4" }
+fastapi = "^0.103.2"
 
 
 [tool.poetry.group.dev.dependencies]
