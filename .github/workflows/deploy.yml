@@ -1,0 +1,22 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rebuild the docker image
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.KEY }}
+          script_stop: true
+          script: |
+            cd ${{ secrets.PROJECT_ROOT }}
+            git pull
+            sudo docker-compose -f docker-compose.prod.yml up --build -d
