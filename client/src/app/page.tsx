@@ -46,18 +46,26 @@ const Home = () => {
         newBreaks: CookieBreak[],
         breaksToRemove: CookieBreak[]
     ) => setBreaks(replaceBreaks(breaks, newBreaks, breaksToRemove))
-    const makeClaim = (cbs: CookieBreak[]) => {}
+    const makeClaim = (
+        cbs: CookieBreak[],
+        setLoadingCards: (cbs: CookieBreak[], loading: boolean) => void
+    ) => {
+        if (user) {
+            submitClaim(user, cbs, updateBreaks, (b) => setLoadingCards(cbs, b))
+        }
+    }
     return (
         <>
             <main className={`text-fg ${manrope.className}`}>
                 <TopBar setUser={setUser} user={user} setBreaks={setBreaks} />
-                <div className="text-center m-5 w-mobileContent tablet:w-tabletContent w-content mx-auto">
-                    The cookie break is the school's longest running social
-                    event: every week a different host buys some biscuits up to
-                    the amount of £10 and shares them with everyone else. Thanks
-                    to the gracious funding of Research Committee, they get
-                    reimbursed for their troubles!
-                </div>
+                <div className="text-center m-5 w-mobileContent tablet:w-tabletContent desktop:w-content mx-auto">
+                    <div>
+                        The cookie break is the school's longest running social
+                        event: every week a different host buys some biscuits up
+                        to the amount of £10 and shares them with everyone else.
+                        Thanks to the gracious funding of Research Committee,
+                        they get reimbursed for their troubles!
+                    </div>
                     <BreakCards
                         title="Upcoming"
                         user={user}
