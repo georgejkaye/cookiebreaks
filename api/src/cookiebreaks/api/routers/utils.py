@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Optional
 
 from arrow import Arrow
@@ -20,7 +21,7 @@ class BreakExternal:
     holiday: Optional[str]
     host: Optional[str]
     break_announced: Optional[datetime]
-    cost: Optional[float]
+    cost: Optional[Decimal]
     host_reimbursed: Optional[datetime]
     admin_claimed: Optional[datetime]
     admin_reimbursed: Optional[datetime]
@@ -67,7 +68,7 @@ class ClaimExternal:
     id: int
     claim_date: datetime
     breaks_claimed: list[BreakExternal]
-    claim_amount: float
+    claim_amount: Decimal
     claim_reimbursed: Optional[datetime]
 
 
@@ -76,7 +77,7 @@ def claim_internal_to_external(
 ) -> ClaimExternal:
     return ClaimExternal(
         internal.id,
-        internal.claim_date.datetime,
+        internal.claim_date,
         list(
             map(
                 lambda b: break_internal_to_external(b, current_user),
