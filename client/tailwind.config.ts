@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss"
 
 const buffer = 50
 const minDesktopSize = 1000
-const minTabletSize = 800
+const minTabletSize = 600
 const contentSize = minDesktopSize - buffer
 const tabletContentSize = minTabletSize - buffer
 const mobileContentSize = 400

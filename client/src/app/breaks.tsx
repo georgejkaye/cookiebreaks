@@ -88,7 +88,7 @@ const BreakContentEditor = (props: {
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     setEditingText: SetState<boolean>
-    setCardLoading: SetState<boolean>
+    setCardLoading: (loading: boolean) => void
 }) => {
     const discardContentText = () => {
         props.setEditingText(false)
@@ -124,7 +124,7 @@ const BreakContent = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetState<boolean>
+    setCardLoading: (loading: boolean) => void
 }) => {
     const [editingText, setEditingText] = useState(false)
     let isHoliday = props.cb.holiday
@@ -174,8 +174,7 @@ const BreakContent = (props: {
 }
 
 const BreakDate = (props: { cb: CookieBreak }) => {
-    let dateStyle =
-        "w-full tablet:w-2/3 desktop:my-2 desktop:mx-0 text-center font-bold"
+    let dateStyle = "w-full desktop:my-2 text-center font-bold"
     return (
         <div className={dateStyle}>
             {getCookieBreakDate(props.cb)}, {getCookieBreakTime(props.cb)}
@@ -187,7 +186,7 @@ const BreakDetails = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetState<boolean>
+    setCardLoading: (loading: boolean) => void
 }) => {
     let detailsStyle =
         "flex flex-col justify-around tablet:flex-row " +
@@ -209,7 +208,7 @@ const AdminIcons = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetState<boolean>
+    setCardLoading: (loading: boolean) => void
 }) => {
     let adminIconsStyle =
         "h-12 desktop:my-0 w-full justify-center items-center desktop:w-1/4 flex flex-row desktop:flex-end"
@@ -236,25 +235,41 @@ const BreakCard = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
+    selectable: boolean
+    isSelected: boolean
+    isLoading: boolean
+    setSelected?: (selected: boolean) => void
+    setLoading: (loading: boolean) => void
 }) => {
-    let cardColour = props.cb.holiday ? "bg-gray-200" : "bg-white"
-    let cardHeight = props.user?.admin ? "h-36 desktop:h-16" : "desktop:h-16"
     let border = props.index === 0 ? "border-y-2" : "border-b-2"
+    let selectableStyles = props.selectable
+        ? "cursor-pointer hover:bg-gray-50"
+        : ""
+    let cardColour = props.cb.holiday
+        ? "bg-gray-200"
+        : props.isSelected
+        ? "bg-gray-100"
+        : "bg-white"
     let cardStyle =
-        `flex w-3/4 desktop:w-content flex-col desktop:flex-row ` +
-        `tablet:w-tabletContent py-4 px-2 mx-auto align-center ` +
-        `items-center ${cardColour} ${cardHeight} ${border}`
-    const [contentLoading, setCardLoading] = useState(false)
+        `flex flex-col desktop:flex-row py-2 px-2 mx-auto align-center ` +
+        `items-center ${cardColour} ${border} ${selectableStyles}`
+    const onSelect = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (props.selectable) {
+            if (props.setSelected) {
+                props.setSelected(!props.isSelected)
+            }
+        }
+    }
     return (
-        <div className={cardStyle}>
-            {contentLoading ? (
-                <Loader size={10} />
+        <div className={cardStyle} onClick={onSelect}>
+            {props.isLoading ? (
+                <Loader size={2} styles="h-10 my-1" />
             ) : (
                 <>
                     <BreakDetails
                         cb={props.cb}
                         user={props.user}
-                        setCardLoading={setCardLoading}
+                        setCardLoading={props.setLoading}
                         updateBreaks={props.updateBreaks}
                     />
                     {!props.user?.admin ? (
@@ -263,7 +278,7 @@ const BreakCard = (props: {
                         <AdminIcons
                             cb={props.cb}
                             user={props.user}
-                            setCardLoading={setCardLoading}
+                            setCardLoading={props.setLoading}
                             updateBreaks={props.updateBreaks}
                         />
                     )}
@@ -273,6 +288,15 @@ const BreakCard = (props: {
     )
 }
 
+export interface BreakCardSelector {
+    buttonName: string
+    submitSelection: (
+        cb: CookieBreak[],
+        setLoadingCards: (cbs: CookieBreak[], loading: boolean) => void
+    ) => void
+    flavourText: (cbs: CookieBreak[]) => string
+}
+
 export const BreakCards = (props: {
     title: string
     user: User | undefined
@@ -280,16 +304,69 @@ export const BreakCards = (props: {
     updateBreaks: UpdateBreaksFn
     isLoadingBreaks: boolean
     reverseBreaks: boolean
+    buttons?: BreakCardSelector[]
 }) => {
-    return (
+    const [selectedCards, setSelectedCards] = useState<CookieBreak[]>([])
+    const [loadingCards, setLoadingCards] = useState<CookieBreak[]>([])
+    const setCardSelected = (cb: CookieBreak, selected: boolean) =>
+        selected
+            ? setSelectedCards([...selectedCards, cb])
+            : setSelectedCards(selectedCards.filter((cb1) => cb1 !== cb))
+    const setCardsSelected = (cbs: CookieBreak[], selected: boolean) =>
+        selected
+            ? setSelectedCards(selectedCards.concat(cbs))
+            : setSelectedCards(selectedCards.filter((cb) => !cbs.includes(cb)))
+    const addCardToLoadingCards = (cb: CookieBreak) => {
+        setLoadingCards([...loadingCards, cb])
+        setCardSelected(cb, false)
+    }
+    const addCardsToLoadingCards = (cbs: CookieBreak[]) => {
+        setLoadingCards(loadingCards.concat(cbs))
+        setCardsSelected(cbs, false)
+    }
+    const removeCardFromLoadingCards = (cb: CookieBreak) =>
+        setLoadingCards(loadingCards.filter((b) => b !== cb))
+    const removeCardsFromLoadingCards = (cbs: CookieBreak[]) =>
+        setLoadingCards(loadingCards.filter((b) => !cbs.includes(b)))
+    const setCardLoading = (cb: CookieBreak, isLoading: boolean) =>
+        isLoading ? addCardToLoadingCards(cb) : removeCardFromLoadingCards(cb)
+    const setCardsLoading = (cbs: CookieBreak[], isLoading: boolean) =>
+        isLoading
+            ? addCardsToLoadingCards(cbs)
+            : removeCardsFromLoadingCards(cbs)
+    return !props.isLoadingBreaks && props.breaks.length === 0 ? (
+        ""
+    ) : (
         <>
-            <div className="text-xl font-bold text-center m-5">
+            <div className="text-xl font-bold m-5 mb-4 my-10 text-center">
                 {props.title}
             </div>
-            {props.isLoadingBreaks ? (
-                <div className="m-10">
-                    <Loader size={10} />
+            {selectedCards.length === 0 || !props.buttons ? (
+                ""
+            ) : (
+                <div className="text-center mb-4 flex justify-center">
+                    {props.buttons.map((button) => (
+                        <span className="flex flex-row justify-center items-center border-2 border-bg2 rounded">
+                            <button
+                                className="bg-bg2 text-fg2 font-bold p-2 hover:opacity-80"
+                                onClick={(e) =>
+                                    button.submitSelection(
+                                        selectedCards,
+                                        setCardsLoading
+                                    )
+                                }
+                            >
+                                {button.buttonName}
+                            </button>
+                            <div className="font-bold p-2">
+                                {button.flavourText(selectedCards)}
+                            </div>
+                        </span>
+                    ))}
                 </div>
+            )}
+            {props.isLoadingBreaks ? (
+                <Loader size={10} />
             ) : (
                 props.breaks.map((cb, i) => (
                     <BreakCard
@@ -298,6 +375,15 @@ export const BreakCards = (props: {
                         key={cb.id}
                         cb={cb}
                         updateBreaks={props.updateBreaks}
+                        selectable={
+                            props.buttons !== undefined &&
+                            props.buttons.length > 0 &&
+                            !loadingCards.includes(cb)
+                        }
+                        isSelected={selectedCards.includes(cb)}
+                        isLoading={loadingCards.includes(cb)}
+                        setLoading={(b) => setCardLoading(cb, b)}
+                        setSelected={(b) => setCardSelected(cb, b)}
                     />
                 ))
             )}

@@ -312,26 +312,29 @@ def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
     return row_to_break(row)
 
 
-def claim_for_breaks(break_ids: List[int]) -> None:
+def claim_for_breaks(break_ids: List[int]) -> [list[Break], list[Claim]]:
     (conn, cur) = connect()
     break_table_statement = f"""
-        WITH updated AS (
-            UPDATE break
-            SET admin_claimed = DATE_TRUNC('minute', NOW())
-            WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
-            RETURNING *
-        ) SELECT SUM(break_cost) FROM updated
-    """
-    claim_table_statement = f"""
-        INSERT INTO claim(claim_date, breaks_claimed, claim_amount)
-        VALUES(DATE_TRUNC('minute', NOW()), %(breaks)s, %(amount)s)
+        UPDATE break
+        SET admin_claimed = DATE_TRUNC('minute', NOW())
+        WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
+        RETURNING *
     """
     cur.execute(break_table_statement, {"ids": break_ids})
     rows = cur.fetchall()
-    amount = rows[0][0]
+    updated_breaks = rows_to_breaks(rows)
+    amount = sum(map(lambda b: b.cost, updated_breaks))
+    claim_table_statement = f"""
+        INSERT INTO claim(claim_date, breaks_claimed, claim_amount)
+        VALUES(DATE_TRUNC('minute', NOW()), %(breaks)s, %(amount)s)
+        RETURNING *
+    """
     cur.execute(claim_table_statement, {"breaks": break_ids, "amount": amount})
+    rows = cur.fetchall()
+    updated_claims = rows_to_claims(rows)
     conn.commit()
     disconnect(conn, cur)
+    return (updated_breaks, updated_claims)
 
 
 def get_claims(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
