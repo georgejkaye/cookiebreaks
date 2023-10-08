@@ -71,7 +71,7 @@ export const BreakControlIcons = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetState<boolean>
+    setCardLoading: (loading: boolean) => void
 }) => {
     let hoverColour = getHoverColour(props.cb)
     const onClickHoliday = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -128,7 +128,7 @@ const AnnounceIcon = (props: {
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     user: User | undefined
-    setCardLoading: Dispatch<SetStateAction<boolean>>
+    setCardLoading: (loading: boolean) => void
 }) => {
     const onClickAnnounce = () => {
         props.user
@@ -166,7 +166,7 @@ const ReimburseIcon = (props: {
     cb: CookieBreak
     user: User | undefined
     updateBreaks: UpdateBreaksFn
-    setCardLoading: SetState<boolean>
+    setCardLoading: (loading: boolean) => void
     setReimbursing: () => void
 }) => {
     const onClickReimburse = () => {
@@ -215,7 +215,7 @@ const ReimburseHostBox = (props: {
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     user: User | undefined
-    setCardLoading: SetState<boolean>
+    setCardLoading: (loading: boolean) => void
     setMode: SetState<StatusIconsMode>
 }) => {
     const onClickConfirmReimburse = (text: string) => {
@@ -255,7 +255,7 @@ export const BreakStatusIcons = (props: {
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     user: User | undefined
-    setCardLoading: Dispatch<SetStateAction<boolean>>
+    setCardLoading: (loading: boolean) => void
 }) => {
     let iconBoxStyle = `flex mr-4 desktop:w-40 h-10 justify-center`
     const [mode, setMode] = useState(StatusIconsMode.Normal)

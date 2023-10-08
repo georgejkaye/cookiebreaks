@@ -87,3 +87,5 @@ export interface User {
     admin: boolean
     token: string
 }
+
+export const formatAsPrice = (cost: number) => `£${cost.toFixed(2)}`

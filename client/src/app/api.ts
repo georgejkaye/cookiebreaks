@@ -17,6 +17,7 @@ const responseToBreak = (b: any) => ({
     claimed: dateOrUndefined(b.admin_claimed),
     success: dateOrUndefined(b.admin_reimbursed),
 })
+const responseToBreaks = (bs: any[]) => bs.map(responseToBreak)
 
 export const login = async (
     username: string,
@@ -78,7 +79,7 @@ export const announceBreak = async (
     user: User,
     id: number,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: Dispatch<SetStateAction<boolean>>
+    setLoadingCard: (loading: boolean) => void
 ) => {
     let endpoint = `/api/breaks/announce`
     let config = {
@@ -99,7 +100,7 @@ export const reimburseBreak = async (
     id: number,
     cost: number,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: Dispatch<SetStateAction<boolean>>
+    setLoadingCard: (loading: boolean) => void
 ) => {
     let endpoint = `/api/breaks/reimburse`
     let config = {
@@ -121,7 +122,7 @@ export const setHost = async (
     id: number,
     host: string,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: Dispatch<SetStateAction<boolean>>
+    setLoadingCard: (loading: boolean) => void
 ) => {
     let actualHost = host === "" ? undefined : host
     let endpoint = `/api/breaks/host`
@@ -144,7 +145,7 @@ export const setHoliday = async (
     id: number,
     reason: string | undefined,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: Dispatch<SetStateAction<boolean>>
+    setLoadingCard: (loading: boolean) => void
 ) => {
     let endpoint = `/api/breaks/holiday`
     let config = {
@@ -165,7 +166,7 @@ export const deleteBreak = async (
     user: User,
     cb: CookieBreak,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: Dispatch<SetStateAction<boolean>>
+    setLoadingCard: (loading: boolean) => void
 ) => {
     let endpoint = `/api/breaks/${cb.id}`
     let config = {
@@ -175,4 +176,27 @@ export const deleteBreak = async (
     await axios.delete(endpoint, config)
     updateBreaks([], [cb])
     setTimeout(() => setLoadingCard(false), 1)
+}
+
+export const submitClaim = async (
+    user: User,
+    cbs: CookieBreak[],
+    updateBreaks: UpdateBreaksFn,
+    setLoadingCards: (loading: boolean) => void
+) => {
+    let endpoint = `api/claims/claim`
+    let config = {
+        headers: headers(user.token),
+    }
+    setLoadingCards(true)
+    let response = await axios.post(
+        endpoint,
+        cbs.map((cb) => cb.id),
+        config
+    )
+    let responseData = response.data
+    let updatedBreaks = responseData.breaks
+    let updatedClaims = responseData.claims
+    updateBreaks(responseToBreaks(updatedBreaks), [])
+    setTimeout(() => setLoadingCards(false), 1)
 }

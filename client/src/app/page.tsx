@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import {
     CookieBreak,
     User,
+    formatAsPrice,
     getBreaksToClaim,
     getBreaksToComplete,
     getBreaksToReimburse,
@@ -11,7 +12,7 @@ import {
     getOutstandingBreaks,
     replaceBreaks,
 } from "./structs"
-import { getBreaks } from "./api"
+import { getBreaks, submitClaim } from "./api"
 import { BreakCards } from "./breaks"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
@@ -97,6 +98,15 @@ const Home = () => {
                                     {
                                         buttonName: "Make claim",
                                         submitSelection: makeClaim,
+                                        flavourText: (cbs) => {
+                                            let cost = cbs.reduce(
+                                                (acc, cur) =>
+                                                    acc +
+                                                    (cur.cost ? cur.cost : 0),
+                                                0
+                                            )
+                                            return formatAsPrice(cost)
+                                        },
                                     },
                                 ]}
                             />
