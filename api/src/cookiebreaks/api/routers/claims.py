@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends
 
-from cookiebreaks.core.database import claim_for_breaks, claim_reimbursed, get_claims
+from cookiebreaks.core.database import claim_for_breaks, claim_reimbursed, get_claim_objects#
 from cookiebreaks.core.structs import ClaimFilters, User
 
 from cookiebreaks.api.routers.utils import (
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/claims", tags=["claims"])
 async def request_claims(
     current_user: Annotated[User, Depends(is_admin)], reimbursed: Optional[bool] = None
 ):
-    claims = get_claims(ClaimFilters(reimbursed))
+    claims = get_claim_objects(ClaimFilters(reimbursed))
     return list(map(lambda c: claim_internal_to_external(c, current_user), claims))
 
 
@@ -56,5 +56,5 @@ async def reimburse_admin(
 ):
     claim_reimbursed(break_id)
     return list(
-        map(lambda c: claim_internal_to_external(c, current_user), get_claims())
+        map(lambda c: claim_internal_to_external(c, current_user), get_claim_objects())
     )

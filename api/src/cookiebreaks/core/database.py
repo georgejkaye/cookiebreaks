@@ -340,7 +340,7 @@ def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], list[Claim]]:
     return (updated_breaks, updated_claims)
 
 
-def get_claims(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
+def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
     (conn, cur) = connect()
     if filters.reimbursed is not None:
         if filters.reimbursed:
@@ -364,10 +364,9 @@ def get_claims(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
         if claim_reimbursed is not None:
             claim_reimbursed = arrow.get(claim_reimbursed)
         claim_date = arrow.get(claim_date)
-        breaks = get_specific_breaks(breaks_claimed)
         claims.append(
             Claim(
-                claim_id, arrow.get(claim_date), breaks, claim_amount, claim_reimbursed
+                claim_id, arrow.get(claim_date), breaks_claimed, claim_amount, claim_reimbursed
             )
         )
     return claims

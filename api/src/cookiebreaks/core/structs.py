@@ -56,7 +56,7 @@ class BreakFilters:
 class Claim:
     id: int
     claim_date: Arrow
-    breaks_claimed: List[Break]
+    breaks_claimed: List[int]
     claim_amount: float
     claim_reimbursed: Optional[Arrow] = None
 

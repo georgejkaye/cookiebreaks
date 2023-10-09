@@ -1,5 +1,5 @@
 from typing import List, Optional
-from cookiebreaks.core.database import get_break_objects, get_claims
+from cookiebreaks.core.database import get_break_objects, get_claim_objects#
 from cookiebreaks.core.structs import (
     Break,
     BreakFilters,
@@ -68,7 +68,7 @@ def select_break(filters: BreakFilters) -> Optional[Break]:
 
 
 def select_claim(filters: ClaimFilters) -> Optional[Claim]:
-    claims = get_claims(filters)
+    claims = get_claim_objects#(filters)
     if len(claims) > 0:
         display_claims(claims)
     else:
