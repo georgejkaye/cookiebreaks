@@ -1,9 +1,9 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import List, Optional
 
 from arrow import Arrow
-from cookiebreaks.core.database import get_break_objects
+from cookiebreaks.core.database import get_break_objects, get_claim_objects
 from cookiebreaks.core.structs import (
     BreakFilters,
     User,
@@ -67,7 +67,7 @@ def break_internal_to_external(
 class ClaimExternal:
     id: int
     claim_date: datetime
-    breaks_claimed: list[BreakExternal]
+    breaks_claimed: list[int]
     claim_amount: Decimal
     claim_reimbursed: Optional[datetime]
 
@@ -78,12 +78,7 @@ def claim_internal_to_external(
     return ClaimExternal(
         internal.id,
         arrow_to_datetime(internal.claim_date),
-        list(
-            map(
-                lambda b: break_internal_to_external(b, current_user),
-                internal.breaks_claimed,
-            )
-        ),
+        internal.breaks_claimed,
         internal.claim_amount,
         arrow_to_datetime(internal.claim_reimbursed),
     )
@@ -91,6 +86,11 @@ def claim_internal_to_external(
 
 def get_breaks(
     filters: BreakFilters = BreakFilters(), current_user: Optional[User] = None
-):
+) -> List[BreakExternal]:
     breaks = get_break_objects(filters)
     return list(map(lambda b: break_internal_to_external(b, current_user), breaks))
+
+
+def get_claims(current_user: Optional[User] = None) -> List[ClaimExternal]:
+    claims = get_claim_objects()
+    return list(map(lambda c: claim_internal_to_external(c, current_user), claims))
