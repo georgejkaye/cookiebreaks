@@ -18,24 +18,39 @@ export interface CookieBreak {
     claimed?: Date
     success?: Date
 }
+export interface Claim {
+    id: number
+    date: Date
+    breaks: CookieBreak[]
+    amount: number
+    reimbursed?: Date
+}
 
 export const breakInPast = (cb: CookieBreak) => dateInPast(cb.datetime)
 
 export type UpdateBreaksFn = (
     breaksToAdd: CookieBreak[],
     breaksToRemove: CookieBreak[]
-) => void
+) => CookieBreak[]
 
-export const replaceBreaks = (
-    oldBreaks: CookieBreak[],
-    newBreaks: CookieBreak[],
-    breaksToRemove: CookieBreak[]
+export type UpdateClaimsFn = (
+    claimsToAdd: Claim[],
+    claimsToRemove: Claim[]
+) => Claim[]
+
+export const replaceItems = <T>(
+    oldItems: T[],
+    itemsToAdd: T[],
+    itemsToRemove: T[],
+    eqCheck: (t1: T, t2: T) => boolean
 ) =>
-    oldBreaks
+    oldItems
         .map(
-            (old) => newBreaks.find((newBreak) => newBreak.id === old.id) || old
+            (oldItem) =>
+                itemsToAdd.find((newItem) => eqCheck(oldItem, newItem)) ||
+                oldItem
         )
-        .filter((cb) => !breaksToRemove.includes(cb))
+        .filter((item) => !itemsToRemove.includes(item))
 
 export const getDateString = (datetime: Date) => {
     let weekday = datetime.toLocaleDateString("en-GB", {
