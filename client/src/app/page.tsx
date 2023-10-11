@@ -17,6 +17,7 @@ import { getBreaks, getClaims, submitClaim } from "./api"
 import { BreakCards } from "./breaks"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
+import { ClaimCards } from "./claims"
 
 const manrope = Manrope({
     weight: ["400", "700"],
@@ -42,7 +43,7 @@ const Home = () => {
     const [isLoadingClaims, setLoadingClaims] = useState(false)
     useEffect(() => {
         getBreaks(setBreaks, setLoadingBreaks)
-        if (user) {
+        if (user && user.admin) {
             getClaims(setClaims, setLoadingClaims)
         }
     }, [])
@@ -146,13 +147,12 @@ const Home = () => {
                                     },
                                 ]}
                             />
-                            <BreakCards
-                                title="Awaiting completion"
+                            <ClaimCards
+                                title="Outstanding claims"
                                 user={user}
-                                breaks={breaksToComplete}
-                                updateBreaks={updateBreaks}
-                                isLoadingBreaks={isLoadingBreaks}
-                                reverseBreaks={false}
+                                claims={claims}
+                                updateClaims={updateClaims}
+                                isLoadingClaims={isLoadingClaims}
                             />
                         </>
                     )}
