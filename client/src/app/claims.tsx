@@ -1,9 +1,18 @@
+import { useState } from "react"
 import { Cards } from "./cards"
 import { Claim, UpdateClaimsFn, User } from "./structs"
 
-export const ClaimCard = (props: { claim: Claim }) => (
-    <div>{props.claim.date.toLocaleDateString()}</div>
-)
+export const ClaimCard = (props: { claim: Claim }) => {
+    const [isExpanded, setExpanded] = useState(false)
+    return (
+        <div className="flex">
+            <div className="font-bold">
+                {props.claim.date.toLocaleDateString()}
+            </div>
+            <div className="font-bold">£{props.claim.amount.toFixed(2)}</div>
+        </div>
+    )
+}
 
 export const ClaimCards = (props: {
     title: string
