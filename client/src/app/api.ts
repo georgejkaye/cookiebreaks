@@ -98,7 +98,7 @@ export const getClaims = async (
     setClaims: SetState<Claim[]>,
     setLoadingClaims: SetState<boolean>
 ) => {
-    let endpoint = `/api/claims`
+    let endpoint = `/api/claims?reimbursed=false`
     setLoadingClaims(true)
     let response = await axios.get(endpoint)
     let data = response.data
