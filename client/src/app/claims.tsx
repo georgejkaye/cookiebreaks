@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { Cards } from "./cards"
-import { Claim, UpdateClaimsFn, User } from "./structs"
+import { CardAction, Cards, CardsActionProps } from "./cards"
+import { Claim, UpdateClaimsFn, User, getCookieBreakDate } from "./structs"
 
 export const ClaimCard = (props: { claim: Claim }) => {
     const [isExpanded, setExpanded] = useState(false)
@@ -13,7 +13,9 @@ export const ClaimCard = (props: { claim: Claim }) => {
         </div>
     )
 }
-
+export const ClaimCardExpanded = (props: { claim: Claim }) => {
+    return <div>Poo</div>
+}
 export const ClaimCards = (props: {
     title: string
     user: User | undefined
@@ -21,15 +23,23 @@ export const ClaimCards = (props: {
     updateClaims: UpdateClaimsFn
     isLoadingClaims: boolean
 }) => {
-    const getCardColour = (c: Claim, isSelected: boolean) =>
-        isSelected ? "bg-gray-100" : "bg-white"
+    const getCardColour = (c: Claim) => "bg-white"
     const getCardContent = (
         c: Claim,
         setLoading: (loading: boolean) => void
     ) => <ClaimCard claim={c} />
+    const getCardContentExpanded = (
+        c: Claim,
+        setLoading: (loading: boolean) => void
+    ) => <ClaimCardExpanded claim={c} />
+    const cardsAction: CardsActionProps<Claim> = {
+        type: CardAction.EXPAND,
+        getCardContentExpanded: getCardContentExpanded,
+    }
     return (
-        <Cards
+        <Cards<Claim>
             title={props.title}
+            cardsAction={cardsAction}
             isLoading={props.isLoadingClaims}
             elements={props.claims}
             getCardColour={getCardColour}

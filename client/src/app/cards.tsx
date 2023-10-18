@@ -10,34 +10,67 @@ export interface CardSelector<T> {
     flavourText: (ts: T[]) => string
 }
 
+export enum CardAction {
+    NONE,
+    EXPAND,
+    SELECT,
+}
+
+export interface SelectableCardProps {
+    type: CardAction.SELECT
+    isSelected: boolean
+    setSelected: (selected: boolean) => void
+    selectedColour: string
+}
+
+export interface ExpandableCardProps {
+    type: CardAction.EXPAND
+    cardContentExpanded: JSX.Element
+}
+
+export interface NoneCardProps {
+    type: CardAction.NONE
+}
+
+export type CardActionProps =
+    | SelectableCardProps
+    | ExpandableCardProps
+    | NoneCardProps
+
 export const Card = <T,>(props: {
     index: number
-    selectable: boolean
-    isSelected: boolean
-    isLoading: boolean
-    setSelected?: (selected: boolean) => void
-    setLoading: (loading: boolean) => void
     cardColour: string
+    cardAction: CardActionProps
+    isLoading: boolean
+    setLoading: (loading: boolean) => void
     cardContent: JSX.Element
 }) => {
     let border = props.index === 0 ? "border-y-2" : "border-b-2"
-    let selectableStyles = props.selectable
-        ? "cursor-pointer hover:bg-gray-50"
-        : ""
+    let selectableStyles =
+        props.cardAction.type === CardAction.SELECT
+            ? "cursor-pointer hover:bg-gray-50"
+            : ""
+    let cardColour =
+        props.cardAction.type === CardAction.SELECT &&
+        props.cardAction.isSelected
+            ? props.cardAction.selectedColour
+            : props.cardColour
     let cardStyle =
         `flex flex-col desktop:flex-row py-2 px-2 mx-auto align-center ` +
-        `items-center ${props.cardColour} ${border} ${selectableStyles}`
-    const onSelect = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (props.selectable) {
-            if (props.setSelected) {
-                props.setSelected(!props.isSelected)
-            }
-        }
-    }
+        `items-center ${cardColour} ${border} ${selectableStyles}`
+    const [isExpanded, setExpanded] = useState(false)
+    const onClickCard = (e: React.MouseEvent<HTMLDivElement>) =>
+        props.cardAction.type === CardAction.SELECT
+            ? props.cardAction.setSelected(!props.cardAction.isSelected)
+            : props.cardAction.type === CardAction.EXPAND
+            ? setExpanded(!isExpanded)
+            : () => {}
     return (
-        <div className={cardStyle} onClick={onSelect}>
+        <div className={cardStyle} onClick={onClickCard}>
             {props.isLoading ? (
                 <Loader size={2} styles="h-10 my-1" />
+            ) : isExpanded && props.cardAction.type === CardAction.EXPAND ? (
+                props.cardAction.cardContentExpanded
             ) : (
                 props.cardContent
             )}
@@ -87,15 +120,39 @@ export const Buttons = <T,>(props: {
         </div>
     )
 
+export interface SelectableCardsProps<T> {
+    type: CardAction.SELECT
+    buttons: CardSelector<T>[]
+    getSelectedColour: (t: T) => string
+}
+
+export interface ExpandableCardsProps<T> {
+    type: CardAction.EXPAND
+    getCardContentExpanded: (
+        t: T,
+        setLoading: (loading: boolean) => void
+    ) => JSX.Element
+}
+
+export interface NoneCardsProps {
+    type: CardAction.NONE
+}
+
+export type CardsActionProps<T> =
+    | SelectableCardsProps<T>
+    | ExpandableCardsProps<T>
+    | NoneCardsProps
+
 export const Cards = <T,>(props: {
     title: string
-    isLoading: boolean
-    elements: T[]
-    getCardColour: (t: T, isSelected: boolean) => string
+    getCardColour: (t: T) => string
     getCardContent: (
         t: T,
         setLoading: (loading: boolean) => void
     ) => JSX.Element
+    cardsAction: CardsActionProps<T>
+    isLoading: boolean
+    elements: T[]
     buttons?: CardSelector<T>[]
 }) => {
     const [selectedCards, setSelectedCards] = useState<T[]>([])
@@ -124,9 +181,26 @@ export const Cards = <T,>(props: {
         isLoading ? addCardToLoadingCards(t) : removeCardFromLoadingCards(t)
     const setCardsLoading = (ts: T[], isLoading: boolean) =>
         isLoading ? addCardsToLoadingCards(ts) : removeCardsFromLoadingCards(ts)
-    const cardsSelectable =
-        props.buttons !== undefined && props.buttons.length > 0
-    const isSelected = (t: T) => selectedCards.includes(t)
+    let getCardActionProps = (t: T): CardActionProps =>
+        props.cardsAction.type === CardAction.SELECT
+            ? {
+                  type: CardAction.SELECT,
+                  isSelected: selectedCards.includes(t),
+                  setSelected: (b: boolean) => setCardSelected(t, b),
+                  selectedColour: props.cardsAction.getSelectedColour(t),
+              }
+            : props.cardsAction.type === CardAction.EXPAND
+            ? {
+                  type: CardAction.EXPAND,
+                  cardContentExpanded: props.cardsAction.getCardContentExpanded(
+                      t,
+                      (b) => setCardLoading(t, b)
+                  ),
+              }
+            : {
+                  type: CardAction.NONE,
+              }
+
     return !props.isLoading && props.elements.length === 0 ? (
         ""
     ) : (
@@ -145,14 +219,10 @@ export const Cards = <T,>(props: {
                 props.elements.map((t, i) => (
                     <Card
                         index={i}
-                        selectable={
-                            cardsSelectable && !loadingCards.includes(t)
-                        }
-                        isSelected={isSelected(t)}
-                        setSelected={(b) => setCardSelected(t, b)}
+                        cardColour={props.getCardColour(t)}
+                        cardAction={getCardActionProps(t)}
                         isLoading={loadingCards.includes(t)}
                         setLoading={(b) => setCardLoading(t, b)}
-                        cardColour={props.getCardColour(t, isSelected(t))}
                         cardContent={props.getCardContent(t, (b) =>
                             setCardLoading(t, b)
                         )}

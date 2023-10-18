@@ -14,7 +14,7 @@ import {
     SmallIcon,
     getHoverColour,
 } from "./icons"
-import { CardSelector, Cards } from "./cards"
+import { CardAction, CardSelector, Cards, CardsActionProps } from "./cards"
 
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
@@ -265,8 +265,9 @@ export const BreakCards = (props: {
     reverseBreaks: boolean
     buttons?: CardSelector<CookieBreak>[]
 }) => {
-    const getCardColour = (cb: CookieBreak, isSelected: boolean) =>
-        cb.holiday ? "bg-gray-200" : isSelected ? "bg-gray-100" : "bg-white"
+    const getCardColour = (cb: CookieBreak) =>
+        cb.holiday ? "bg-gray-200" : "bg-white"
+    const getSelectedColour = (cb: CookieBreak) => "bg-gray-100"
     const getCardContent = (
         cb: CookieBreak,
         setLoading: (loading: boolean) => void
@@ -278,9 +279,20 @@ export const BreakCards = (props: {
             setLoading={setLoading}
         />
     )
+    let cardsActionProps: CardsActionProps<CookieBreak> =
+        props.buttons && props.buttons.length > 0
+            ? {
+                  type: CardAction.SELECT,
+                  buttons: props.buttons,
+                  getSelectedColour: getSelectedColour,
+              }
+            : {
+                  type: CardAction.NONE,
+              }
     return (
-        <Cards
+        <Cards<CookieBreak>
             title={props.title}
+            cardsAction={cardsActionProps}
             isLoading={props.isLoadingBreaks}
             elements={props.breaks}
             getCardColour={getCardColour}
