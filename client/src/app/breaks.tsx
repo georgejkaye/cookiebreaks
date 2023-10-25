@@ -285,6 +285,7 @@ export const BreakCards = (props: {
                   type: CardAction.SELECT,
                   buttons: props.buttons,
                   getSelectedColour: getSelectedColour,
+                  getHoverColour: getHoverColour,
               }
             : {
                   type: CardAction.NONE,
