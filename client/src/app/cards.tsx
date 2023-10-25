@@ -40,11 +40,13 @@ export interface SelectableCardProps {
     isSelected: boolean
     setSelected: (selected: boolean) => void
     selectedColour: string
+    hoverColour: string
 }
 
 export interface ExpandableCardProps {
     type: CardAction.EXPAND
     cardContentExpanded: JSX.Element
+    hoverColour: string
 }
 
 export interface NoneCardProps {
@@ -66,8 +68,9 @@ export const Card = <T,>(props: {
 }) => {
     let border = props.index === 0 ? "border-y-2" : "border-b-2"
     let selectableStyles =
-        props.cardAction.type === CardAction.SELECT
-            ? "cursor-pointer hover:bg-gray-50"
+        props.cardAction.type === CardAction.SELECT ||
+        props.cardAction.type === CardAction.EXPAND
+            ? `cursor-pointer ${props.cardAction.hoverColour}`
             : ""
     let cardColour =
         props.cardAction.type === CardAction.SELECT &&
@@ -143,6 +146,7 @@ export interface SelectableCardsProps<T> {
     type: CardAction.SELECT
     buttons: CardSelector<T>[]
     getSelectedColour: (t: T) => string
+    getHoverColour: (t: T) => string
 }
 
 export interface ExpandableCardsProps<T> {
@@ -151,6 +155,7 @@ export interface ExpandableCardsProps<T> {
         t: T,
         setLoading: (loading: boolean) => void
     ) => JSX.Element
+    getHoverColour: (t: T) => string
 }
 
 export interface NoneCardsProps {
@@ -207,6 +212,7 @@ export const Cards = <T,>(props: {
                   isSelected: selectedCards.includes(t),
                   setSelected: (b: boolean) => setCardSelected(t, b),
                   selectedColour: props.cardsAction.getSelectedColour(t),
+                  hoverColour: props.cardsAction.getHoverColour(t),
               }
             : props.cardsAction.type === CardAction.EXPAND
             ? {
@@ -215,6 +221,7 @@ export const Cards = <T,>(props: {
                       t,
                       (b) => setCardLoading(t, b)
                   ),
+                  hoverColour: props.cardsAction.getHoverColour(t),
               }
             : {
                   type: CardAction.NONE,
