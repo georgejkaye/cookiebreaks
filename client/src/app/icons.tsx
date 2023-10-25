@@ -122,7 +122,7 @@ export const BreakControlIcons = (props: {
 }
 
 export const getHoverColour = (cb: CookieBreak) =>
-    cb.holiday ? "hover:bg-gray-500/50" : "hover:bg-gray-400/50"
+    cb.holiday ? "hover:bg-gray-500/50" : "hover:bg-gray-100"
 
 const AnnounceIcon = (props: {
     cb: CookieBreak
