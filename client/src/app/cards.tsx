@@ -1,6 +1,25 @@
 import { useState } from "react"
 import Loader from "./loader"
 
+export const ActionButton = (props: {
+    name: string
+    hoverColour: string
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+}) => {
+    const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation()
+        props.onClick(e)
+    }
+    return (
+        <button
+            className={`p-2 border-2 bg-white border-bg2 rounded ${props.hoverColour}`}
+            onClick={onClick}
+        >
+            {props.name}
+        </button>
+    )
+}
+
 export interface CardSelector<T> {
     buttonName: string
     submitSelection: (
