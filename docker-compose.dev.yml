@@ -4,6 +4,7 @@ services:
       context: api
       dockerfile: Dockerfile.dev
       args:
+        API_PORT: ${API_PORT}
         POETRY_VERSION: ${POETRY_VERSION}
         MAILCTL_VERSION: ${MAILCTL_VERSION}
         MSMTP_VERSION: ${MSMTP_VERSION}
@@ -36,6 +37,7 @@ services:
       context: client
       dockerfile: Dockerfile.dev
       args:
+        CLIENT_PORT: ${CLIENT_PORT}
         API_URL: "http://api:${API_PORT}"
     ports:
       - "${CLIENT_PORT}:${CLIENT_PORT}"

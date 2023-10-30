@@ -105,8 +105,9 @@ ENV CB_API_ROOT="/app" \
 
 WORKDIR /app
 
-EXPOSE ${API_PORT}
-
 RUN apt remove binutils gcc gawk bison pkg-config make tcc expect -y
+
+ARG API_PORT
+ENV API_PORT ${API_PORT}
 
 ENTRYPOINT ["python", "src/cookiebreaks/api/main.py"]

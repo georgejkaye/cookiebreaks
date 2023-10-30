@@ -43,5 +43,7 @@ USER nextjs
 EXPOSE 3000
 
 ENV HOSTNAME "0.0.0.0"
+ARG CLIENT_PORT
+ENV PORT ${CLIENT_PORT}
 
 CMD ["node", "server.js"]
