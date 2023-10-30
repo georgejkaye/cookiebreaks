@@ -62,9 +62,9 @@ RUN chmod +x ${MSMTP_EVAL_SCRIPT}
 
 COPY .env .
 
-EXPOSE ${API_PORT}
-
 ENV CB_API_ROOT /app
 ENV API_ENV dev
+ARG API_PORT
+ENV API_PORT ${API_PORT}
 
 ENTRYPOINT ["poetry", "run", "python", "src/cookiebreaks/api/main.py"]
