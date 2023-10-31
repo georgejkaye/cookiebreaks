@@ -41,7 +41,7 @@ services:
       - "traefik.http.routers.cookies_api.rule=Host(`${API_HOST}`)"
       - "traefik.http.routers.cookies_api.tls=true"
       - "traefik.http.routers.cookies_api.tls.certresolver=lets-encrypt"
-      - "traefik.port=${API_PORT}"
+      - "traefik.http.services.cookies_api.loadbalancer.server.port=${API_PORT}"
     networks:
       - internal
       - web
@@ -66,7 +66,7 @@ services:
       - "traefik.http.routers.cookies_client.rule=Host(`${CLIENT_HOST}`)"
       - "traefik.http.routers.cookies_client.tls=true"
       - "traefik.http.routers.cookies_client.tls.certresolver=lets-encrypt"
-      - "traefik.port=3000"
+      - "traefik.http.services.cookies_client.loadbalancer.server.port=${CLIENT_PORT}"
     networks:
       - internal
       - web
