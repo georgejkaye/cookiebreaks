@@ -8,6 +8,7 @@ from cookiebreaks.api.routers.utils import (
 from cookiebreaks.core.database import (
     get_break_objects,
     insert_host,
+    insert_missing_breaks,
     mask_host,
     reimburse_host,
     remove_break,
@@ -88,9 +89,7 @@ async def reimburse_break(
     response_model=Break,
     summary="Remove the name of someone who hosted a cookie break",
 )
-async def reimburse_break(
-    current_user: Annotated[User, Depends(is_admin)], break_id: int
-):
+async def mask_break(current_user: Annotated[User, Depends(is_admin)], break_id: int):
     reimbursed_break = mask_host(break_id)
     return break_internal_to_external(reimbursed_break, current_user)
 
@@ -115,3 +114,12 @@ async def delete_break(
     break_id: int,
 ):
     remove_break(break_id)
+
+
+@router.post(
+    "/update",
+    response_model=list[Break],
+    summary="Update the list of upcoming breaks",
+)
+async def post_update_breaks(current_user: Annotated[User, Depends(is_admin)]):
+    insert_missing_breaks()
