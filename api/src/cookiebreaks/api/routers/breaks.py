@@ -122,4 +122,4 @@ async def delete_break(
     summary="Update the list of upcoming breaks",
 )
 async def post_update_breaks(current_user: Annotated[User, Depends(is_admin)]):
-    insert_missing_breaks()
+    return insert_missing_breaks()
