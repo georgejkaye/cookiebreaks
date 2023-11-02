@@ -72,9 +72,26 @@ services:
       - web
     depends_on:
       - api
+  updater:
+    build:
+      context: updater
+      dockerfile: Dockerfile
+      args:
+        ENDPOINT: ${API_ENDPOINT}
+        POETRY_VERSION: ${POETRY_VERSION}
+      environment:
+        API_USER: ${API_USER}
+        API_PASSWORD: /run/secrets/api_password
+        API_ENDPOINT: ${API_ENDPOINT}
+      secrets:
+        - api_password
+      depends_on:
+        - api
 
 secrets:
   api_secret:
-    file: api-secret.txt
+    file: ${API_SECRET_FILE}
   gpg_private:
-    file: ${GPG_SECRET_KEY}
+    file: ${GPG_SECRET_KEY_FILE}
+  api_password:
+    file: ${API_PASSWORD_FILE}

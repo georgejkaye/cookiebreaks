@@ -273,6 +273,7 @@ def insert_missing_breaks() -> None:
             ) AS dates
             WHERE dates.days NOT IN (SELECT break_datetime FROM break)
         )
+        RETURNING *
     """
     cur.execute(
         statement,
@@ -283,8 +284,10 @@ def insert_missing_breaks() -> None:
             "day": int(get_env_variable("BREAK_DAY")) + 1,
         },
     )
+    rows = cur.fetchall()
     conn.commit()
     disconnect(conn, cur)
+    return list(map(row_to_break, rows))
 
 
 def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
@@ -316,7 +319,7 @@ def claim_for_breaks(break_ids: List[int]) -> [list[Break], list[Claim]]:
     (conn, cur) = connect()
     break_table_statement = f"""
         UPDATE break
-        SET admin_claimed = DATE_TRUNC('minute', NOW())
+        SET admin_claimed = DATE_TRUNC('minute', NOW()), break_host = NULL
         WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
         RETURNING *
     """
