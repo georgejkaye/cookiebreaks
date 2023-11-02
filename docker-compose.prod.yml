@@ -79,14 +79,14 @@ services:
       args:
         ENDPOINT: ${API_ENDPOINT}
         POETRY_VERSION: ${POETRY_VERSION}
-      environment:
-        API_USER: ${API_USER}
-        API_PASSWORD: /run/secrets/api_password
-        API_ENDPOINT: ${API_ENDPOINT}
-      secrets:
-        - api_password
-      depends_on:
-        - api
+    environment:
+      API_USER: ${API_USER}
+      API_PASSWORD: /run/secrets/api_password
+      API_ENDPOINT: ${API_ENDPOINT}
+    secrets:
+      - api_password
+    depends_on:
+      - api
 
 secrets:
   api_secret:
