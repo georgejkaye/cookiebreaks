@@ -64,7 +64,7 @@ def insert_breaks(breaks: list[tuple[Arrow, str]]) -> None:
     disconnect(conn, cur)
 
 
-def insert_host(break_host: str | None, break_id: int) -> None:
+def insert_host(break_host: str | None, break_id: int) -> Break:
     (conn, cur) = connect()
     statement = f"""
         UPDATE break
@@ -257,7 +257,7 @@ def to_postgres_day(day: int) -> int:
         return day + 1
 
 
-def insert_missing_breaks() -> None:
+def insert_missing_breaks() -> list[Break]:
     (conn, cur) = connect()
     statement = f"""
         INSERT INTO break (break_datetime, break_location) (
@@ -315,7 +315,7 @@ def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
     return row_to_break(row)
 
 
-def claim_for_breaks(break_ids: List[int]) -> [list[Break], list[Claim]]:
+def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], list[Claim]]:
     (conn, cur) = connect()
     break_table_statement = f"""
         UPDATE break
@@ -326,7 +326,7 @@ def claim_for_breaks(break_ids: List[int]) -> [list[Break], list[Claim]]:
     cur.execute(break_table_statement, {"ids": break_ids})
     rows = cur.fetchall()
     updated_breaks = rows_to_breaks(rows)
-    amount = sum(map(lambda b: b.cost, updated_breaks))
+    amount = sum(list(map(lambda b: b.cost, updated_breaks)))
     claim_table_statement = f"""
         INSERT INTO claim(claim_date, breaks_claimed, claim_amount)
         VALUES(DATE_TRUNC('minute', NOW()), %(breaks)s, %(amount)s)

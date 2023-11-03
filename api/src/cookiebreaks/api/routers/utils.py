@@ -77,7 +77,7 @@ def claim_internal_to_external(
 ) -> ClaimExternal:
     return ClaimExternal(
         internal.id,
-        internal.claim_date,
+        arrow_to_datetime(internal.claim_date),
         list(
             map(
                 lambda b: break_internal_to_external(b, current_user),
