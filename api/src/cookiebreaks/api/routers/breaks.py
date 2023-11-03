@@ -122,4 +122,5 @@ async def delete_break(
     summary="Update the list of upcoming breaks",
 )
 async def post_update_breaks(current_user: Annotated[User, Depends(is_admin)]):
-    insert_missing_breaks()
+    breaks = insert_missing_breaks()
+    return list(map(lambda b: break_internal_to_external(b, current_user), breaks))
