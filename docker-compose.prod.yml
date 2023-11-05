@@ -82,7 +82,7 @@ services:
     environment:
       API_USER: ${API_USER}
       API_PASSWORD: /run/secrets/api_password
-      API_ENDPOINT: ${API_ENDPOINT}
+      API_ENDPOINT: "http://api:${API_PORT}"
     secrets:
       - api_password
     depends_on:
