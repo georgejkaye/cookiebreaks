@@ -1,6 +1,6 @@
 from math import e
 import os
-import sys
+from typing import Optional
 import requests
 
 
@@ -20,7 +20,7 @@ def get_env_variable(name: str) -> str:
         raise FileNotFoundError(f"Environment variable {name} not set")
 
 
-def get_token(endpoint: str, user: str, password: str) -> str:
+def get_token(endpoint: str, user: str, password: str) -> Optional[str]:
     url = f"{endpoint}/users/token"
     headers = {
         "accept": "application/json",
@@ -28,9 +28,12 @@ def get_token(endpoint: str, user: str, password: str) -> str:
     }
     data = {"username": user, "password": password}
     response = requests.post(url, headers=headers, data=data)
-    token = response.json()["access_token"]
-    print(token)
-    return token
+    if not response.status_code == 200:
+        print("Could not get token")
+        return None
+    else:
+        token = response.json()["access_token"]
+        return token
 
 
 def request_update(endpoint: str, token: str):
@@ -46,7 +49,8 @@ def main() -> str:
         get_env_variable("API_USER"),
         get_secret(get_env_variable("API_PASSWORD")),
     )
-    request_update(endpoint, token)
+    if token:
+        request_update(endpoint, token)
 
 
 if __name__ == "__main__":
