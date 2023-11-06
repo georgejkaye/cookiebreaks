@@ -9,7 +9,8 @@ import {
 } from "./structs"
 import { Dispatch, SetStateAction, useRef, useState } from "react"
 import { setHoliday, deleteBreak, announceBreak, reimburseBreak } from "./api"
-import { SetState, TickCrossInputBox } from "./breaks"
+import { TickCrossInputBox } from "./cards/breaks"
+import { SetState } from "./page"
 
 export const SmallIcon = (props: {
     icon: string
@@ -164,7 +165,7 @@ const AnnounceIcon = (props: {
         props.user
             ? announceBreak(
                   props.user,
-                  props.cb.id,
+                  props.cb,
                   props.updateBreaks,
                   props.setCardLoading
               )

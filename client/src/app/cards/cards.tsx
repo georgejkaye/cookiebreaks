@@ -1,6 +1,7 @@
-import { useState } from "react"
-import Loader from "./loader"
-import { SmallIcon } from "./icons"
+import React, { useState } from "react"
+import Loader from "../loader"
+import { SmallIcon } from "../icons"
+import { SetState } from "../page"
 
 export const ActionButton = (props: {
     name: string
@@ -101,47 +102,67 @@ export const Card = <T,>(props: {
     )
 }
 
-export const Button = <T,>(props: {
+export const CardSelectorButton = <T,>(props: {
     button: CardSelector<T>
     selectedCards: T[]
     setCardsLoading: (ts: T[], isLoading: boolean) => void
 }) => (
-    <span className="flex flex-row justify-center items-center border-2 border-bg2 rounded">
+    <Button
+        onClick={(_) =>
+            props.button.submitSelection(
+                props.selectedCards,
+                props.setCardsLoading
+            )
+        }
+        buttonText={props.button.buttonName}
+        flavourText={props.button.flavourText(props.selectedCards)}
+    />
+)
+
+export const Button = <T,>(props: {
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+    buttonText: string
+    flavourText?: string
+}) => (
+    <span className="flex flex-row justify-center items-center border-2 border-bg2 rounded m-2">
         <button
             className="bg-bg2 text-fg2 font-bold p-2 hover:opacity-80"
-            onClick={(_) =>
-                props.button.submitSelection(
-                    props.selectedCards,
-                    props.setCardsLoading
-                )
-            }
+            onClick={props.onClick}
         >
-            {props.button.buttonName}
+            {props.buttonText}
         </button>
-        <div className="font-bold p-2">
-            {props.button.flavourText(props.selectedCards)}
-        </div>
+        {!props.flavourText ? (
+            ""
+        ) : (
+            <div className="font-bold p-2">{props.flavourText}</div>
+        )}
     </span>
 )
 
 export const Buttons = <T,>(props: {
     buttons: CardSelector<T>[] | undefined
     selectedCards: T[]
+    setSelectedCards: SetState<T[]>
     setCardsLoading: (ts: T[], isLoading: boolean) => void
-}) =>
-    props.selectedCards.length === 0 || !props.buttons ? (
+}) => {
+    const onClickReset = (e: React.MouseEvent<HTMLButtonElement>) => {
+        props.setSelectedCards([])
+    }
+    return props.selectedCards.length === 0 || !props.buttons ? (
         ""
     ) : (
         <div className="text-center mb-4 flex justify-center">
             {props.buttons.map((button) => (
-                <Button
+                <CardSelectorButton
                     button={button}
                     selectedCards={props.selectedCards}
                     setCardsLoading={props.setCardsLoading}
                 />
             ))}
+            <Button buttonText={"Reset"} onClick={onClickReset} />
         </div>
     )
+}
 
 export interface SelectableCardsProps<T> {
     type: CardAction.SELECT
@@ -178,7 +199,6 @@ export const Cards = <T,>(props: {
     cardsAction: CardsActionProps<T>
     isLoading: boolean
     elements: T[] | undefined
-    buttons?: CardSelector<T>[]
 }) => {
     const [selectedCards, setSelectedCards] = useState<T[]>([])
     const [loadingCards, setLoadingCards] = useState<T[]>([])
@@ -236,11 +256,16 @@ export const Cards = <T,>(props: {
             <div className="text-xl font-bold m-5 mb-4 my-10 text-center">
                 {props.title}
             </div>
-            <Buttons
-                buttons={props.buttons}
-                selectedCards={selectedCards}
-                setCardsLoading={setCardsLoading}
-            />
+            {props.cardsAction.type !== CardAction.SELECT ? (
+                ""
+            ) : (
+                <Buttons
+                    buttons={props.cardsAction.buttons}
+                    selectedCards={selectedCards}
+                    setSelectedCards={setSelectedCards}
+                    setCardsLoading={setCardsLoading}
+                />
+            )}
             {props.isLoading ? (
                 <Loader size={10} />
             ) : (

@@ -14,10 +14,14 @@ import {
     replaceItems,
 } from "./structs"
 import { getBreaks, getClaims, submitClaim } from "./api"
-import { AwaitingClaimCards, BreakCards } from "./breaks"
+import { BreakCards } from "./cards/breaks"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
-import { ClaimCards } from "./claims"
+import { ClaimCards } from "./cards/claims"
+import { UpcomingBreaksCards } from "./cards/upcoming"
+import { AwaitingClaimCards } from "./cards/reimbursed"
+
+export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
 const manrope = Manrope({
     weight: ["400", "700"],
