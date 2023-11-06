@@ -104,3 +104,12 @@ export interface User {
 }
 
 export const formatAsPrice = (cost: number) => `£${cost.toFixed(2)}`
+
+export const getShortDate = (dt: Date) =>
+    `${dt.getFullYear()}-${dt.getMonth().toString().padStart(2, "0")}-${dt
+        .getDate()
+        .toString()
+        .padStart(2, "0")} ${dt.getHours().toString().padStart(2, "0")}:${dt
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`

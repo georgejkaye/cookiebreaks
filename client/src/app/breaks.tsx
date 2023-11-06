@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react"
-import { setHoliday, setHost } from "./api"
+import React, { useEffect, useRef, useState } from "react"
+import { setHoliday, setHost, submitClaim } from "./api"
 import {
     User,
     CookieBreak,
@@ -7,14 +7,30 @@ import {
     getCookieBreakTime,
     breakInPast,
     UpdateBreaksFn,
+    getBreaksToClaim,
+    Claim,
+    UpdateClaimsFn,
+    formatAsPrice,
+    getDatetimeText,
+    getShortDate,
 } from "./structs"
 import {
     BreakControlIcons,
     BreakStatusIcons,
+    DeleteBreakIcon,
     SmallIcon,
-    getHoverColour,
 } from "./icons"
-import { CardAction, CardSelector, Cards, CardsActionProps } from "./cards"
+import {
+    CardAction,
+    CardSelector,
+    Cards,
+    CardsActionProps,
+    ExpandableCardProps,
+    ExpandableCardsProps,
+    SelectableCardsProps,
+    SmallInfoCard,
+} from "./cards"
+import { ClaimBreakCost } from "./claims"
 
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
@@ -189,8 +205,7 @@ const BreakDetails = (props: {
     setCardLoading: (loading: boolean) => void
 }) => {
     let detailsStyle =
-        "flex flex-col justify-around tablet:flex-row " +
-        "items-center flex-1 w-full desktop:w-2/3"
+        "flex flex-col justify-around tablet:flex-row " + "items-center flex-1"
     return (
         <div className={detailsStyle}>
             <BreakDate cb={props.cb} />
@@ -256,6 +271,11 @@ const BreakCard = (props: {
     </>
 )
 
+const getCardColour = (cb: CookieBreak) =>
+    cb.holiday ? "bg-gray-200" : "bg-white"
+const getSelectedColour = (_: CookieBreak) => "bg-gray-100"
+const getHoverColour = (_: CookieBreak) => "hover:bg-gray-50"
+
 export const BreakCards = (props: {
     title: string
     user: User | undefined
@@ -265,9 +285,6 @@ export const BreakCards = (props: {
     reverseBreaks: boolean
     buttons?: CardSelector<CookieBreak>[]
 }) => {
-    const getCardColour = (cb: CookieBreak) =>
-        cb.holiday ? "bg-gray-200" : "bg-white"
-    const getSelectedColour = (cb: CookieBreak) => "bg-gray-100"
     const getCardContent = (
         cb: CookieBreak,
         setLoading: (loading: boolean) => void
@@ -299,6 +316,177 @@ export const BreakCards = (props: {
             getCardColour={getCardColour}
             getCardContent={getCardContent}
             buttons={props.buttons}
+        />
+    )
+}
+
+const BreakReimbursedDate = (props: { cb: CookieBreak }) => {
+    const content = (
+        <span className="mr-6">
+            {!props.cb.reimbursed ? "" : getShortDate(props.cb.reimbursed)}
+        </span>
+    )
+    return (
+        <SmallInfoCard
+            width="w-7/12"
+            icon="reimburse"
+            alt="Coin"
+            content={content}
+        />
+    )
+}
+
+const AwaitingClaimCard = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    setLoading: (loading: boolean) => void
+    updateBreaks: UpdateBreaksFn
+}) => {
+    const cardStyles =
+        "flex flex-col desktop:flex-row w-full justify-center " +
+        "items-center justify-between p-2 desktop:p-0"
+    return (
+        <div className={cardStyles}>
+            <div className="flex-1">
+                <BreakDetails
+                    user={props.user}
+                    cb={props.cb}
+                    updateBreaks={props.updateBreaks}
+                    setCardLoading={props.setLoading}
+                />
+            </div>
+            <div className="flex flex-row justify-end w-5/12">
+                <BreakReimbursedDate cb={props.cb} />
+                <div className="w-1/4 my-auto">
+                    <ClaimBreakCost cb={props.cb} />
+                </div>
+                <DeleteBreakIcon
+                    user={props.user}
+                    cb={props.cb}
+                    updateBreaks={props.updateBreaks}
+                    setCardLoading={props.setLoading}
+                />
+            </div>
+        </div>
+    )
+}
+
+const AwaitingClaimInfoCards = (props: { cb: CookieBreak }) => {
+    let content = (
+        <>
+            {!props.cb.reimbursed
+                ? ""
+                : `Reimbursed on ${getDatetimeText(props.cb.reimbursed)}`}
+        </>
+    )
+    return (
+        <>
+            <SmallInfoCard
+                width="w-7/12"
+                icon="reimburse"
+                alt="Coin"
+                content={content}
+            />
+        </>
+    )
+}
+
+const AwaitingClaimCardExpanded = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    setLoading: (loading: boolean) => void
+    updateBreaks: UpdateBreaksFn
+}) => {
+    const cardStyles = "flex w-full flex-col"
+    const expansionStyles =
+        "m-2 p-2 border-t-2 flex flex-row flex-wrap justify-center"
+    return (
+        <div className={cardStyles}>
+            <AwaitingClaimCard
+                user={props.user}
+                cb={props.cb}
+                setLoading={props.setLoading}
+                updateBreaks={props.updateBreaks}
+            />
+            <div className={expansionStyles}>
+                <AwaitingClaimInfoCards cb={props.cb} />
+            </div>
+        </div>
+    )
+}
+
+export const AwaitingClaimCards = (props: {
+    user: User | undefined
+    breaks: CookieBreak[]
+    updateBreaks: UpdateBreaksFn
+    updateClaims: UpdateClaimsFn
+    isLoadingBreaks: boolean
+}) => {
+    const [breaksToClaim, setBreaksToClaim] = useState<CookieBreak[]>()
+    useEffect(() => {
+        setBreaksToClaim(getBreaksToClaim(props.breaks))
+    }, [props.breaks])
+    const getCardContent = (
+        cb: CookieBreak,
+        setLoading: (loading: boolean) => void
+    ) => (
+        <AwaitingClaimCard
+            user={props.user}
+            cb={cb}
+            setLoading={setLoading}
+            updateBreaks={props.updateBreaks}
+        />
+    )
+    const getCardContentExpanded = (
+        cb: CookieBreak,
+        setLoading: (loading: boolean) => void
+    ) => (
+        <AwaitingClaimCardExpanded
+            user={props.user}
+            cb={cb}
+            setLoading={setLoading}
+            updateBreaks={props.updateBreaks}
+        />
+    )
+    const makeClaim = (
+        cbs: CookieBreak[],
+        setLoadingCards: (cbs: CookieBreak[], loading: boolean) => void
+    ) => {
+        if (props.user) {
+            submitClaim(
+                props.user,
+                cbs,
+                props.updateBreaks,
+                props.updateClaims,
+                (b) => setLoadingCards(cbs, b)
+            )
+        }
+    }
+    const claimButton = {
+        buttonName: "Make claim",
+        submitSelection: makeClaim,
+        flavourText: (cbs: CookieBreak[]) => {
+            let cost = cbs.reduce(
+                (acc, cur) => acc + (cur.cost ? cur.cost : 0),
+                0
+            )
+            return formatAsPrice(cost)
+        },
+    }
+    const cardsAction: SelectableCardsProps<CookieBreak> = {
+        type: CardAction.SELECT,
+        getSelectedColour: getSelectedColour,
+        getHoverColour: getHoverColour,
+        buttons: [claimButton],
+    }
+    return (
+        <Cards<CookieBreak>
+            title="Awaiting claim"
+            getCardColour={getCardColour}
+            getCardContent={getCardContent}
+            cardsAction={cardsAction}
+            isLoading={props.isLoadingBreaks}
+            elements={breaksToClaim}
         />
     )
 }
