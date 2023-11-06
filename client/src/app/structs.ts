@@ -113,3 +113,6 @@ export const getShortDate = (dt: Date) =>
         .getMinutes()
         .toString()
         .padStart(2, "0")}`
+
+export const getClaimsToComplete = (cs: Claim[]) =>
+    cs.filter((c) => !c.reimbursed)
