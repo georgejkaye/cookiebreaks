@@ -394,6 +394,7 @@ def claim_reimbursed(claim_id: int) -> None:
         )
     """
     cur.execute(break_statement, {"id": claim_id})
+    conn.commit()
     disconnect(conn, cur)
 
 
