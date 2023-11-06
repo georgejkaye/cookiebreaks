@@ -30,7 +30,7 @@ import {
     SelectableCardsProps,
     SmallInfoCard,
 } from "./cards"
-import { ClaimBreakCost } from "./claims"
+import { ClaimBreakCost } from "./claimed"
 import { SetState } from "../page"
 
 export const TickCrossInputBox = (props: {

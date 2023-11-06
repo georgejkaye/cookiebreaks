@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { submitClaim } from "../api"
 import { SmallInfoCard, SelectableCardsProps, CardAction, Cards } from "./cards"
-import { ClaimBreakCost } from "./claims"
+import { ClaimBreakCost } from "./claimed"
 import { getHoverColour } from "../icons"
 import {
     CookieBreak,

@@ -17,7 +17,7 @@ import { getBreaks, getClaims, submitClaim } from "./api"
 import { BreakCards } from "./cards/breaks"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
-import { ClaimCards } from "./cards/claims"
+import { ClaimCards } from "./cards/claimed"
 import { UpcomingBreaksCards } from "./cards/upcoming"
 import { AwaitingClaimCards } from "./cards/reimbursed"
 
@@ -139,6 +139,7 @@ const Home = () => {
                                 title="Outstanding claims"
                                 user={user}
                                 claims={claims}
+                                breaks={breaks}
                                 updateClaims={updateClaims}
                                 isLoadingClaims={isLoadingClaims}
                             />
