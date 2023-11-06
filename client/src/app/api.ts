@@ -239,3 +239,24 @@ export const submitClaim = async (
     updateClaims([responseToClaim(updatedClaims, breaks)], [])
     setTimeout(() => setLoadingCards(false), 1)
 }
+
+export const completeClaim = async (
+    user: User,
+    claim: Claim,
+    breaks: CookieBreak[],
+    updateClaims: UpdateClaimsFn,
+    setLoadingCard: (loading: boolean) => void
+) => {
+    let endpoint = `api/claims/success`
+    let config = {
+        headers: headers(user.token),
+        params: {
+            claim_id: claim.id,
+        },
+    }
+    setLoadingCard(true)
+    let response = await axios.post(endpoint, null, config)
+    let responseData = response.data
+    updateClaims([], [responseToClaim(responseData[0], breaks)])
+    setTimeout(() => setLoadingCard(false), 1)
+}
