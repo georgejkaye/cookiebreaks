@@ -54,7 +54,7 @@ async def claim_break(
     "/success", response_model=list[Claim], summary="Record a successful expense claim"
 )
 async def reimburse_admin(
-    current_user: Annotated[User, Depends(is_admin)], break_id: int
+    current_user: Annotated[User, Depends(is_admin)], claim_id: int
 ):
-    claim_reimbursed(break_id)
+    claim_reimbursed(claim_id)
     return list(map(lambda c: claim_internal_to_external(c), get_claim_objects()))
