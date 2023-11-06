@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import Modal from "./modal"
 import { login } from "../api"
 import { Claim, CookieBreak, User } from "../structs"
-import { SetState } from "../breaks"
+import { SetState } from "../cards/breaks"
 
 export interface LoginData {
     user: string

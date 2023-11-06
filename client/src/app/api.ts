@@ -7,7 +7,7 @@ import {
     UpdateClaimsFn,
     User,
 } from "./structs"
-import { SetState } from "./breaks"
+import { SetState } from "./page"
 
 const dateOrUndefined = (datetime: string | undefined) =>
     datetime ? new Date(datetime) : undefined

@@ -3,7 +3,7 @@ import { User, CookieBreak, Claim } from "./structs"
 import Loader from "./loader"
 import { login } from "./api"
 import { LoginModal, LogoutModal } from "./modals/login"
-import { SetState } from "./breaks"
+import { SetState } from "./page"
 
 const InputBox = (props: {
     type: string

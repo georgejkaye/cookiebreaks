@@ -11,8 +11,8 @@ import {
     UpdateClaimsFn,
     User,
     getDateString,
-} from "./structs"
-import { SmallIcon } from "./icons"
+} from "../structs"
+import { SmallIcon } from "../icons"
 const ClaimBreakDate = (props: { cb: CookieBreak }) => {
     const claimBreakDateStyles = "mx-2 flex-1 line-height-0"
     return (
