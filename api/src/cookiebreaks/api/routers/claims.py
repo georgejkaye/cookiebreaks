@@ -2,7 +2,11 @@ from dataclasses import dataclass
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends
 
-from cookiebreaks.core.database import claim_for_breaks, claim_reimbursed, get_claim_objects#
+from cookiebreaks.core.database import (
+    claim_for_breaks,
+    claim_reimbursed,
+    get_claim_objects,
+)
 from cookiebreaks.core.structs import ClaimFilters, User
 
 from cookiebreaks.api.routers.utils import (
@@ -23,7 +27,7 @@ async def request_claims(
     current_user: Annotated[User, Depends(is_admin)], reimbursed: Optional[bool] = None
 ):
     claims = get_claim_objects(ClaimFilters(reimbursed))
-    return list(map(lambda c: claim_internal_to_external(c, current_user), claims))
+    return list(map(lambda c: claim_internal_to_external(c), claims))
 
 
 @dataclass
@@ -42,9 +46,7 @@ async def claim_break(
     external_breaks = list(
         map(lambda c: break_internal_to_external(c, current_user), updated_breaks)
     )
-    external_claims = list(
-        map(lambda c: claim_internal_to_external(c, current_user), updated_claims)
-    )
+    external_claims = list(map(lambda c: claim_internal_to_external(c), updated_claims))
     return BreakAndClaim(external_breaks, external_claims)
 
 
@@ -55,6 +57,4 @@ async def reimburse_admin(
     current_user: Annotated[User, Depends(is_admin)], break_id: int
 ):
     claim_reimbursed(break_id)
-    return list(
-        map(lambda c: claim_internal_to_external(c, current_user), get_claim_objects())
-    )
+    return list(map(lambda c: claim_internal_to_external(c), get_claim_objects()))
