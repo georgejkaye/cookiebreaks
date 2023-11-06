@@ -114,14 +114,14 @@ const headers = (token: string) => ({
 
 export const announceBreak = async (
     user: User,
-    id: number,
+    cb: CookieBreak,
     updateBreaks: UpdateBreaksFn,
     setLoadingCard: (loading: boolean) => void
 ) => {
     let endpoint = `/api/breaks/announce`
     let config = {
         params: {
-            break_id: id,
+            break_id: cb.id,
         },
         headers: headers(user.token),
     }
