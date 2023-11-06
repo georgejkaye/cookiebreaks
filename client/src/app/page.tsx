@@ -14,7 +14,7 @@ import {
     replaceItems,
 } from "./structs"
 import { getBreaks, getClaims, submitClaim } from "./api"
-import { BreakCards } from "./breaks"
+import { AwaitingClaimCards, BreakCards } from "./breaks"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
 import { ClaimCards } from "./claims"
@@ -124,28 +124,12 @@ const Home = () => {
                                 isLoadingBreaks={isLoadingBreaks}
                                 reverseBreaks={false}
                             />
-                            <BreakCards
-                                title="Awaiting claim"
+                            <AwaitingClaimCards
                                 user={user}
-                                breaks={breaksToClaim}
+                                breaks={breaks}
                                 updateBreaks={updateBreaks}
+                                updateClaims={updateClaims}
                                 isLoadingBreaks={isLoadingBreaks}
-                                reverseBreaks={false}
-                                buttons={[
-                                    {
-                                        buttonName: "Make claim",
-                                        submitSelection: makeClaim,
-                                        flavourText: (cbs) => {
-                                            let cost = cbs.reduce(
-                                                (acc, cur) =>
-                                                    acc +
-                                                    (cur.cost ? cur.cost : 0),
-                                                0
-                                            )
-                                            return formatAsPrice(cost)
-                                        },
-                                    },
-                                ]}
                             />
                             <ClaimCards
                                 title="Outstanding claims"

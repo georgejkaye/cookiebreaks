@@ -1,5 +1,6 @@
 import { useState } from "react"
 import Loader from "./loader"
+import { SmallIcon } from "./icons"
 
 export const ActionButton = (props: {
     name: string
@@ -176,7 +177,7 @@ export const Cards = <T,>(props: {
     ) => JSX.Element
     cardsAction: CardsActionProps<T>
     isLoading: boolean
-    elements: T[]
+    elements: T[] | undefined
     buttons?: CardSelector<T>[]
 }) => {
     const [selectedCards, setSelectedCards] = useState<T[]>([])
@@ -227,7 +228,8 @@ export const Cards = <T,>(props: {
                   type: CardAction.NONE,
               }
 
-    return !props.isLoading && props.elements.length === 0 ? (
+    return !props.elements ||
+        (!props.isLoading && props.elements.length === 0) ? (
         ""
     ) : (
         <>
@@ -256,5 +258,23 @@ export const Cards = <T,>(props: {
                 ))
             )}
         </>
+    )
+}
+
+export const SmallInfoCard = (props: {
+    icon: string
+    alt: string
+    content: JSX.Element
+    width: string
+}) => {
+    const claimBreakStyles =
+        "flex flex-row m-2 p-2 border-2 rounded " +
+        "items-center bg-white justify-between " +
+        props.width
+    return (
+        <div className={claimBreakStyles}>
+            <SmallIcon icon={props.icon} alt={props.alt} styles="mr-2" />
+            {props.content}
+        </div>
     )
 }

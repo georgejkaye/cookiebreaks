@@ -1,4 +1,10 @@
-import { ActionButton, CardAction, Cards, CardsActionProps } from "./cards"
+import {
+    ActionButton,
+    CardAction,
+    Cards,
+    CardsActionProps,
+    SmallInfoCard,
+} from "./cards"
 import {
     Claim,
     CookieBreak,
@@ -15,21 +21,26 @@ const ClaimBreakDate = (props: { cb: CookieBreak }) => {
         </div>
     )
 }
-const ClaimBreakCost = (props: { cb: CookieBreak }) => {
+export const ClaimBreakCost = (props: { cb: CookieBreak }) => {
     const breakCost = !props.cb.cost ? "" : `£${props.cb.cost.toFixed(2)}`
-    const claimBreakCostStyles = "mx-2 bg-bg2 rounded text-white font-bold px-2"
-    return <div className={claimBreakCostStyles}>{breakCost}</div>
+    const claimBreakCostStyles =
+        "mx-2 bg-bg2 rounded text-white font-bold px-2 py-1"
+    return <span className={claimBreakCostStyles}>{breakCost}</span>
 }
 const ClaimBreak = (props: { cb: CookieBreak }) => {
-    const claimBreakStyles =
-        "flex flex-row m-2 p-2 w-11/12 desktop:w-5/12 border-2 rounded " +
-        "items-center bg-white justify-center"
-    return (
-        <div className={claimBreakStyles}>
-            <SmallIcon icon="cookie" title="" alt="Cookie" styles="mr-2" />
+    let content = (
+        <>
             <ClaimBreakDate cb={props.cb} />
             <ClaimBreakCost cb={props.cb} />
-        </div>
+        </>
+    )
+    return (
+        <SmallInfoCard
+            icon="cookie"
+            alt="Cookie"
+            width="w-11/12 desktop:w-5/12"
+            content={content}
+        />
     )
 }
 const ClaimCompleteButton = (props: { claim: Claim; hoverColour: string }) => {
