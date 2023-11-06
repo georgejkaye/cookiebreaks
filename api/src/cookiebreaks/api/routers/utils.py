@@ -72,9 +72,7 @@ class ClaimExternal:
     claim_reimbursed: Optional[datetime]
 
 
-def claim_internal_to_external(
-    internal: ClaimInternal, current_user: Optional[User]
-) -> ClaimExternal:
+def claim_internal_to_external(internal: ClaimInternal) -> ClaimExternal:
     return ClaimExternal(
         internal.id,
         arrow_to_datetime(internal.claim_date),
@@ -93,4 +91,4 @@ def get_breaks(
 
 def get_claims(current_user: Optional[User] = None) -> List[ClaimExternal]:
     claims = get_claim_objects()
-    return list(map(lambda c: claim_internal_to_external(c, current_user), claims))
+    return list(map(lambda c: claim_internal_to_external(c), claims))

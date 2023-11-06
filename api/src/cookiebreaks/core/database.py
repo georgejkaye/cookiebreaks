@@ -190,7 +190,15 @@ def rows_to_claims(rows) -> List[Claim]:
     for row in rows:
         (id, date, breaks, amount, reimbursed) = row
         break_objects = get_specific_breaks(breaks)
-        claims.append(Claim(id, date, break_objects, amount, reimbursed))
+        claims.append(
+            Claim(
+                id,
+                arrow.get(date),
+                break_objects,
+                amount,
+                arrow_or_none(reimbursed, "Europe/London"),
+            )
+        )
     return claims
 
 
@@ -365,9 +373,7 @@ def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
             claim_reimbursed = arrow.get(claim_reimbursed)
         claim_date = arrow.get(claim_date)
         claims.append(
-            Claim(
-                claim_id, arrow.get(claim_date), breaks_claimed, claim_amount, claim_reimbursed
-            )
+            Claim(claim_id, claim_date, breaks_claimed, claim_amount, claim_reimbursed)
         )
     return claims
 
