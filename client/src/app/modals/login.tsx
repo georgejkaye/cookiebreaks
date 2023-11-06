@@ -41,7 +41,6 @@ export const LoginModal = (props: {
     }
     const handleSubmit = (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault()
-        console.log(formState.user, formState.password)
         setFormState(initialLoginFormState)
     }
     const onClickSubmitButton = (e: React.MouseEvent<HTMLButtonElement>) => {

@@ -50,7 +50,9 @@ export const replaceItems = <T>(
                 itemsToAdd.find((newItem) => eqCheck(oldItem, newItem)) ||
                 oldItem
         )
-        .filter((item) => !itemsToRemove.includes(item))
+        .filter((item) =>
+            itemsToRemove.find((removedItem) => eqCheck(item, removedItem))
+        )
 
 export const getDateString = (datetime: Date) => {
     let weekday = datetime.toLocaleDateString("en-GB", {
