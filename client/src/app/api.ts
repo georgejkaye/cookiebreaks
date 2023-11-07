@@ -18,7 +18,7 @@ const responseToBreak = (b: any) => ({
     datetime: new Date(b.break_time),
     location: b.location,
     holiday: b.holiday,
-    cost: b.cost,
+    cost: parseFloat(b.cost),
     announced: dateOrUndefined(b.break_announced),
     reimbursed: dateOrUndefined(b.host_reimbursed),
     claimed: dateOrUndefined(b.admin_claimed),
@@ -32,7 +32,7 @@ const responseToClaim = (c: any, breaks: CookieBreak[]) => ({
     breaks: c.breaks_claimed.map((id: number) =>
         breaks.find((cb) => cb.id === id)
     ),
-    amount: c.claim_amount,
+    amount: parseFloat(c.claim_amount),
     reimbursed: dateOrUndefined(c.claim_reimbursed),
 })
 
@@ -81,13 +81,34 @@ export const login = async (
     }
 }
 
+export const getData = async (
+    user: User | undefined,
+    breaks: CookieBreak[],
+    setBreaks: SetState<CookieBreak[]>,
+    setLoadingBreaks: SetState<boolean>,
+    setClaims: SetState<Claim[]>,
+    setLoadingClaims: SetState<boolean>
+) => {
+    setLoadingBreaks(true)
+    setLoadingClaims(true)
+    await getBreaks(user, setBreaks, setLoadingBreaks)
+    if (user && user.admin) {
+        await getClaims(user, breaks, setClaims, setLoadingClaims)
+        setLoadingClaims(false)
+    }
+}
+
 export const getBreaks = async (
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>,
-    setLoadingBreaks: Dispatch<SetStateAction<boolean>>
+    user: User | undefined,
+    setBreaks: SetState<CookieBreak[]>,
+    setLoadingBreaks: SetState<boolean>
 ) => {
     let endpoint = `/api/breaks`
     setLoadingBreaks(true)
-    let response = await axios.get(endpoint)
+    let config = {
+        headers: getHeaders(user),
+    }
+    let response = await axios.get(endpoint, config)
     let data = response.data
     let breaks = data.map(responseToBreak)
     setBreaks(breaks)
@@ -95,22 +116,30 @@ export const getBreaks = async (
 }
 
 export const getClaims = async (
+    user: User | undefined,
+    breaks: CookieBreak[],
     setClaims: SetState<Claim[]>,
     setLoadingClaims: SetState<boolean>
 ) => {
     let endpoint = `/api/claims?reimbursed=false`
     setLoadingClaims(true)
-    let response = await axios.get(endpoint)
+    let config = {
+        headers: getHeaders(user),
+    }
+    let response = await axios.get(endpoint, config)
     let data = response.data
-    let claims = data.map(responseToClaim)
+    let claims = data.map((c: any) => responseToClaim(c, breaks))
     setClaims(claims)
-    setTimeout(() => setLoadingClaims(true), 1)
+    setTimeout(() => setLoadingClaims(false), 1)
 }
 
-const headers = (token: string) => ({
-    accept: "application/json",
-    Authorization: `Bearer ${token}`,
-})
+const getHeaders = (user: User | undefined) =>
+    !user
+        ? {}
+        : {
+              accept: "application/json",
+              Authorization: `Bearer ${user.token}`,
+          }
 
 export const announceBreak = async (
     user: User,
@@ -123,7 +152,7 @@ export const announceBreak = async (
         params: {
             break_id: cb.id,
         },
-        headers: headers(user.token),
+        headers: getHeaders(user),
     }
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
@@ -145,7 +174,7 @@ export const reimburseBreak = async (
             break_id: id,
             cost,
         },
-        headers: headers(user.token),
+        headers: getHeaders(user),
     }
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
@@ -168,7 +197,7 @@ export const setHost = async (
             break_id: id,
             host_name: actualHost,
         },
-        headers: headers(user.token),
+        headers: getHeaders(user),
     }
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
@@ -190,7 +219,7 @@ export const setHoliday = async (
             break_id: id,
             reason,
         },
-        headers: headers(user.token),
+        headers: getHeaders(user),
     }
     setLoadingCard(true)
     let response = await axios.post(endpoint, null, config)
@@ -207,7 +236,7 @@ export const deleteBreak = async (
 ) => {
     let endpoint = `/api/breaks/${cb.id}`
     let config = {
-        headers: headers(user.token),
+        headers: getHeaders(user),
     }
     setLoadingCard(true)
     await axios.delete(endpoint, config)
@@ -224,7 +253,7 @@ export const submitClaim = async (
 ) => {
     let endpoint = `api/claims/claim`
     let config = {
-        headers: headers(user.token),
+        headers: getHeaders(user),
     }
     setLoadingCards(true)
     let response = await axios.post(
@@ -249,7 +278,7 @@ export const completeClaim = async (
 ) => {
     let endpoint = `api/claims/success`
     let config = {
-        headers: headers(user.token),
+        headers: getHeaders(user),
         params: {
             claim_id: claim.id,
         },
