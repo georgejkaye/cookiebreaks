@@ -13,7 +13,7 @@ import {
     getOutstandingBreaks,
     replaceItems,
 } from "./structs"
-import { getBreaks, getClaims, submitClaim } from "./api"
+import { getBreaks, getClaims, getData, submitClaim } from "./api"
 import { BreakCards } from "./cards/breaks"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
@@ -46,10 +46,14 @@ const Home = () => {
     const [isLoadingBreaks, setLoadingBreaks] = useState(false)
     const [isLoadingClaims, setLoadingClaims] = useState(false)
     useEffect(() => {
-        getBreaks(setBreaks, setLoadingBreaks)
-        if (user && user.admin) {
-            getClaims(setClaims, setLoadingClaims)
-        }
+        getData(
+            user,
+            breaks,
+            setBreaks,
+            setLoadingBreaks,
+            setClaims,
+            setLoadingClaims
+        )
     }, [])
     useEffect(() => {
         setUpcomingBreaks(getFutureBreaks(breaks))
