@@ -7,7 +7,7 @@ import {
     UpdateClaimsFn,
     User,
 } from "./structs"
-import { SetState } from "./page"
+import { Data, SetState } from "./page"
 
 const dateOrUndefined = (datetime: string | undefined) =>
     datetime ? new Date(datetime) : undefined
@@ -39,11 +39,10 @@ const responseToClaim = (c: any, breaks: CookieBreak[]) => ({
 export const login = async (
     username: string,
     password: string,
-    setUser: Dispatch<SetStateAction<User | undefined>>,
-    setStatus: Dispatch<SetStateAction<string>>,
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>,
-    setClaims: Dispatch<SetStateAction<Claim[]>>,
-    setLoading: Dispatch<SetStateAction<boolean>>
+    setUser: SetState<User | undefined>,
+    setStatus: SetState<string>,
+    setData: SetState<Data>,
+    setLoading: SetState<boolean>
 ) => {
     let endpoint = `/api/users/token`
     let data = new FormData()
@@ -67,70 +66,58 @@ export const login = async (
                 token: responseData.access_token,
             })
             let breakObjects = responseData.breaks.map(responseToBreak)
-            setBreaks(breakObjects)
             let claimObjects = responseData.claims.map((c: any) =>
                 responseToClaim(c, breakObjects)
             )
-            setClaims(claimObjects)
+            setData({ breaks: breakObjects, claims: claimObjects })
         } catch (err) {
             console.log(err)
             setStatus("Could not log in...")
         } finally {
-            setLoading(false)
+            setTimeout(() => setLoading(false), 1)
         }
     }
 }
 
 export const getData = async (
     user: User | undefined,
-    breaks: CookieBreak[],
-    setBreaks: SetState<CookieBreak[]>,
-    setLoadingBreaks: SetState<boolean>,
-    setClaims: SetState<Claim[]>,
-    setLoadingClaims: SetState<boolean>
+    setData: SetState<Data>,
+    setLoadingData: SetState<boolean>
 ) => {
-    setLoadingBreaks(true)
-    setLoadingClaims(true)
-    await getBreaks(user, setBreaks, setLoadingBreaks)
-    if (user && user.admin) {
-        await getClaims(user, breaks, setClaims, setLoadingClaims)
-        setLoadingClaims(false)
-    }
+    setLoadingData(true)
+    let breaks = await getBreaks(user)
+    let claims = await getClaims(user, breaks)
+    setData({ breaks: breaks, claims: claims })
+    setTimeout(() => setLoadingData(false))
 }
 
-export const getBreaks = async (
-    user: User | undefined,
-    setBreaks: SetState<CookieBreak[]>,
-    setLoadingBreaks: SetState<boolean>
-) => {
+export const getBreaks = async (user: User | undefined) => {
     let endpoint = `/api/breaks`
-    setLoadingBreaks(true)
     let config = {
         headers: getHeaders(user),
     }
     let response = await axios.get(endpoint, config)
     let data = response.data
     let breaks = data.map(responseToBreak)
-    setBreaks(breaks)
-    setTimeout(() => setLoadingBreaks(false), 1)
+    return breaks
 }
 
 export const getClaims = async (
     user: User | undefined,
-    breaks: CookieBreak[],
-    setClaims: SetState<Claim[]>,
-    setLoadingClaims: SetState<boolean>
+    breaks: CookieBreak[]
 ) => {
-    let endpoint = `/api/claims?reimbursed=false`
-    setLoadingClaims(true)
-    let config = {
-        headers: getHeaders(user),
+    if (!user || !user.admin) {
+        return []
+    } else {
+        let endpoint = `/api/claims?reimbursed=false`
+        let config = {
+            headers: getHeaders(user),
+        }
+        let response = await axios.get(endpoint, config)
+        let data = response.data
+        let claims = data.map((c: any) => responseToClaim(c, breaks))
+        return claims
     }
-    let response = await axios.get(endpoint, config)
-    let data = response.data
-    let claims = data.map((c: any) => responseToClaim(c, breaks))
-    setClaims(claims)
-    setTimeout(() => setLoadingClaims(false), 1)
 }
 
 const getHeaders = (user: User | undefined) =>
