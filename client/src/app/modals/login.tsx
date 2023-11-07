@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import Modal from "./modal"
 import { login } from "../api"
 import { Claim, CookieBreak, User } from "../structs"
-import { SetState } from "../cards/breaks"
+import { SetState, Data } from "../page"
 
 export interface LoginData {
     user: string
@@ -19,8 +19,7 @@ export const LoginModal = (props: {
     setOpen: SetState<boolean>
     setUser: SetState<User | undefined>
     setStatus: SetState<string>
-    setBreaks: SetState<CookieBreak[]>
-    setClaims: SetState<Claim[]>
+    setData: SetState<Data>
     setLoading: SetState<boolean>
 }) => {
     const focusInputRef = useRef<HTMLInputElement | null>(null)
@@ -49,8 +48,7 @@ export const LoginModal = (props: {
             formState.password,
             props.setUser,
             props.setStatus,
-            props.setBreaks,
-            props.setClaims,
+            props.setData,
             props.setLoading
         )
     }

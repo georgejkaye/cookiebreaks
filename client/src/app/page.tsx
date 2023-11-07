@@ -30,54 +30,39 @@ const manrope = Manrope({
     display: "swap",
 })
 
+export interface Data {
+    breaks: CookieBreak[]
+    claims: Claim[]
+}
+
 const Home = () => {
     const [user, setUser] = useState<User | undefined>(undefined)
     // All data
-    const [breaks, setBreaks] = useState<CookieBreak[]>([])
-    const [claims, setClaims] = useState<Claim[]>([])
-    // Categories of break
-    const [upcomingBreaks, setUpcomingBreaks] = useState<CookieBreak[]>([])
-    const [breaksToReimburse, setBreaksToReimburse] = useState<CookieBreak[]>(
-        []
-    )
-    const [breaksToClaim, setBreaksToClaim] = useState<CookieBreak[]>([])
-    const [breaksToComplete, setBreaksToComplete] = useState<CookieBreak[]>([])
-    // Loading while retrieving content
-    const [isLoadingBreaks, setLoadingBreaks] = useState(false)
-    const [isLoadingClaims, setLoadingClaims] = useState(false)
+    const [data, setData] = useState<Data>({ breaks: [], claims: [] })
+    const setBreaks = (breaks: CookieBreak[]) =>
+        setData({ breaks: breaks, claims: data.claims })
+    const setClaims = (claims: Claim[]) =>
+        setData({ breaks: data.breaks, claims: claims })
+    const [isLoadingData, setLoadingData] = useState(false)
     useEffect(() => {
-        getData(
-            user,
-            breaks,
-            setBreaks,
-            setLoadingBreaks,
-            setClaims,
-            setLoadingClaims
-        )
+        getData(user, setData, setLoadingData)
     }, [])
-    useEffect(() => {
-        setUpcomingBreaks(getFutureBreaks(breaks))
-        setBreaksToReimburse(getBreaksToReimburse(breaks))
-        setBreaksToClaim(getBreaksToClaim(breaks))
-        setBreaksToComplete(getBreaksToComplete(breaks))
-    }, [breaks])
-    useEffect(() => {}, [claims])
     const updateBreaks = (
         newBreaks: CookieBreak[],
         breaksToRemove: CookieBreak[]
     ) => {
         let updatedBreaks = replaceItems(
-            breaks,
+            data.breaks,
             newBreaks,
             breaksToRemove,
             (b1, b2) => b1.id === b2.id
         )
-        setBreaks(updatedBreaks)
+        setData({ breaks: updatedBreaks, claims: data.claims })
         return updatedBreaks
     }
     const updateClaims = (newClaims: Claim[], claimsToRemove: Claim[]) => {
         let updatedClaims = replaceItems(
-            claims,
+            data.claims,
             newClaims,
             claimsToRemove,
             (c1, c2) => c1.id === c2.id
@@ -95,15 +80,23 @@ const Home = () => {
             )
         }
     }
+    const [upcomingBreaks, setUpcomingBreaks] = useState<CookieBreak[]>([])
+    const [breaksToReimburse, setBreaksToReimburse] = useState<CookieBreak[]>(
+        []
+    )
+    const [breaksToClaim, setBreaksToClaim] = useState<CookieBreak[]>([])
+    const [breaksToComplete, setBreaksToComplete] = useState<CookieBreak[]>([])
+    // Loading while retrieving content
+    useEffect(() => {
+        setUpcomingBreaks(getFutureBreaks(data.breaks))
+        setBreaksToReimburse(getBreaksToReimburse(data.breaks))
+        setBreaksToClaim(getBreaksToClaim(data.breaks))
+        setBreaksToComplete(getBreaksToComplete(data.breaks))
+    }, [data])
     return (
         <>
             <main className={`text-fg ${manrope.className}`}>
-                <TopBar
-                    setUser={setUser}
-                    user={user}
-                    setBreaks={setBreaks}
-                    setClaims={setClaims}
-                />
+                <TopBar setUser={setUser} user={user} setData={setData} />
                 <div className="text-center m-5 w-mobileContent tablet:w-tabletContent desktop:w-content mx-auto">
                     <div>
                         The cookie break is the school's longest running social
@@ -117,7 +110,7 @@ const Home = () => {
                         user={user}
                         breaks={upcomingBreaks}
                         updateBreaks={updateBreaks}
-                        isLoadingBreaks={isLoadingBreaks}
+                        isLoadingBreaks={isLoadingData}
                         reverseBreaks={false}
                     />
                     {!user?.admin ? (
@@ -129,23 +122,23 @@ const Home = () => {
                                 user={user}
                                 breaks={breaksToReimburse}
                                 updateBreaks={updateBreaks}
-                                isLoadingBreaks={isLoadingBreaks}
+                                isLoadingBreaks={isLoadingData}
                                 reverseBreaks={false}
                             />
                             <AwaitingClaimCards
                                 user={user}
-                                breaks={breaks}
+                                breaks={data.breaks}
                                 updateBreaks={updateBreaks}
                                 updateClaims={updateClaims}
-                                isLoadingBreaks={isLoadingBreaks}
+                                isLoadingBreaks={isLoadingData}
                             />
                             <ClaimCards
                                 title="Outstanding claims"
                                 user={user}
-                                claims={claims}
-                                breaks={breaks}
+                                claims={data.claims}
+                                breaks={data.breaks}
                                 updateClaims={updateClaims}
-                                isLoadingClaims={isLoadingClaims}
+                                isLoadingClaims={isLoadingData}
                             />
                         </>
                     )}
