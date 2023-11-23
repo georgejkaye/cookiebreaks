@@ -63,6 +63,8 @@ services:
       - api
     secrets:
       - api_password
+    networks:
+      - internal
 
 secrets:
   api_secret:
