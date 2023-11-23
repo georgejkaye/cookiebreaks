@@ -87,6 +87,8 @@ services:
       - api_password
     depends_on:
       - api
+    networks:
+      - internal
 
 secrets:
   api_secret:
