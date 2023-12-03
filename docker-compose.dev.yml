@@ -1,3 +1,6 @@
+networks:
+  internal:
+    external: false
 services:
   api:
     build:
@@ -32,6 +35,8 @@ services:
     volumes:
       - ./api/src:/app/src
       - ${MAILCTL_TOKEN}:/app/mail/token.auth
+    networks:
+      - internal
   client:
     build:
       context: client
@@ -48,12 +53,14 @@ services:
     volumes:
       - ./client:/app
       - ./client/node_modules:/app/node_modules
+    networks:
+      - internal
   updater:
     build:
       context: updater
       dockerfile: Dockerfile
       args:
-        ENDPOINT: ${API_ENDPOINT}
+        CRON: "* * * * *"
         POETRY_VERSION: ${POETRY_VERSION}
     environment:
       API_USER: ${API_USER}
@@ -65,7 +72,6 @@ services:
       - api_password
     networks:
       - internal
-
 secrets:
   api_secret:
     file: ${API_SECRET_FILE}

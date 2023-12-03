@@ -25,9 +25,9 @@ ENV VIRTUAL_ENV=/app/.venv \
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-ARG ENDPOINT
+ARG CRON="0 0 * * *"
 
-RUN echo "0 0 * * * /app/.venv/bin/python /app/src/updater/main.py >> /var/log/cron.log 2>&1" > crontab
+RUN echo "${CRON} /app/.venv/bin/python /app/src/updater/main.py >> /var/log/cron.log 2>&1" > crontab
 RUN crontab crontab
 
 COPY src ./app/src
