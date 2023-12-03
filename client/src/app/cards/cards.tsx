@@ -7,6 +7,7 @@ export const ActionButton = (props: {
     name: string
     hoverColour: string
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+    icon?: string
 }) => {
     const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation()
@@ -17,7 +18,14 @@ export const ActionButton = (props: {
             className={`p-2 border-2 bg-white border-bg2 rounded ${props.hoverColour}`}
             onClick={onClick}
         >
-            {props.name}
+            <div className="flex align-items-center">
+                {props.icon ? (
+                    <SmallIcon styles="m-0" icon={props.icon} alt={"Tick"} />
+                ) : (
+                    ""
+                )}
+                {props.name}
+            </div>
         </button>
     )
 }

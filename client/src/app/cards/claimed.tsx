@@ -25,6 +25,7 @@ const ClaimBreakDate = (props: { cb: CookieBreak }) => {
     )
 }
 export const ClaimBreakCost = (props: { cb: CookieBreak }) => {
+    console.log(props.cb.cost)
     const breakCost = !props.cb.cost ? "" : `£${props.cb.cost.toFixed(2)}`
     const claimBreakCostStyles =
         "mx-2 bg-bg2 rounded text-white font-bold px-2 py-1"
@@ -71,6 +72,7 @@ const ClaimCompleteButton = (props: {
                 name="Complete"
                 onClick={onClickComplete}
                 hoverColour={props.hoverColour}
+                icon="success"
             />
         </div>
     )
