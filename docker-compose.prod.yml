@@ -77,7 +77,7 @@ services:
       context: updater
       dockerfile: Dockerfile
       args:
-        ENDPOINT: ${API_ENDPOINT}
+        CRON: ${CRON}
         POETRY_VERSION: ${POETRY_VERSION}
     environment:
       API_USER: ${API_USER}
