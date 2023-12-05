@@ -67,9 +67,11 @@ const ClaimCompleteButton = (props: {
         }
     }
     return (
-        <div className="desktop:w-40 m-2 desktop:m-0">
+        <div className="flex-end">
             <ActionButton
-                name="Complete"
+                style="mx-1"
+                alt="Tick"
+                title="Mark this claim as completed"
                 onClick={onClickComplete}
                 hoverColour={props.hoverColour}
                 icon="success"
@@ -101,7 +103,7 @@ const ClaimButtons = (props: {
 }) => {
     const buttonHoverColour = "hover:bg-gray-100"
     const claimButtonsStyles =
-        "w-full desktop:w-1/4 mt-2 tablet:mt-0 flex items-center justify-center"
+        "w-full desktop:w-1/4 mt-2 tablet:mt-0 flex items-center justify-end"
     return (
         <div className={claimButtonsStyles}>
             <ClaimCompleteButton
