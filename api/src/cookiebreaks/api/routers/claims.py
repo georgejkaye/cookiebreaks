@@ -8,20 +8,21 @@ from cookiebreaks.core.database import (
     get_claim_objects,
 )
 from cookiebreaks.core.structs import ClaimFilters, User
-
 from cookiebreaks.api.routers.utils import (
-    BreakExternal as Break,
+    BreakExternal,
+    ClaimExternal,
     break_internal_to_external,
+    claim_internal_to_external,
 )
-from cookiebreaks.api.routers.utils import ClaimExternal as Claim
 from cookiebreaks.api.routers.users import is_admin
-from cookiebreaks.api.routers.utils import claim_internal_to_external
 
 router = APIRouter(prefix="/claims", tags=["claims"])
 
 
 @router.get(
-    "", response_model=list[Claim], summary="Get a list of submitted expense claims"
+    "",
+    response_model=list[ClaimExternal],
+    summary="Get a list of submitted expense claims",
 )
 async def request_claims(
     current_user: Annotated[User, Depends(is_admin)], reimbursed: Optional[bool] = None
@@ -32,8 +33,8 @@ async def request_claims(
 
 @dataclass
 class BreakAndClaim:
-    breaks: list[Break]
-    claims: list[Claim]
+    breaks: list[BreakExternal]
+    claims: list[ClaimExternal]
 
 
 @router.post(
@@ -51,7 +52,9 @@ async def claim_break(
 
 
 @router.post(
-    "/success", response_model=list[Claim], summary="Record a successful expense claim"
+    "/success",
+    response_model=list[ClaimExternal],
+    summary="Record a successful expense claim",
 )
 async def reimburse_admin(
     current_user: Annotated[User, Depends(is_admin)], claim_id: int
