@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from "react"
-import { setHoliday, setHost, submitClaim } from "../api"
+import {
+    announceBreak,
+    deleteBreak,
+    setHoliday,
+    setHost,
+    submitClaim,
+} from "../api"
 import {
     User,
     CookieBreak,
@@ -14,13 +20,9 @@ import {
     getDatetimeText,
     getShortDate,
 } from "../structs"
+import { BreakControlIcons, BreakStatusIcons, SmallIcon } from "../icons"
 import {
-    BreakControlIcons,
-    BreakStatusIcons,
-    DeleteBreakIcon,
-    SmallIcon,
-} from "../icons"
-import {
+    ActionButton,
     CardAction,
     CardSelector,
     Cards,
@@ -220,6 +222,91 @@ export const BreakDetails = (props: {
     )
 }
 
+const AnnounceBreakButton = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setCardLoading: (loading: boolean) => void
+}) => {
+    const onClickAnnounce = (e: React.MouseEvent<HTMLButtonElement>) => {
+        props.user
+            ? announceBreak(
+                  props.user,
+                  props.cb,
+                  props.updateBreaks,
+                  props.setCardLoading
+              )
+            : undefined
+    }
+    return (
+        <ActionButton
+            style="mx-1"
+            hoverColour={getHoverColour(props.cb)}
+            onClick={onClickAnnounce}
+            icon="announce"
+            alt="Loudspeaker"
+            title="Announce this cookie break"
+        />
+    )
+}
+
+export const HolidayBreakButton = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setCardLoading: (loading: boolean) => void
+}) => {
+    const onClickHoliday = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (props.user) {
+            setHoliday(
+                props.user,
+                props.cb,
+                props.cb.holiday ? undefined : "Holiday",
+                props.updateBreaks,
+                props.setCardLoading
+            )
+        }
+    }
+    return (
+        <ActionButton
+            style="mx-1"
+            icon={props.cb.holiday ? "landing" : "takeoff"}
+            title={props.cb.holiday ? "Unset holiday" : "Set holiday"}
+            alt={props.cb.holiday ? "Plane landing" : "Plane taking off"}
+            onClick={onClickHoliday}
+            hoverColour={getHoverColour(props.cb)}
+        />
+    )
+}
+
+export const DeleteBreakButton = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setCardLoading: (loading: boolean) => void
+}) => {
+    const onClickDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (props.user) {
+            deleteBreak(
+                props.user,
+                props.cb,
+                props.updateBreaks,
+                props.setCardLoading
+            )
+        }
+    }
+    return (
+        <ActionButton
+            style="mx-1"
+            icon="bin"
+            title="Delete break"
+            alt="Bin"
+            onClick={onClickDelete}
+            hoverColour={getHoverColour(props.cb)}
+        />
+    )
+}
+
 const AdminIcons = (props: {
     user: User | undefined
     cb: CookieBreak
@@ -227,19 +314,26 @@ const AdminIcons = (props: {
     setCardLoading: (loading: boolean) => void
 }) => {
     let adminIconsStyle =
-        "h-12 desktop:my-0 w-full justify-center items-center desktop:w-1/4 flex flex-row desktop:flex-end"
+        "h-12 desktop:my-0 w-full justify-center desktop:justify-end items-center desktop:w-1/4 flex flex-row desktop:flex-end"
+
     return (
         <div className={adminIconsStyle}>
-            <BreakStatusIcons
+            <AnnounceBreakButton
+                user={props.user}
                 cb={props.cb}
                 updateBreaks={props.updateBreaks}
-                user={props.user}
                 setCardLoading={props.setCardLoading}
             />
-            <BreakControlIcons
+            <HolidayBreakButton
+                user={props.user}
                 cb={props.cb}
                 updateBreaks={props.updateBreaks}
+                setCardLoading={props.setCardLoading}
+            />
+            <DeleteBreakButton
                 user={props.user}
+                cb={props.cb}
+                updateBreaks={props.updateBreaks}
                 setCardLoading={props.setCardLoading}
             />
         </div>
@@ -275,7 +369,7 @@ const BreakCard = (props: {
 export const getCardColour = (cb: CookieBreak) =>
     cb.holiday ? "bg-gray-200" : "bg-white"
 export const getSelectedColour = (_: CookieBreak) => "bg-gray-100"
-const getHoverColour = (_: CookieBreak) => "hover:bg-gray-50"
+const getHoverColour = (_: CookieBreak) => "hover:bg-gray-400"
 
 export const BreakCards = (props: {
     title: string

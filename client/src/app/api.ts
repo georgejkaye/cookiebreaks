@@ -195,7 +195,7 @@ export const setHost = async (
 
 export const setHoliday = async (
     user: User,
-    id: number,
+    cb: CookieBreak,
     reason: string | undefined,
     updateBreaks: UpdateBreaksFn,
     setLoadingCard: (loading: boolean) => void
@@ -203,7 +203,7 @@ export const setHoliday = async (
     let endpoint = `/api/breaks/holiday`
     let config = {
         params: {
-            break_id: id,
+            break_id: cb.id,
             reason,
         },
         headers: getHeaders(user),
