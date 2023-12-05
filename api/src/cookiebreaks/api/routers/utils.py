@@ -27,7 +27,11 @@ class BreakExternal:
     admin_reimbursed: Optional[datetime]
 
 
-def arrow_to_datetime(original: Arrow | None) -> datetime | None:
+def arrow_to_datetime(original: Arrow) -> datetime:
+    return original.datetime
+
+
+def maybe_arrow_to_datetime(original: Arrow | None) -> datetime | None:
     if original:
         return original.datetime
     else:
@@ -38,11 +42,14 @@ def break_internal_to_external(
     internal: BreakInternal, current_user: Optional[User]
 ) -> BreakExternal:
     if current_user and current_user.admin:
-        break_announced = arrow_to_datetime(internal.break_announced)
-        cost = internal.cost
-        host_reimbursed = arrow_to_datetime(internal.host_reimbursed)
-        admin_claimed = arrow_to_datetime(internal.admin_claimed)
-        admin_reimbursed = arrow_to_datetime(internal.admin_reimbursed)
+        break_announced = maybe_arrow_to_datetime(internal.break_announced)
+        if internal.cost:
+            cost = Decimal(internal.cost)
+        else:
+            cost = None
+        host_reimbursed = maybe_arrow_to_datetime(internal.host_reimbursed)
+        admin_claimed = maybe_arrow_to_datetime(internal.admin_claimed)
+        admin_reimbursed = maybe_arrow_to_datetime(internal.admin_reimbursed)
     else:
         break_announced = None
         cost = None
@@ -78,7 +85,7 @@ def claim_internal_to_external(internal: ClaimInternal) -> ClaimExternal:
         arrow_to_datetime(internal.claim_date),
         internal.breaks_claimed,
         internal.claim_amount,
-        arrow_to_datetime(internal.claim_reimbursed),
+        maybe_arrow_to_datetime(internal.claim_reimbursed),
     )
 
 

@@ -46,7 +46,7 @@ async def claim_break(
     external_breaks = list(
         map(lambda c: break_internal_to_external(c, current_user), updated_breaks)
     )
-    external_claims = list(map(lambda c: claim_internal_to_external(c), updated_claims))
+    external_claims = list(map(claim_internal_to_external, updated_claims))
     return BreakAndClaim(external_breaks, external_claims)
 
 

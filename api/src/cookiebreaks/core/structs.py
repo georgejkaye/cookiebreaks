@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import List, Optional
 from arrow import Arrow
 
@@ -23,7 +24,7 @@ class Break:
     holiday: Optional[str]
     host: Optional[str] = None
     break_announced: Optional[Arrow] = None
-    cost: Optional[float] = None
+    cost: Optional[Decimal] = None
     host_reimbursed: Optional[Arrow] = None
     admin_claimed: Optional[Arrow] = None
     admin_reimbursed: Optional[Arrow] = None
@@ -57,7 +58,7 @@ class Claim:
     id: int
     claim_date: Arrow
     breaks_claimed: List[int]
-    claim_amount: float
+    claim_amount: Decimal
     claim_reimbursed: Optional[Arrow] = None
 
 

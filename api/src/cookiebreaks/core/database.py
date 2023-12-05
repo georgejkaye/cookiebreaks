@@ -1,3 +1,5 @@
+from decimal import Decimal
+from turtle import update
 import arrow
 import psycopg2
 
@@ -194,7 +196,7 @@ def rows_to_claims(rows) -> List[Claim]:
             Claim(
                 id,
                 arrow.get(date),
-                break_objects,
+                list(map(lambda b: b.id, break_objects)),
                 amount,
                 arrow_or_none(reimbursed, "Europe/London"),
             )
@@ -323,6 +325,12 @@ def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
     return row_to_break(row)
 
 
+def get_maybe_cost(b: Break) -> Decimal:
+    if b.cost is None:
+        return Decimal(0)
+    return b.cost
+
+
 def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], list[Claim]]:
     (conn, cur) = connect()
     break_table_statement = f"""
@@ -334,7 +342,8 @@ def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], list[Claim]]:
     cur.execute(break_table_statement, {"ids": break_ids})
     rows = cur.fetchall()
     updated_breaks = rows_to_breaks(rows)
-    amount = sum(list(map(lambda b: b.cost, updated_breaks)))
+    costs = list(map(lambda b: get_maybe_cost(b), updated_breaks))
+    amount = sum(costs)
     claim_table_statement = f"""
         INSERT INTO claim(claim_date, breaks_claimed, claim_amount)
         VALUES(DATE_TRUNC('minute', NOW()), %(breaks)s, %(amount)s)
