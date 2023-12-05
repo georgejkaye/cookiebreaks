@@ -82,6 +82,7 @@ const ClaimDeleteButton = (props: { claim: Claim; hoverColour: string }) => {
     return (
         <div className="desktop:ml-auto ml-2">
             <SmallIcon
+                width={30}
                 icon="bin"
                 title="Delete claim"
                 alt="Bin"

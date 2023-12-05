@@ -14,6 +14,7 @@ import { SetState } from "./page"
 
 export const SmallIcon = (props: {
     icon: string
+    width: number
     styles?: string
     title?: string
     alt: string
@@ -27,8 +28,8 @@ export const SmallIcon = (props: {
     return (
         <Image
             className={style}
-            width={30}
-            height={30}
+            width={props.width}
+            height={props.width}
             src={`/images/icons/${props.icon}.svg`}
             alt={props.alt}
             onClick={props.onClick}
@@ -56,6 +57,7 @@ export const BreakIcon = (props: {
     let style = `desktop:m-0 ${opacity}`
     return (
         <SmallIcon
+            width={30}
             styles={style}
             onClick={
                 props.onClick && props.clickable ? props.onClick : undefined

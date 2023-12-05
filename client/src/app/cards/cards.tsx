@@ -20,7 +20,12 @@ export const ActionButton = (props: {
         >
             <div className="flex align-items-center">
                 {props.icon ? (
-                    <SmallIcon styles="m-0" icon={props.icon} alt={"Tick"} />
+                    <SmallIcon
+                        width={25}
+                        styles="m-0"
+                        icon={props.icon}
+                        alt={"Tick"}
+                    />
                 ) : (
                     ""
                 )}
@@ -306,7 +311,12 @@ export const SmallInfoCard = (props: {
         props.width
     return (
         <div className={claimBreakStyles}>
-            <SmallIcon icon={props.icon} alt={props.alt} styles="mr-2" />
+            <SmallIcon
+                width={30}
+                icon={props.icon}
+                alt={props.alt}
+                styles="mr-2"
+            />
             {props.content}
         </div>
     )

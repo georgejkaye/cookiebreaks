@@ -72,6 +72,7 @@ export const TickCrossInputBox = (props: {
     return (
         <div className={divStyle}>
             <SmallIcon
+                width={30}
                 icon="cross"
                 styles=""
                 title="Close"
@@ -88,6 +89,7 @@ export const TickCrossInputBox = (props: {
                 size={props.size}
             />
             <SmallIcon
+                width={30}
                 icon="tick"
                 styles=""
                 title="Confirm"
