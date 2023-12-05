@@ -1,12 +1,14 @@
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException
 
+from cookiebreaks.core.structs import BreakFilters, User
+from cookiebreaks.tasks.announce import announce_specific
 from cookiebreaks.api.routers.utils import (
-    BreakExternal as Break,
+    BreakExternal,
     break_internal_to_external,
+    get_breaks,
 )
 from cookiebreaks.core.database import (
-    get_break_objects,
     insert_host,
     insert_missing_breaks,
     mask_host,
@@ -15,15 +17,14 @@ from cookiebreaks.core.database import (
     set_holiday,
 )
 from cookiebreaks.api.routers.users import get_current_user, is_admin
-from cookiebreaks.api.routers.utils import get_breaks
-from cookiebreaks.core.structs import BreakFilters, User
-from cookiebreaks.tasks.announce import announce_specific
 
 
 router = APIRouter(prefix="/breaks", tags=["breaks"])
 
 
-@router.get("", response_model=list[Break], summary="Get a list of cookie breaks")
+@router.get(
+    "", response_model=list[BreakExternal], summary="Get a list of cookie breaks"
+)
 async def request_breaks(
     current_user: Annotated[User, Depends(get_current_user)],
     number: Optional[int] = None,
@@ -48,7 +49,7 @@ async def request_breaks(
 
 @router.post(
     "/host",
-    response_model=Break,
+    response_model=BreakExternal,
     summary="Set the host of a cookie break",
 )
 async def set_host(
@@ -58,23 +59,25 @@ async def set_host(
 ):
     hosted_break = insert_host(host_name, break_id)
     if hosted_break is None:
-        raise HTTPException(400, "Break does not exist")
+        raise HTTPException(400, "BreakExternal does not exist")
     return break_internal_to_external(hosted_break, current_user)
 
 
-@router.post("/announce", response_model=Break, summary="Announce a cookie break")
+@router.post(
+    "/announce", response_model=BreakExternal, summary="Announce a cookie break"
+)
 async def announce_break(
     break_id: int, current_user: Annotated[User, Depends(is_admin)]
 ):
     announced_break = announce_specific(break_id)
     if announced_break is None:
-        raise HTTPException(400, "Break does not exist")
+        raise HTTPException(400, "BreakExternal does not exist")
     return break_internal_to_external(announced_break, current_user)
 
 
 @router.post(
     "/reimburse",
-    response_model=Break,
+    response_model=BreakExternal,
     summary="Record the reimbursement of someone who hosted a cookie break",
 )
 async def reimburse_break(
@@ -86,7 +89,7 @@ async def reimburse_break(
 
 @router.post(
     "/mask",
-    response_model=Break,
+    response_model=BreakExternal,
     summary="Remove the name of someone who hosted a cookie break",
 )
 async def mask_break(current_user: Annotated[User, Depends(is_admin)], break_id: int):
@@ -96,7 +99,7 @@ async def mask_break(current_user: Annotated[User, Depends(is_admin)], break_id:
 
 @router.post(
     "/holiday",
-    response_model=Break,
+    response_model=BreakExternal,
     summary="Set a cookie break to be a holiday with a specified reason",
 )
 async def post_holiday(
@@ -118,7 +121,7 @@ async def delete_break(
 
 @router.post(
     "/update",
-    response_model=list[Break],
+    response_model=list[BreakExternal],
     summary="Update the list of upcoming breaks",
 )
 async def post_update_breaks(current_user: Annotated[User, Depends(is_admin)]):

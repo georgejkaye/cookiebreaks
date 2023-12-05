@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from decimal import Decimal
+from typing import Optional
 from arrow import Arrow
 
 
@@ -11,7 +12,7 @@ class User:
     hashed_password: str
 
 
-def format_as_price(cost: float) -> str:
+def format_as_price(cost: Decimal) -> str:
     return f"£{cost:.2f}"
 
 
@@ -23,7 +24,7 @@ class Break:
     holiday: Optional[str]
     host: Optional[str] = None
     break_announced: Optional[Arrow] = None
-    cost: Optional[float] = None
+    cost: Optional[Decimal] = None
     host_reimbursed: Optional[Arrow] = None
     admin_claimed: Optional[Arrow] = None
     admin_reimbursed: Optional[Arrow] = None
@@ -56,12 +57,12 @@ class BreakFilters:
 class Claim:
     id: int
     claim_date: Arrow
-    breaks_claimed: List[Break]
-    claim_amount: float
+    breaks_claimed: list[int]
+    claim_amount: Decimal
     claim_reimbursed: Optional[Arrow] = None
 
 
-def claim_list_date_string(breaks: List[Break]) -> str:
+def claim_list_date_string(breaks: list[Break]) -> str:
     return ", ".join(list(map(lambda b: b.get_break_date(), breaks)))
 
 

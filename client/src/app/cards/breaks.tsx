@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react"
-import { setHoliday, setHost } from "./api"
+import React, { useEffect, useRef, useState } from "react"
+import { setHoliday, setHost, submitClaim } from "../api"
 import {
     User,
     CookieBreak,
@@ -7,16 +7,31 @@ import {
     getCookieBreakTime,
     breakInPast,
     UpdateBreaksFn,
-} from "./structs"
-import Loader from "./loader"
+    getBreaksToClaim,
+    Claim,
+    UpdateClaimsFn,
+    formatAsPrice,
+    getDatetimeText,
+    getShortDate,
+} from "../structs"
 import {
     BreakControlIcons,
     BreakStatusIcons,
+    DeleteBreakIcon,
     SmallIcon,
-    getHoverColour,
-} from "./icons"
-
-export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
+} from "../icons"
+import {
+    CardAction,
+    CardSelector,
+    Cards,
+    CardsActionProps,
+    ExpandableCardProps,
+    ExpandableCardsProps,
+    SelectableCardsProps,
+    SmallInfoCard,
+} from "./cards"
+import { ClaimBreakCost } from "./claimed"
+import { SetState } from "../page"
 
 export const TickCrossInputBox = (props: {
     onClickClose: (text: string) => void
@@ -182,15 +197,14 @@ const BreakDate = (props: { cb: CookieBreak }) => {
     )
 }
 
-const BreakDetails = (props: {
+export const BreakDetails = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     setCardLoading: (loading: boolean) => void
 }) => {
     let detailsStyle =
-        "flex flex-col justify-around tablet:flex-row " +
-        "items-center flex-1 w-full desktop:w-2/3"
+        "flex flex-col justify-around tablet:flex-row items-center flex-1"
     return (
         <div className={detailsStyle}>
             <BreakDate cb={props.cb} />
@@ -231,71 +245,35 @@ const AdminIcons = (props: {
 }
 
 const BreakCard = (props: {
-    index: number
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    selectable: boolean
-    isSelected: boolean
-    isLoading: boolean
-    setSelected?: (selected: boolean) => void
     setLoading: (loading: boolean) => void
-}) => {
-    let border = props.index === 0 ? "border-y-2" : "border-b-2"
-    let selectableStyles = props.selectable
-        ? "cursor-pointer hover:bg-gray-50"
-        : ""
-    let cardColour = props.cb.holiday
-        ? "bg-gray-200"
-        : props.isSelected
-        ? "bg-gray-100"
-        : "bg-white"
-    let cardStyle =
-        `flex flex-col desktop:flex-row py-2 px-2 mx-auto align-center ` +
-        `items-center ${cardColour} ${border} ${selectableStyles}`
-    const onSelect = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (props.selectable) {
-            if (props.setSelected) {
-                props.setSelected(!props.isSelected)
-            }
-        }
-    }
-    return (
-        <div className={cardStyle} onClick={onSelect}>
-            {props.isLoading ? (
-                <Loader size={2} styles="h-10 my-1" />
-            ) : (
-                <>
-                    <BreakDetails
-                        cb={props.cb}
-                        user={props.user}
-                        setCardLoading={props.setLoading}
-                        updateBreaks={props.updateBreaks}
-                    />
-                    {!props.user?.admin ? (
-                        ""
-                    ) : (
-                        <AdminIcons
-                            cb={props.cb}
-                            user={props.user}
-                            setCardLoading={props.setLoading}
-                            updateBreaks={props.updateBreaks}
-                        />
-                    )}
-                </>
-            )}
-        </div>
-    )
-}
+}) => (
+    <>
+        <BreakDetails
+            cb={props.cb}
+            user={props.user}
+            setCardLoading={props.setLoading}
+            updateBreaks={props.updateBreaks}
+        />
+        {!props.user?.admin ? (
+            ""
+        ) : (
+            <AdminIcons
+                cb={props.cb}
+                user={props.user}
+                setCardLoading={props.setLoading}
+                updateBreaks={props.updateBreaks}
+            />
+        )}
+    </>
+)
 
-export interface BreakCardSelector {
-    buttonName: string
-    submitSelection: (
-        cb: CookieBreak[],
-        setLoadingCards: (cbs: CookieBreak[], loading: boolean) => void
-    ) => void
-    flavourText: (cbs: CookieBreak[]) => string
-}
+export const getCardColour = (cb: CookieBreak) =>
+    cb.holiday ? "bg-gray-200" : "bg-white"
+export const getSelectedColour = (_: CookieBreak) => "bg-gray-100"
+const getHoverColour = (_: CookieBreak) => "hover:bg-gray-50"
 
 export const BreakCards = (props: {
     title: string
@@ -304,89 +282,54 @@ export const BreakCards = (props: {
     updateBreaks: UpdateBreaksFn
     isLoadingBreaks: boolean
     reverseBreaks: boolean
-    buttons?: BreakCardSelector[]
+    buttons?: CardSelector<CookieBreak>[]
 }) => {
-    const [selectedCards, setSelectedCards] = useState<CookieBreak[]>([])
-    const [loadingCards, setLoadingCards] = useState<CookieBreak[]>([])
-    const setCardSelected = (cb: CookieBreak, selected: boolean) =>
-        selected
-            ? setSelectedCards([...selectedCards, cb])
-            : setSelectedCards(selectedCards.filter((cb1) => cb1 !== cb))
-    const setCardsSelected = (cbs: CookieBreak[], selected: boolean) =>
-        selected
-            ? setSelectedCards(selectedCards.concat(cbs))
-            : setSelectedCards(selectedCards.filter((cb) => !cbs.includes(cb)))
-    const addCardToLoadingCards = (cb: CookieBreak) => {
-        setLoadingCards([...loadingCards, cb])
-        setCardSelected(cb, false)
-    }
-    const addCardsToLoadingCards = (cbs: CookieBreak[]) => {
-        setLoadingCards(loadingCards.concat(cbs))
-        setCardsSelected(cbs, false)
-    }
-    const removeCardFromLoadingCards = (cb: CookieBreak) =>
-        setLoadingCards(loadingCards.filter((b) => b !== cb))
-    const removeCardsFromLoadingCards = (cbs: CookieBreak[]) =>
-        setLoadingCards(loadingCards.filter((b) => !cbs.includes(b)))
-    const setCardLoading = (cb: CookieBreak, isLoading: boolean) =>
-        isLoading ? addCardToLoadingCards(cb) : removeCardFromLoadingCards(cb)
-    const setCardsLoading = (cbs: CookieBreak[], isLoading: boolean) =>
-        isLoading
-            ? addCardsToLoadingCards(cbs)
-            : removeCardsFromLoadingCards(cbs)
-    return !props.isLoadingBreaks && props.breaks.length === 0 ? (
-        ""
-    ) : (
-        <>
-            <div className="text-xl font-bold m-5 mb-4 my-10 text-center">
-                {props.title}
-            </div>
-            {selectedCards.length === 0 || !props.buttons ? (
-                ""
-            ) : (
-                <div className="text-center mb-4 flex justify-center">
-                    {props.buttons.map((button) => (
-                        <span className="flex flex-row justify-center items-center border-2 border-bg2 rounded">
-                            <button
-                                className="bg-bg2 text-fg2 font-bold p-2 hover:opacity-80"
-                                onClick={(e) =>
-                                    button.submitSelection(
-                                        selectedCards,
-                                        setCardsLoading
-                                    )
-                                }
-                            >
-                                {button.buttonName}
-                            </button>
-                            <div className="font-bold p-2">
-                                {button.flavourText(selectedCards)}
-                            </div>
-                        </span>
-                    ))}
-                </div>
-            )}
-            {props.isLoadingBreaks ? (
-                <Loader size={10} />
-            ) : (
-                props.breaks.map((cb, i) => (
-                    <BreakCard
-                        index={i}
-                        user={props.user}
-                        key={cb.id}
-                        cb={cb}
-                        updateBreaks={props.updateBreaks}
-                        selectable={
-                            props.buttons !== undefined &&
-                            props.buttons.length > 0 &&
-                            !loadingCards.includes(cb)
-                        }
-                        isSelected={selectedCards.includes(cb)}
-                        isLoading={loadingCards.includes(cb)}
-                        setLoading={(b) => setCardLoading(cb, b)}
-                        setSelected={(b) => setCardSelected(cb, b)}
-                    />
-                ))
-            )}
-        </>
+    const getCardContent = (
+        cb: CookieBreak,
+        setLoading: (loading: boolean) => void
+    ) => (
+        <BreakCard
+            user={props.user}
+            cb={cb}
+            updateBreaks={props.updateBreaks}
+            setLoading={setLoading}
+        />
+    )
+    let cardsActionProps: CardsActionProps<CookieBreak> =
+        props.buttons && props.buttons.length > 0
+            ? {
+                  type: CardAction.SELECT,
+                  buttons: props.buttons,
+                  getSelectedColour: getSelectedColour,
+                  getHoverColour: getHoverColour,
+              }
+            : {
+                  type: CardAction.NONE,
+              }
+    return (
+        <Cards<CookieBreak>
+            title={props.title}
+            cardsAction={cardsActionProps}
+            isLoading={props.isLoadingBreaks}
+            elements={props.breaks}
+            getCardColour={getCardColour}
+            getCardContent={getCardContent}
+        />
+    )
+}
+
+const BreakReimbursedDate = (props: { cb: CookieBreak }) => {
+    const content = (
+        <span className="mr-6">
+            {!props.cb.reimbursed ? "" : getShortDate(props.cb.reimbursed)}
+        </span>
+    )
+    return (
+        <SmallInfoCard
+            width="w-7/12"
+            icon="reimburse"
+            alt="Coin"
+            content={content}
+        />
     )
 }

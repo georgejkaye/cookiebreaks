@@ -18,24 +18,41 @@ export interface CookieBreak {
     claimed?: Date
     success?: Date
 }
+export interface Claim {
+    id: number
+    date: Date
+    breaks: CookieBreak[]
+    amount: number
+    reimbursed?: Date
+}
 
 export const breakInPast = (cb: CookieBreak) => dateInPast(cb.datetime)
 
 export type UpdateBreaksFn = (
     breaksToAdd: CookieBreak[],
     breaksToRemove: CookieBreak[]
-) => void
+) => CookieBreak[]
 
-export const replaceBreaks = (
-    oldBreaks: CookieBreak[],
-    newBreaks: CookieBreak[],
-    breaksToRemove: CookieBreak[]
+export type UpdateClaimsFn = (
+    claimsToAdd: Claim[],
+    claimsToRemove: Claim[]
+) => Claim[]
+
+export const replaceItems = <T>(
+    oldItems: T[],
+    itemsToAdd: T[],
+    itemsToRemove: T[],
+    eqCheck: (t1: T, t2: T) => boolean
 ) =>
-    oldBreaks
+    oldItems
         .map(
-            (old) => newBreaks.find((newBreak) => newBreak.id === old.id) || old
+            (oldItem) =>
+                itemsToAdd.find((newItem) => eqCheck(oldItem, newItem)) ||
+                oldItem
         )
-        .filter((cb) => !breaksToRemove.includes(cb))
+        .filter((item) =>
+            itemsToRemove.find((removedItem) => eqCheck(item, removedItem))
+        )
 
 export const getDateString = (datetime: Date) => {
     let weekday = datetime.toLocaleDateString("en-GB", {
@@ -89,3 +106,15 @@ export interface User {
 }
 
 export const formatAsPrice = (cost: number) => `£${cost.toFixed(2)}`
+
+export const getShortDate = (dt: Date) =>
+    `${dt.getFullYear()}-${dt.getMonth().toString().padStart(2, "0")}-${dt
+        .getDate()
+        .toString()
+        .padStart(2, "0")} ${dt.getHours().toString().padStart(2, "0")}:${dt
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`
+
+export const getClaimsToComplete = (cs: Claim[]) =>
+    cs.filter((c) => !c.reimbursed)

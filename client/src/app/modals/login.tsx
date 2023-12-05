@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import Modal from "./modal"
 import { login } from "../api"
-import { CookieBreak, User } from "../structs"
-import { SetState } from "../breaks"
+import { Claim, CookieBreak, User } from "../structs"
+import { SetState, Data } from "../page"
 
 export interface LoginData {
     user: string
@@ -19,7 +19,7 @@ export const LoginModal = (props: {
     setOpen: SetState<boolean>
     setUser: SetState<User | undefined>
     setStatus: SetState<string>
-    setBreaks: SetState<CookieBreak[]>
+    setData: SetState<Data>
     setLoading: SetState<boolean>
 }) => {
     const focusInputRef = useRef<HTMLInputElement | null>(null)
@@ -40,7 +40,6 @@ export const LoginModal = (props: {
     }
     const handleSubmit = (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault()
-        console.log(formState.user, formState.password)
         setFormState(initialLoginFormState)
     }
     const onClickSubmitButton = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -49,7 +48,7 @@ export const LoginModal = (props: {
             formState.password,
             props.setUser,
             props.setStatus,
-            props.setBreaks,
+            props.setData,
             props.setLoading
         )
     }

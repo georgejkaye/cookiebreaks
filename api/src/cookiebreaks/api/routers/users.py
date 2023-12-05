@@ -6,8 +6,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-from cookiebreaks.core.database import get_env_variable, get_user
-from cookiebreaks.api.routers.utils import get_breaks
+from cookiebreaks.core.database import get_claim_objects, get_env_variable, get_user
+from cookiebreaks.api.routers.utils import get_breaks, get_claims
 from cookiebreaks.core.env import load_envs
 from cookiebreaks.core.structs import BreakFilters, User
 
@@ -85,7 +85,7 @@ async def get_current_user(token: Annotated[Optional[str], Depends(oauth2_scheme
 
 
 async def is_admin(current_user: Annotated[User, Depends(get_current_user)]):
-    if not current_user.admin:
+    if current_user and not current_user.admin:
         raise HTTPException(status_code=400, detail="Not an admin")
     return current_user
 
@@ -126,11 +126,16 @@ async def login(
         admin_reimbursed,
     )
     breaks = get_breaks(current_user=user, filters=break_filters)
+    if user.admin:
+        claims = get_claims(current_user=user)
+    else:
+        claims = []
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "admin": user.admin,
         "breaks": breaks,
+        "claims": claims
     }
 
 

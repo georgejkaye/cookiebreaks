@@ -9,12 +9,13 @@ import {
 } from "./structs"
 import { Dispatch, SetStateAction, useRef, useState } from "react"
 import { setHoliday, deleteBreak, announceBreak, reimburseBreak } from "./api"
-import { SetState, TickCrossInputBox } from "./breaks"
+import { TickCrossInputBox } from "./cards/breaks"
+import { SetState } from "./page"
 
 export const SmallIcon = (props: {
     icon: string
     styles?: string
-    title: string
+    title?: string
     alt: string
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
     hoverColour?: string
@@ -29,9 +30,9 @@ export const SmallIcon = (props: {
             width={30}
             height={30}
             src={`/images/icons/${props.icon}.svg`}
-            alt={props.title}
+            alt={props.alt}
             onClick={props.onClick}
-            title={props.title}
+            title={!props.title ? "" : props.title}
         />
     )
 }
@@ -67,25 +68,15 @@ export const BreakIcon = (props: {
     )
 }
 
-export const BreakControlIcons = (props: {
+export const getHoverColour = (cb: CookieBreak) =>
+    cb.holiday ? "hover:bg-gray-500/50" : "hover:bg-gray-100"
+
+export const HolidayBreakIcon = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     setCardLoading: (loading: boolean) => void
 }) => {
-    let hoverColour = getHoverColour(props.cb)
-    const onClickHoliday = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (props.user) {
-            let reason = props.cb.holiday ? undefined : "Holiday"
-            setHoliday(
-                props.user,
-                props.cb.id,
-                reason,
-                props.updateBreaks,
-                props.setCardLoading
-            )
-        }
-    }
     const onClickDelete = (e: React.MouseEvent<HTMLDivElement>) => {
         if (props.user) {
             deleteBreak(
@@ -96,33 +87,73 @@ export const BreakControlIcons = (props: {
             )
         }
     }
-    let iconStyle = "flex flex-row w-16 desktop:justify-end justify-center"
     return (
-        <div className={iconStyle}>
+        <SmallIcon
+            icon={props.cb.holiday ? "landing" : "takeoff"}
+            title={props.cb.holiday ? "Unset holiday" : "Set holiday"}
+            alt={props.cb.holiday ? "Plane landing" : "Plane taking off"}
+            onClick={onClickDelete}
+            hoverColour={getHoverColour(props.cb)}
+        />
+    )
+}
+
+export const DeleteBreakIcon = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setCardLoading: (loading: boolean) => void
+}) => {
+    const onClickDelete = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (props.user) {
+            deleteBreak(
+                props.user,
+                props.cb,
+                props.updateBreaks,
+                props.setCardLoading
+            )
+        }
+    }
+    return (
+        <SmallIcon
+            icon="bin"
+            title="Delete break"
+            alt="Bin"
+            onClick={onClickDelete}
+            hoverColour={getHoverColour(props.cb)}
+        />
+    )
+}
+
+export const BreakControlIcons = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setCardLoading: (loading: boolean) => void
+}) => {
+    let breakControlStyle =
+        "flex flex-row w-16 desktop:justify-end justify-center"
+    return (
+        <div className={breakControlStyle}>
             {dateInPast(props.cb.datetime) ? (
                 ""
             ) : (
-                <SmallIcon
-                    icon={props.cb.holiday ? "landing" : "takeoff"}
-                    title={props.cb.holiday ? "Unset holiday" : "Set holiday"}
-                    alt="Beach umbrella"
-                    onClick={onClickHoliday}
-                    hoverColour={hoverColour}
+                <HolidayBreakIcon
+                    user={props.user}
+                    cb={props.cb}
+                    updateBreaks={props.updateBreaks}
+                    setCardLoading={props.setCardLoading}
                 />
             )}
-            <SmallIcon
-                icon="bin"
-                title="Delete break"
-                alt="Bin"
-                onClick={onClickDelete}
-                hoverColour={hoverColour}
+            <DeleteBreakIcon
+                user={props.user}
+                cb={props.cb}
+                updateBreaks={props.updateBreaks}
+                setCardLoading={props.setCardLoading}
             />
         </div>
     )
 }
-
-export const getHoverColour = (cb: CookieBreak) =>
-    cb.holiday ? "hover:bg-gray-500/50" : "hover:bg-gray-400/50"
 
 const AnnounceIcon = (props: {
     cb: CookieBreak
@@ -134,7 +165,7 @@ const AnnounceIcon = (props: {
         props.user
             ? announceBreak(
                   props.user,
-                  props.cb.id,
+                  props.cb,
                   props.updateBreaks,
                   props.setCardLoading
               )

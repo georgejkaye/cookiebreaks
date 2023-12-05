@@ -1,5 +1,5 @@
-from typing import List, Optional
-from cookiebreaks.core.database import get_break_objects, get_claims
+from typing import Optional
+from cookiebreaks.core.database import get_break_objects, get_claim_objects
 from cookiebreaks.core.structs import (
     Break,
     BreakFilters,
@@ -10,7 +10,7 @@ from cookiebreaks.core.structs import (
 )
 
 
-def display_breaks(breaks: List[Break]):
+def display_breaks(breaks: list[Break]):
     for i, b in enumerate(breaks):
         break_date = b.get_break_date()
         break_time = b.get_break_time()
@@ -29,7 +29,7 @@ def display_breaks(breaks: List[Break]):
     print(f"{len(breaks) + 1}: Cancel")
 
 
-def display_claims(claims: List[Claim]):
+def display_claims(claims: list[Claim]):
     for i, c in enumerate(claims):
         claim_submitted = c.claim_date
         claim_amount = c.claim_amount
@@ -68,7 +68,7 @@ def select_break(filters: BreakFilters) -> Optional[Break]:
 
 
 def select_claim(filters: ClaimFilters) -> Optional[Claim]:
-    claims = get_claims(filters)
+    claims = get_claim_objects(filters)
     if len(claims) > 0:
         display_claims(claims)
     else:
@@ -84,7 +84,7 @@ def select_claim(filters: ClaimFilters) -> Optional[Claim]:
         return claims[choice - 1]
 
 
-def select_multiple_breaks(filters: BreakFilters) -> List[Break]:
+def select_multiple_breaks(filters: BreakFilters) -> list[Break]:
     breaks = get_break_objects(filters)
     if len(breaks) > 0:
         display_breaks(breaks)
@@ -94,7 +94,7 @@ def select_multiple_breaks(filters: BreakFilters) -> List[Break]:
     choices = None
     while choices is None:
         choice_input = input(f"Select breaks (1-{len(breaks) + 1}) e.g. 1,2,3: ")
-        candidate_choices: List[int] = []
+        candidate_choices: list[int] = []
         choice_strings = choice_input.split(",")
         for choice_string in choice_strings:
             current_choice = validate_choice(choice_string, 1, len(breaks) + 1)

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react"
 import {
+    Claim,
     CookieBreak,
     User,
     formatAsPrice,
@@ -10,12 +11,17 @@ import {
     getBreaksToReimburse,
     getFutureBreaks,
     getOutstandingBreaks,
-    replaceBreaks,
+    replaceItems,
 } from "./structs"
-import { getBreaks, submitClaim } from "./api"
-import { BreakCards } from "./breaks"
+import { getBreaks, getClaims, getData, submitClaim } from "./api"
+import { BreakCards } from "./cards/breaks"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
+import { ClaimCards } from "./cards/claimed"
+import { UpcomingBreaksCards } from "./cards/upcoming"
+import { AwaitingClaimCards } from "./cards/reimbursed"
+
+export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
 const manrope = Manrope({
     weight: ["400", "700"],
@@ -24,41 +30,73 @@ const manrope = Manrope({
     display: "swap",
 })
 
+export interface Data {
+    breaks: CookieBreak[]
+    claims: Claim[]
+}
+
 const Home = () => {
-    const [breaks, setBreaks] = useState<CookieBreak[]>([])
+    const [user, setUser] = useState<User | undefined>(undefined)
+    // All data
+    const [data, setData] = useState<Data>({ breaks: [], claims: [] })
+    const setBreaks = (breaks: CookieBreak[]) =>
+        setData({ breaks: breaks, claims: data.claims })
+    const setClaims = (claims: Claim[]) =>
+        setData({ breaks: data.breaks, claims: claims })
+    const [isLoadingData, setLoadingData] = useState(false)
+    useEffect(() => {
+        getData(user, setData, setLoadingData)
+    }, [])
+    const updateBreaks = (
+        newBreaks: CookieBreak[],
+        breaksToRemove: CookieBreak[]
+    ) => {
+        let updatedBreaks = replaceItems(
+            data.breaks,
+            newBreaks,
+            breaksToRemove,
+            (b1, b2) => b1.id === b2.id
+        )
+        setData({ breaks: updatedBreaks, claims: data.claims })
+        return updatedBreaks
+    }
+    const updateClaims = (newClaims: Claim[], claimsToRemove: Claim[]) => {
+        let updatedClaims = replaceItems(
+            data.claims,
+            newClaims,
+            claimsToRemove,
+            (c1, c2) => c1.id === c2.id
+        )
+        setClaims(updatedClaims)
+        return updatedClaims
+    }
+    const makeClaim = (
+        cbs: CookieBreak[],
+        setLoadingCards: (cbs: CookieBreak[], loading: boolean) => void
+    ) => {
+        if (user) {
+            submitClaim(user, cbs, updateBreaks, updateClaims, (b) =>
+                setLoadingCards(cbs, b)
+            )
+        }
+    }
     const [upcomingBreaks, setUpcomingBreaks] = useState<CookieBreak[]>([])
     const [breaksToReimburse, setBreaksToReimburse] = useState<CookieBreak[]>(
         []
     )
     const [breaksToClaim, setBreaksToClaim] = useState<CookieBreak[]>([])
     const [breaksToComplete, setBreaksToComplete] = useState<CookieBreak[]>([])
-    const [user, setUser] = useState<User | undefined>(undefined)
-    const [isLoadingBreaks, setLoadingBreaks] = useState(false)
+    // Loading while retrieving content
     useEffect(() => {
-        getBreaks(setBreaks, setLoadingBreaks)
-    }, [])
-    useEffect(() => {
-        setUpcomingBreaks(getFutureBreaks(breaks))
-        setBreaksToReimburse(getBreaksToReimburse(breaks))
-        setBreaksToClaim(getBreaksToClaim(breaks))
-        setBreaksToComplete(getBreaksToComplete(breaks))
-    }, [breaks])
-    const updateBreaks = (
-        newBreaks: CookieBreak[],
-        breaksToRemove: CookieBreak[]
-    ) => setBreaks(replaceBreaks(breaks, newBreaks, breaksToRemove))
-    const makeClaim = (
-        cbs: CookieBreak[],
-        setLoadingCards: (cbs: CookieBreak[], loading: boolean) => void
-    ) => {
-        if (user) {
-            submitClaim(user, cbs, updateBreaks, (b) => setLoadingCards(cbs, b))
-        }
-    }
+        setUpcomingBreaks(getFutureBreaks(data.breaks))
+        setBreaksToReimburse(getBreaksToReimburse(data.breaks))
+        setBreaksToClaim(getBreaksToClaim(data.breaks))
+        setBreaksToComplete(getBreaksToComplete(data.breaks))
+    }, [data])
     return (
         <>
             <main className={`text-fg ${manrope.className}`}>
-                <TopBar setUser={setUser} user={user} setBreaks={setBreaks} />
+                <TopBar setUser={setUser} user={user} setData={setData} />
                 <div className="text-center m-5 w-mobileContent tablet:w-tabletContent desktop:w-content mx-auto">
                     <div>
                         The cookie break is the school's longest running social
@@ -72,7 +110,7 @@ const Home = () => {
                         user={user}
                         breaks={upcomingBreaks}
                         updateBreaks={updateBreaks}
-                        isLoadingBreaks={isLoadingBreaks}
+                        isLoadingBreaks={isLoadingData}
                         reverseBreaks={false}
                     />
                     {!user?.admin ? (
@@ -84,39 +122,23 @@ const Home = () => {
                                 user={user}
                                 breaks={breaksToReimburse}
                                 updateBreaks={updateBreaks}
-                                isLoadingBreaks={isLoadingBreaks}
+                                isLoadingBreaks={isLoadingData}
                                 reverseBreaks={false}
                             />
-                            <BreakCards
-                                title="Awaiting claim"
+                            <AwaitingClaimCards
                                 user={user}
-                                breaks={breaksToClaim}
+                                breaks={data.breaks}
                                 updateBreaks={updateBreaks}
-                                isLoadingBreaks={isLoadingBreaks}
-                                reverseBreaks={false}
-                                buttons={[
-                                    {
-                                        buttonName: "Make claim",
-                                        submitSelection: makeClaim,
-                                        flavourText: (cbs) => {
-                                            let cost = cbs.reduce(
-                                                (acc, cur) =>
-                                                    acc +
-                                                    (cur.cost ? cur.cost : 0),
-                                                0
-                                            )
-                                            return formatAsPrice(cost)
-                                        },
-                                    },
-                                ]}
+                                updateClaims={updateClaims}
+                                isLoadingBreaks={isLoadingData}
                             />
-                            <BreakCards
-                                title="Awaiting completion"
+                            <ClaimCards
+                                title="Outstanding claims"
                                 user={user}
-                                breaks={breaksToComplete}
-                                updateBreaks={updateBreaks}
-                                isLoadingBreaks={isLoadingBreaks}
-                                reverseBreaks={false}
+                                claims={data.claims}
+                                breaks={data.breaks}
+                                updateClaims={updateClaims}
+                                isLoadingClaims={isLoadingData}
                             />
                         </>
                     )}

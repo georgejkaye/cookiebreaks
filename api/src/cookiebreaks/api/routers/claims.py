@@ -2,34 +2,39 @@ from dataclasses import dataclass
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends
 
-from cookiebreaks.core.database import claim_for_breaks, claim_reimbursed, get_claims
-from cookiebreaks.core.structs import ClaimFilters, User
-
-from cookiebreaks.api.routers.utils import (
-    BreakExternal as Break,
-    break_internal_to_external,
+from cookiebreaks.core.database import (
+    claim_for_breaks,
+    claim_reimbursed,
+    get_claim_objects,
 )
-from cookiebreaks.api.routers.utils import ClaimExternal as Claim
+from cookiebreaks.core.structs import ClaimFilters, User
+from cookiebreaks.api.routers.utils import (
+    BreakExternal,
+    ClaimExternal,
+    break_internal_to_external,
+    claim_internal_to_external,
+)
 from cookiebreaks.api.routers.users import is_admin
-from cookiebreaks.api.routers.utils import claim_internal_to_external
 
 router = APIRouter(prefix="/claims", tags=["claims"])
 
 
 @router.get(
-    "", response_model=list[Claim], summary="Get a list of submitted expense claims"
+    "",
+    response_model=list[ClaimExternal],
+    summary="Get a list of submitted expense claims",
 )
 async def request_claims(
     current_user: Annotated[User, Depends(is_admin)], reimbursed: Optional[bool] = None
 ):
-    claims = get_claims(ClaimFilters(reimbursed))
-    return list(map(lambda c: claim_internal_to_external(c, current_user), claims))
+    claims = get_claim_objects(ClaimFilters(reimbursed))
+    return list(map(lambda c: claim_internal_to_external(c), claims))
 
 
 @dataclass
 class BreakAndClaim:
-    breaks: list[Break]
-    claims: list[Claim]
+    breaks: list[BreakExternal]
+    claims: list[ClaimExternal]
 
 
 @router.post(
@@ -42,19 +47,17 @@ async def claim_break(
     external_breaks = list(
         map(lambda c: break_internal_to_external(c, current_user), updated_breaks)
     )
-    external_claims = list(
-        map(lambda c: claim_internal_to_external(c, current_user), updated_claims)
-    )
+    external_claims = list(map(claim_internal_to_external, updated_claims))
     return BreakAndClaim(external_breaks, external_claims)
 
 
 @router.post(
-    "/success", response_model=list[Claim], summary="Record a successful expense claim"
+    "/success",
+    response_model=list[ClaimExternal],
+    summary="Record a successful expense claim",
 )
 async def reimburse_admin(
-    current_user: Annotated[User, Depends(is_admin)], break_id: int
+    current_user: Annotated[User, Depends(is_admin)], claim_id: int
 ):
-    claim_reimbursed(break_id)
-    return list(
-        map(lambda c: claim_internal_to_external(c, current_user), get_claims())
-    )
+    claim_reimbursed(claim_id)
+    return list(map(lambda c: claim_internal_to_external(c), get_claim_objects()))

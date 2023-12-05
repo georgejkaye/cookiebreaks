@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Optional
 
 from arrow import Arrow
-from cookiebreaks.core.database import get_break_objects
+from cookiebreaks.core.database import get_break_objects, get_claim_objects
 from cookiebreaks.core.structs import (
     BreakFilters,
     User,
@@ -27,7 +27,11 @@ class BreakExternal:
     admin_reimbursed: Optional[datetime]
 
 
-def arrow_to_datetime(original: Arrow | None) -> datetime | None:
+def arrow_to_datetime(original: Arrow) -> datetime:
+    return original.datetime
+
+
+def maybe_arrow_to_datetime(original: Arrow | None) -> datetime | None:
     if original:
         return original.datetime
     else:
@@ -38,11 +42,14 @@ def break_internal_to_external(
     internal: BreakInternal, current_user: Optional[User]
 ) -> BreakExternal:
     if current_user and current_user.admin:
-        break_announced = arrow_to_datetime(internal.break_announced)
-        cost = internal.cost
-        host_reimbursed = arrow_to_datetime(internal.host_reimbursed)
-        admin_claimed = arrow_to_datetime(internal.admin_claimed)
-        admin_reimbursed = arrow_to_datetime(internal.admin_reimbursed)
+        break_announced = maybe_arrow_to_datetime(internal.break_announced)
+        if internal.cost:
+            cost = Decimal(internal.cost)
+        else:
+            cost = None
+        host_reimbursed = maybe_arrow_to_datetime(internal.host_reimbursed)
+        admin_claimed = maybe_arrow_to_datetime(internal.admin_claimed)
+        admin_reimbursed = maybe_arrow_to_datetime(internal.admin_reimbursed)
     else:
         break_announced = None
         cost = None
@@ -67,30 +74,28 @@ def break_internal_to_external(
 class ClaimExternal:
     id: int
     claim_date: datetime
-    breaks_claimed: list[BreakExternal]
+    breaks_claimed: list[int]
     claim_amount: Decimal
     claim_reimbursed: Optional[datetime]
 
 
-def claim_internal_to_external(
-    internal: ClaimInternal, current_user: Optional[User]
-) -> ClaimExternal:
+def claim_internal_to_external(internal: ClaimInternal) -> ClaimExternal:
     return ClaimExternal(
         internal.id,
         arrow_to_datetime(internal.claim_date),
-        list(
-            map(
-                lambda b: break_internal_to_external(b, current_user),
-                internal.breaks_claimed,
-            )
-        ),
+        internal.breaks_claimed,
         internal.claim_amount,
-        arrow_to_datetime(internal.claim_reimbursed),
+        maybe_arrow_to_datetime(internal.claim_reimbursed),
     )
 
 
 def get_breaks(
     filters: BreakFilters = BreakFilters(), current_user: Optional[User] = None
-):
+) -> list[BreakExternal]:
     breaks = get_break_objects(filters)
     return list(map(lambda b: break_internal_to_external(b, current_user), breaks))
+
+
+def get_claims(current_user: Optional[User] = None) -> list[ClaimExternal]:
+    claims = get_claim_objects()
+    return list(map(lambda c: claim_internal_to_external(c), claims))

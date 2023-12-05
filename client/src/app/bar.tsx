@@ -1,8 +1,9 @@
 import React, { Dispatch, SetStateAction, useState } from "react"
-import { User, CookieBreak } from "./structs"
+import { User, CookieBreak, Claim } from "./structs"
 import Loader from "./loader"
 import { login } from "./api"
 import { LoginModal, LogoutModal } from "./modals/login"
+import { Data, SetState } from "./page"
 
 const InputBox = (props: {
     type: string
@@ -24,9 +25,9 @@ const InputBox = (props: {
 }
 
 const LoginButton = (props: {
-    setUser: Dispatch<SetStateAction<User | undefined>>
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
-    setLoadingLogin: Dispatch<SetStateAction<boolean>>
+    setUser: SetState<User | undefined>
+    setData: SetState<Data>
+    setLoadingLogin: SetState<boolean>
     user: User | undefined
 }) => {
     const [isActive, setActive] = useState(false)
@@ -42,7 +43,7 @@ const LoginButton = (props: {
             passwordText,
             props.setUser,
             setStatus,
-            props.setBreaks,
+            props.setData,
             props.setLoadingLogin
         )
         setPasswordText("")
@@ -60,7 +61,7 @@ const LoginButton = (props: {
                     isOpen={isActive}
                     setOpen={setActive}
                     setUser={props.setUser}
-                    setBreaks={props.setBreaks}
+                    setData={props.setData}
                     setLoading={props.setLoadingLogin}
                     setStatus={setStatus}
                 />
@@ -77,8 +78,8 @@ const LoginButton = (props: {
 }
 
 const LoginBar = (props: {
-    setUser: Dispatch<SetStateAction<User | undefined>>
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    setUser: SetState<User | undefined>
+    setData: SetState<Data>
     user: User | undefined
 }) => {
     const [isLoadingLogin, setLoadingLogin] = useState(false)
@@ -89,7 +90,7 @@ const LoginBar = (props: {
             ) : (
                 <LoginButton
                     user={props.user}
-                    setBreaks={props.setBreaks}
+                    setData={props.setData}
                     setUser={props.setUser}
                     setLoadingLogin={setLoadingLogin}
                 />
@@ -99,8 +100,8 @@ const LoginBar = (props: {
 }
 
 export const TopBar = (props: {
-    setUser: Dispatch<SetStateAction<User | undefined>>
-    setBreaks: Dispatch<SetStateAction<CookieBreak[]>>
+    setUser: SetState<User | undefined>
+    setData: SetState<Data>
     user: User | undefined
 }) => {
     return (
@@ -108,7 +109,7 @@ export const TopBar = (props: {
             <div className="text-lg font-bold">Cookie breaks</div>
             <LoginBar
                 user={props.user}
-                setBreaks={props.setBreaks}
+                setData={props.setData}
                 setUser={props.setUser}
             />
         </div>
