@@ -9,7 +9,7 @@ from email.mime.multipart import MIMEMultipart
 
 from pathlib import Path
 from time import sleep
-from typing import List, Tuple, Union
+from typing import Union
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from cookiebreaks.core.database import get_env_variable
@@ -67,7 +67,7 @@ def prepare_email_in_thunderbird(next_break: Break, body: str, ics: str):
 
 def write_calendar_mime_parts(
     ics_content: str, ics_name: str
-) -> Tuple[Message, Message]:
+) -> tuple[Message, Message]:
     ics_text = MIMEText(ics_content, "calendar;method=REQUEST")
     ics_attachment = MIMEBase("text", f"calendar;name={ics_name}")
     ics_attachment.set_payload(ics_content)
@@ -78,9 +78,9 @@ def write_calendar_mime_parts(
 def write_email(
     sender_name: str,
     sender_email: str,
-    recipients: List[str],
+    recipients: list[str],
     subject: str,
-    content: List[Message],
+    content: list[Message],
 ) -> MIMEMultipart:
     message = MIMEMultipart("mixed")
     message["Subject"] = subject

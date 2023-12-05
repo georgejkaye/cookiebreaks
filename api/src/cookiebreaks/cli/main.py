@@ -30,7 +30,7 @@ class HelpParser(argparse.ArgumentParser):
         sys.exit(2)
 
 
-tasks: Dict[str, Tuple[Callable[[], None], str]] = {
+tasks: Dict[str, tuple[Callable[[], None], str]] = {
     "announce": (announce, "Announce the next cookie break"),
     "host": (host, "Set the host for a future cookie break"),
     "reimburse": (reimburse, "Reimburse a host of a past cookie break"),

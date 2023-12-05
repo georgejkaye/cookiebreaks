@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
+from typing import Optional
 
 from arrow import Arrow
 from cookiebreaks.core.database import get_break_objects, get_claim_objects
@@ -91,11 +91,11 @@ def claim_internal_to_external(internal: ClaimInternal) -> ClaimExternal:
 
 def get_breaks(
     filters: BreakFilters = BreakFilters(), current_user: Optional[User] = None
-) -> List[BreakExternal]:
+) -> list[BreakExternal]:
     breaks = get_break_objects(filters)
     return list(map(lambda b: break_internal_to_external(b, current_user), breaks))
 
 
-def get_claims(current_user: Optional[User] = None) -> List[ClaimExternal]:
+def get_claims(current_user: Optional[User] = None) -> list[ClaimExternal]:
     claims = get_claim_objects()
     return list(map(lambda c: claim_internal_to_external(c), claims))

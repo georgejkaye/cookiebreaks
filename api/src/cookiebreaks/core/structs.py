@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import List, Optional
+from typing import Optional
 from arrow import Arrow
 
 
@@ -12,7 +12,7 @@ class User:
     hashed_password: str
 
 
-def format_as_price(cost: float) -> str:
+def format_as_price(cost: Decimal) -> str:
     return f"£{cost:.2f}"
 
 
@@ -57,12 +57,12 @@ class BreakFilters:
 class Claim:
     id: int
     claim_date: Arrow
-    breaks_claimed: List[int]
+    breaks_claimed: list[int]
     claim_amount: Decimal
     claim_reimbursed: Optional[Arrow] = None
 
 
-def claim_list_date_string(breaks: List[Break]) -> str:
+def claim_list_date_string(breaks: list[Break]) -> str:
     return ", ".join(list(map(lambda b: b.get_break_date(), breaks)))
 
 

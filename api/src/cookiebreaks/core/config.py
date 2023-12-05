@@ -1,7 +1,6 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
 from arrow import Arrow
 import arrow
 
@@ -45,7 +44,7 @@ class Config:
     admin: AdminConfig
     msmtp: MSMTPConfig
     db: DatabaseConfig
-    mailing_lists: List[str]
+    mailing_lists: list[str]
     log_file: str
 
 

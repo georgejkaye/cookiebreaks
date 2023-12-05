@@ -1,9 +1,8 @@
 from decimal import Decimal
-from turtle import update
 import arrow
 import psycopg2
 
-from typing import Any, Optional, Tuple, List
+from typing import Any, Optional
 
 from cookiebreaks.core.env import get_env_variable
 from cookiebreaks.core.structs import (
@@ -16,7 +15,7 @@ from cookiebreaks.core.structs import (
 )
 
 
-def connect() -> Tuple[Any, Any]:
+def connect() -> tuple[Any, Any]:
     conn = psycopg2.connect(
         dbname=get_env_variable("DB_NAME"),
         user=get_env_variable("DB_USER"),
@@ -113,7 +112,7 @@ def mask_host(break_id: int) -> Break:
 
 
 def get_exists_where_clause(
-    where_clauses: List[str], boolean: Optional[bool], field: str
+    where_clauses: list[str], boolean: Optional[bool], field: str
 ):
     if boolean is not None:
         if boolean:
@@ -124,7 +123,7 @@ def get_exists_where_clause(
 
 
 def get_boolean_where_clause(
-    where_clauses: List[str], boolean: Optional[bool], field: str
+    where_clauses: list[str], boolean: Optional[bool], field: str
 ):
     if boolean is not None:
         if boolean:
@@ -169,14 +168,14 @@ def row_to_break(row) -> Break:
     )
 
 
-def rows_to_breaks(rows) -> List[Break]:
+def rows_to_breaks(rows) -> list[Break]:
     next_breaks = []
     for row in rows:
         next_breaks.append(row_to_break(row))
     return next_breaks
 
 
-def get_specific_breaks(breaks: List[int]) -> List[Break]:
+def get_specific_breaks(breaks: list[int]) -> list[Break]:
     (conn, cur) = connect()
     statement = f"""
         SELECT * FROM break WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
@@ -187,7 +186,7 @@ def get_specific_breaks(breaks: List[int]) -> List[Break]:
     return rows_to_breaks(rows)
 
 
-def rows_to_claims(rows) -> List[Claim]:
+def rows_to_claims(rows) -> list[Claim]:
     claims = []
     for row in rows:
         (id, date, breaks, amount, reimbursed) = row
@@ -242,7 +241,7 @@ def get_breaks_statement(filters) -> str:
     return statement
 
 
-def get_break_dicts(filters: BreakFilters = BreakFilters()) -> List[dict]:
+def get_break_dicts(filters: BreakFilters = BreakFilters()) -> list[dict]:
     (conn, cur) = connect()
     statement = get_breaks_statement(filters)
     cur.execute(statement)
@@ -251,7 +250,7 @@ def get_break_dicts(filters: BreakFilters = BreakFilters()) -> List[dict]:
     return rows
 
 
-def get_break_objects(filters: BreakFilters = BreakFilters()) -> List[Break]:
+def get_break_objects(filters: BreakFilters = BreakFilters()) -> list[Break]:
     break_dicts = get_break_dicts(filters)
     return rows_to_breaks(break_dicts)
 
@@ -357,7 +356,7 @@ def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], list[Claim]]:
     return (updated_breaks, updated_claims)
 
 
-def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
+def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> list[Claim]:
     (conn, cur) = connect()
     if filters.reimbursed is not None:
         if filters.reimbursed:
@@ -375,7 +374,7 @@ def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> List[Claim]:
     cur.execute(statement)
     rows = cur.fetchall()
     disconnect(conn, cur)
-    claims = []
+    claims: list[Claim] = []
     for row in rows:
         (claim_id, claim_date, breaks_claimed, claim_amount, claim_reimbursed) = row
         if claim_reimbursed is not None:
