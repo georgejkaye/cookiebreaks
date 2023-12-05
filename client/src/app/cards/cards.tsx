@@ -4,10 +4,13 @@ import { SmallIcon } from "../icons"
 import { SetState } from "../page"
 
 export const ActionButton = (props: {
-    name: string
+    name?: string
     hoverColour: string
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+    title: string
+    alt: string
     icon?: string
+    style?: string
 }) => {
     const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation()
@@ -15,7 +18,9 @@ export const ActionButton = (props: {
     }
     return (
         <button
-            className={`p-2 border-2 bg-white border-bg2 rounded ${props.hoverColour}`}
+            className={`px-2 border-2 bg-white border-bg2 rounded ${
+                props.hoverColour
+            } ${props.style ? props.style : ""}`}
             onClick={onClick}
         >
             <div className="flex align-items-center">
