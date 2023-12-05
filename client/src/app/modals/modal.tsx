@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { SetState } from "../cards/breaks"
+import { SetState } from "../page"
 
 export const Modal = (props: {
     isOpen: boolean
