@@ -172,7 +172,7 @@ export const reimburseBreak = async (
 
 export const setHost = async (
     user: User,
-    id: number,
+    cb: CookieBreak,
     host: string,
     updateBreaks: UpdateBreaksFn,
     setLoadingCard: (loading: boolean) => void
@@ -181,7 +181,7 @@ export const setHost = async (
     let endpoint = `/api/breaks/host`
     let config = {
         params: {
-            break_id: id,
+            break_id: cb.id,
             host_name: actualHost,
         },
         headers: getHeaders(user),
