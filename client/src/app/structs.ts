@@ -93,8 +93,10 @@ export const getOutstandingBreaks = (cbs: CookieBreak[]) => {
         (cb) => !cb.success && cb.datetime.getTime() < date.getTime()
     )
 }
+export const isReimbursable = (cb: CookieBreak, past: boolean) =>
+    (!past || breakInPast(cb)) && cb.host && !cb.reimbursed
 export const getBreaksToReimburse = (cbs: CookieBreak[]) =>
-    cbs.filter((cb) => breakInPast(cb) && cb.host && !cb.reimbursed)
+    cbs.filter((cb) => isReimbursable(cb, true))
 export const getBreaksToClaim = (cbs: CookieBreak[]) =>
     cbs.filter((cb) => cb.reimbursed && !cb.claimed)
 export const getBreaksToComplete = (cbs: CookieBreak[]) =>
