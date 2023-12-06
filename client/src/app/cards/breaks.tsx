@@ -19,8 +19,9 @@ import {
     formatAsPrice,
     getDatetimeText,
     getShortDate,
+    isReimbursable,
 } from "../structs"
-import { BreakControlIcons, BreakStatusIcons, SmallIcon } from "../icons"
+import { BreakStatusIcons, SmallIcon } from "../icons"
 import {
     ActionButton,
     CardAction,
@@ -119,7 +120,7 @@ const BreakContentEditor = (props: {
                 props.cb.holiday && text === "" ? "Holiday" : text
             request(
                 props.user,
-                props.cb.id,
+                props.cb,
                 currentValue,
                 props.updateBreaks,
                 props.setCardLoading
@@ -249,7 +250,6 @@ const AnnounceBreakButton = (props: {
         />
     )
 }
-
 export const HolidayBreakButton = (props: {
     user: User | undefined
     cb: CookieBreak
@@ -278,7 +278,24 @@ export const HolidayBreakButton = (props: {
         />
     )
 }
-
+export const ReimburseBreakButton = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setCardLoading: (loading: boolean) => void
+}) => {
+    const onClickReimburse = (e: React.MouseEvent<HTMLButtonElement>) => {}
+    return (
+        <ActionButton
+            style="mx-1"
+            icon={"reimburse"}
+            title={"Reimburse"}
+            alt={"Coin"}
+            onClick={onClickReimburse}
+            hoverColour={getHoverColour(props.cb)}
+        />
+    )
+}
 export const DeleteBreakButton = (props: {
     user: User | undefined
     cb: CookieBreak
@@ -318,18 +335,36 @@ const AdminIcons = (props: {
 
     return (
         <div className={adminIconsStyle}>
-            <AnnounceBreakButton
-                user={props.user}
-                cb={props.cb}
-                updateBreaks={props.updateBreaks}
-                setCardLoading={props.setCardLoading}
-            />
-            <HolidayBreakButton
-                user={props.user}
-                cb={props.cb}
-                updateBreaks={props.updateBreaks}
-                setCardLoading={props.setCardLoading}
-            />
+            {breakInPast(props.cb) || props.cb.announced ? (
+                ""
+            ) : (
+                <AnnounceBreakButton
+                    user={props.user}
+                    cb={props.cb}
+                    updateBreaks={props.updateBreaks}
+                    setCardLoading={props.setCardLoading}
+                />
+            )}
+            {!isReimbursable(props.cb, false) ? (
+                ""
+            ) : (
+                <ReimburseBreakButton
+                    user={props.user}
+                    cb={props.cb}
+                    updateBreaks={props.updateBreaks}
+                    setCardLoading={props.setCardLoading}
+                />
+            )}
+            {breakInPast(props.cb) ? (
+                ""
+            ) : (
+                <HolidayBreakButton
+                    user={props.user}
+                    cb={props.cb}
+                    updateBreaks={props.updateBreaks}
+                    setCardLoading={props.setCardLoading}
+                />
+            )}
             <DeleteBreakButton
                 user={props.user}
                 cb={props.cb}
