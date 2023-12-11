@@ -335,7 +335,7 @@ const AdminIcons = (props: {
 
     return (
         <div className={adminIconsStyle}>
-            {breakInPast(props.cb) || props.cb.announced ? (
+            {props.cb.holiday || breakInPast(props.cb) || props.cb.announced ? (
                 ""
             ) : (
                 <AnnounceBreakButton
