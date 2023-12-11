@@ -230,7 +230,6 @@ export const ClaimCards = (props: {
     return (
         <Cards<Claim>
             title={props.title}
-            cardsAction={cardsAction}
             isLoading={props.isLoadingClaims}
             elements={claimsToComplete}
             getCardColour={getCardColour}

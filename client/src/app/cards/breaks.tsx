@@ -381,7 +381,7 @@ const BreakCard = (props: {
     updateBreaks: UpdateBreaksFn
     setLoading: (loading: boolean) => void
 }) => (
-    <>
+    <div className="flex flex-row align-center items-center mx-auto">
         <BreakDetails
             cb={props.cb}
             user={props.user}
@@ -398,7 +398,7 @@ const BreakCard = (props: {
                 updateBreaks={props.updateBreaks}
             />
         )}
-    </>
+    </div>
 )
 
 export const getCardColour = (cb: CookieBreak) =>
@@ -426,21 +426,9 @@ export const BreakCards = (props: {
             setLoading={setLoading}
         />
     )
-    let cardsActionProps: CardsActionProps<CookieBreak> =
-        props.buttons && props.buttons.length > 0
-            ? {
-                  type: CardAction.SELECT,
-                  buttons: props.buttons,
-                  getSelectedColour: getSelectedColour,
-                  getHoverColour: getHoverColour,
-              }
-            : {
-                  type: CardAction.NONE,
-              }
     return (
         <Cards<CookieBreak>
             title={props.title}
-            cardsAction={cardsActionProps}
             isLoading={props.isLoadingBreaks}
             elements={props.breaks}
             getCardColour={getCardColour}
