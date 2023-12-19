@@ -4,7 +4,7 @@ import psycopg2
 
 from typing import Any, Optional
 
-from cookiebreaks.core.env import get_env_variable
+from cookiebreaks.core.env import get_env_variable, get_secret
 from cookiebreaks.core.structs import (
     Break,
     BreakFilters,
@@ -19,7 +19,7 @@ def connect() -> tuple[Any, Any]:
     conn = psycopg2.connect(
         dbname=get_env_variable("DB_NAME"),
         user=get_env_variable("DB_USER"),
-        password=get_env_variable("DB_PASSWORD"),
+        password=get_secret("DB_PASSWORD"),
         host=get_env_variable("DB_HOST"),
     )
     cur = conn.cursor()

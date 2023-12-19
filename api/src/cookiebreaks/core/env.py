@@ -13,6 +13,16 @@ def get_env_variable(name: str) -> str:
         exit(1)
 
 
+def get_secret(name: str) -> str:
+    file = get_env_variable(name)
+    if os.file.exists(file):
+        with open(file) as f:
+            secret = f.readline().replace("\n", "")
+    else:
+        raise RuntimeError(f"Secret file {file} does not exist")
+    return secret
+
+
 def get_env_path() -> Path:
     return Path(get_env_variable("CB_API_ROOT")) / ".env"
 

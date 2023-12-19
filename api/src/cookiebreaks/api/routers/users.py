@@ -8,14 +8,10 @@ from pydantic import BaseModel
 
 from cookiebreaks.core.database import get_claim_objects, get_env_variable, get_user
 from cookiebreaks.api.routers.utils import get_breaks, get_claims
-from cookiebreaks.core.env import load_envs
+from cookiebreaks.core.env import get_secret, load_envs
 from cookiebreaks.core.structs import BreakFilters, User
 
 router = APIRouter(prefix="/users", tags=["users"])
-
-
-def get_secret_key() -> str:
-    return get_env_variable("SECRET_KEY")
 
 
 ALGORITHM = "HS256"
@@ -59,7 +55,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, get_secret_key(), algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, get_secret("SECRET_KEY"), algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -71,7 +67,9 @@ async def get_current_user(token: Annotated[Optional[str], Depends(oauth2_scheme
             headers={"WWW-Authenticate": "Bearer"},
         )
         try:
-            payload = jwt.decode(token, get_secret_key(), algorithms=[ALGORITHM])
+            payload = jwt.decode(
+                token, get_secret("SECRET_KEY"), algorithms=[ALGORITHM]
+            )
             username: str | None = payload.get("sub")
             if username is None:
                 raise credentials_exception
@@ -135,7 +133,7 @@ async def login(
         "token_type": "bearer",
         "admin": user.admin,
         "breaks": breaks,
-        "claims": claims
+        "claims": claims,
     }
 
 
