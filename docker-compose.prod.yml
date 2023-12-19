@@ -36,6 +36,10 @@ services:
       API_PORT: "${API_PORT}"
       SECRET_KEY: /run/secrets/api_secret
       MAILCTL_TOKEN: ${MAILCTL_TOKEN}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+      DB_PASSWORD: /run/secrets/db_password
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.cookies_api.rule=Host(`${API_HOST}`)"
@@ -48,6 +52,7 @@ services:
     secrets:
       - api_secret
       - gpg_private
+      - db_password
     volumes:
       - ${MAILCTL_TOKEN}:/app/mail/token.auth
   client:
@@ -97,3 +102,5 @@ secrets:
     file: ${GPG_SECRET_KEY_FILE}
   api_password:
     file: ${API_PASSWORD_FILE}
+  db_password:
+    file: ${DB_PASSWORD_FILE}
