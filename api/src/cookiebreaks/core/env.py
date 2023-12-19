@@ -15,7 +15,7 @@ def get_env_variable(name: str) -> str:
 
 def get_secret(name: str) -> str:
     file = get_env_variable(name)
-    if os.file.exists(file):
+    if os.path.exists(file):
         with open(file) as f:
             secret = f.readline().replace("\n", "")
     else:
