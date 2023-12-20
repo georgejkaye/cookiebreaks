@@ -80,7 +80,7 @@ services:
   updater:
     build:
       context: updater
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
       args:
         CRON: ${CRON}
         POETRY_VERSION: ${POETRY_VERSION}

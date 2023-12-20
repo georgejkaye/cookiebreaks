@@ -61,6 +61,9 @@ RUN python /app/mail/gen_msmtprc.py ${MSMTP_CONFIG_FILE} ${MSMTP_HOST} ${MSMTP_P
 RUN chmod +x ${MSMTP_EVAL_SCRIPT}
 
 COPY .env .
+RUN mkdir /run/secrets
+RUN echo password > /run/secrets/api_password
+RUN echo password > /run/secrets/db_password
 
 ENV CB_API_ROOT /app
 ENV API_ENV dev

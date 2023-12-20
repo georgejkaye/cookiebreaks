@@ -8,21 +8,21 @@ services:
     environment:
       POSTGRES_USER: cookies
       POSTGRES_DB: cookies
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
-    secrets:
-      - db_password
     networks:
       - internal
   adminer:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - 8082:8080
+    networks:
+      - internal
   api:
     build:
       context: api
@@ -63,6 +63,8 @@ services:
     networks:
       - internal
   client:
+    depends_on:
+      - api
     build:
       context: client
       dockerfile: Dockerfile.dev
@@ -73,36 +75,32 @@ services:
       - "${CLIENT_PORT}:${CLIENT_PORT}"
     environment:
       API_URL: "http://api:${API_PORT}"
-    depends_on:
-      - api
     volumes:
       - ./client:/app
       - ./client/node_modules:/app/node_modules
     networks:
       - internal
   updater:
+    depends_on:
+      - api
     build:
       context: updater
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         CRON: "* * * * *"
         POETRY_VERSION: ${POETRY_VERSION}
     environment:
-      API_USER: ${API_USER}
+      API_USER: admin
       API_PASSWORD: /run/secrets/api_password
       API_ENDPOINT: "http://api:${API_PORT}"
-    depends_on:
-      - api
-    secrets:
-      - api_password
     networks:
       - internal
+    volumes:
+      - ./updater/src:/app/src
 secrets:
   api_secret:
     file: ${API_SECRET_FILE}
   gpg_private:
     file: ${GPG_SECRET_KEY_FILE}
-  api_password:
-    file: ${API_PASSWORD_FILE}
-  db_password:
-    file: ${DB_PASSWORD_FILE}
+volumes:
+  pgdata:
