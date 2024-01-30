@@ -60,7 +60,7 @@ def insert_breaks(breaks: list[tuple[Arrow, str, Optional[str]]]) -> list[Break]
         {
             "datetimes": list(map(lambda b: b[0].datetime, breaks)),
             "locations": list(map(lambda b: b[1], breaks)),
-            "hosts": list(map(lambda b: b[1], breaks)),
+            "hosts": list(map(lambda b: b[2], breaks)),
         },
     )
     rows = cur.fetchall()
