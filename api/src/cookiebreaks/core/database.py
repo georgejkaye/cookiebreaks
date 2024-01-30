@@ -47,22 +47,30 @@ def get_user(username: str) -> Optional[User]:
     return User(row[0], row[1], row[2], row[3])
 
 
-def insert_breaks(breaks: list[tuple[Arrow, str]]) -> None:
+def insert_breaks(breaks: list[tuple[Arrow, str, Optional[str]]]) -> list[Break]:
     (conn, cur) = connect()
     statement = """
-        INSERT INTO break (break_datetime, break_location) (
-            SELECT unnest(%(datetimes)s), unnest(%(locations)s)
+        INSERT INTO break (break_datetime, break_location, break_host) (
+            SELECT unnest(%(datetimes)s), unnest(%(locations)s), unnest(%(hosts)s)
         )
+        RETURNING break_id, break_datetime, break_location
     """
     cur.execute(
         statement,
         {
             "datetimes": list(map(lambda b: b[0].datetime, breaks)),
             "locations": list(map(lambda b: b[1], breaks)),
+            "hosts": list(map(lambda b: b[1], breaks)),
         },
     )
+    rows = cur.fetchall()
+    new_breaks = [
+        Break(b[0], arrow.get(b[1]), b[2], None, None, None, None, None, None, None)
+        for b in rows
+    ]
     conn.commit()
     disconnect(conn, cur)
+    return new_breaks
 
 
 def insert_host(break_host: str | None, break_id: int) -> Break:
