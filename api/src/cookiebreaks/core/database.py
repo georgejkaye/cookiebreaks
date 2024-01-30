@@ -47,22 +47,30 @@ def get_user(username: str) -> Optional[User]:
     return User(row[0], row[1], row[2], row[3])
 
 
-def insert_breaks(breaks: list[tuple[Arrow, str]]) -> None:
+def insert_breaks(breaks: list[tuple[Arrow, str, Optional[str]]]) -> list[Break]:
     (conn, cur) = connect()
     statement = """
-        INSERT INTO break (break_datetime, break_location) (
-            SELECT unnest(%(datetimes)s), unnest(%(locations)s)
+        INSERT INTO break (break_datetime, break_location, break_host) (
+            SELECT unnest(%(datetimes)s), unnest(%(locations)s), unnest(%(hosts)s)
         )
+        RETURNING break_id, break_datetime, break_location
     """
     cur.execute(
         statement,
         {
             "datetimes": list(map(lambda b: b[0].datetime, breaks)),
             "locations": list(map(lambda b: b[1], breaks)),
+            "hosts": list(map(lambda b: b[1], breaks)),
         },
     )
+    rows = cur.fetchall()
+    new_breaks = [
+        Break(b[0], arrow.get(b[1]), b[2], None, None, None, None, None, None, None)
+        for b in rows
+    ]
     conn.commit()
     disconnect(conn, cur)
+    return new_breaks
 
 
 def insert_host(break_host: str | None, break_id: int) -> Break:
@@ -147,11 +155,9 @@ def row_to_break(row) -> Break:
         datetime,
         break_location,
         is_holiday,
+        break_announced,
         cost,
         host_reimbursed,
-        admin_claimed,
-        admin_reimbursed,
-        break_announced,
     ) = row
     timezone = "Europe/London"
     return Break(
@@ -163,8 +169,8 @@ def row_to_break(row) -> Break:
         arrow_or_none(break_announced, timezone),
         cost,
         arrow_or_none(host_reimbursed, timezone),
-        arrow_or_none(admin_claimed, timezone),
-        arrow_or_none(admin_reimbursed, timezone),
+        None,
+        None,
     )
 
 
@@ -282,7 +288,7 @@ def insert_missing_breaks() -> list[Break]:
             ) AS dates
             WHERE dates.days NOT IN (SELECT break_datetime FROM break)
         )
-        RETURNING *
+        RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
     """
     cur.execute(
         statement,
@@ -367,7 +373,7 @@ def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> list[Claim]:
     else:
         where_statement = ""
     statement = f"""
-        SELECT * FROM claim
+        SELECT  FROM claim
         {where_statement}
         ORDER BY claim_date ASC
     """

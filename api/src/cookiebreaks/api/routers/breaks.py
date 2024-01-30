@@ -1,7 +1,9 @@
+from datetime import datetime
 from typing import Annotated, Optional
+import arrow
 from fastapi import APIRouter, Depends, HTTPException
 
-from cookiebreaks.core.structs import BreakFilters, User
+from cookiebreaks.core.structs import Break, BreakFilters, User
 from cookiebreaks.tasks.announce import announce_specific
 from cookiebreaks.api.routers.utils import (
     BreakExternal,
@@ -9,6 +11,7 @@ from cookiebreaks.api.routers.utils import (
     get_breaks,
 )
 from cookiebreaks.core.database import (
+    insert_breaks,
     insert_host,
     insert_missing_breaks,
     mask_host,
@@ -45,6 +48,21 @@ async def request_breaks(
         admin_reimbursed,
     )
     return get_breaks(break_filters, current_user)
+
+
+@router.post(
+    "/insert",
+    response_model=BreakExternal,
+    summary="Insert a new cookie break",
+)
+async def insert_break(
+    current_user: Annotated[User, Depends(is_admin)],
+    break_datetime: datetime,
+    location: str,
+    host: Optional[str],
+):
+    new_break = insert_breaks([(arrow.get(break_datetime), location, host)])[0]
+    return break_internal_to_external(new_break, current_user)
 
 
 @router.post(
