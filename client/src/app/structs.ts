@@ -45,14 +45,12 @@ export const replaceItems = <T>(
     eqCheck: (t1: T, t2: T) => boolean
 ) =>
     oldItems
-        .map(
+        .filter(
             (oldItem) =>
-                itemsToAdd.find((newItem) => eqCheck(oldItem, newItem)) ||
-                oldItem
+                !itemsToAdd.find((newItem) => eqCheck(oldItem, newItem)) &&
+                !itemsToRemove.find((remItem) => eqCheck(oldItem, remItem))
         )
-        .filter((item) =>
-            itemsToRemove.find((removedItem) => eqCheck(item, removedItem))
-        )
+        .concat(itemsToAdd)
 
 export const getDateString = (datetime: Date) => {
     let weekday = datetime.toLocaleDateString("en-GB", {
