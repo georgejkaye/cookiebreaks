@@ -67,11 +67,9 @@ const ClaimCompleteButton = (props: {
         }
     }
     return (
-        <div className="flex-end">
+        <div className="desktop:w-40 m-2 desktop:m-0">
             <ActionButton
-                style="mx-1"
-                alt="Tick"
-                title="Mark this claim as completed"
+                name="Complete"
                 onClick={onClickComplete}
                 hoverColour={props.hoverColour}
                 icon="success"
@@ -84,7 +82,6 @@ const ClaimDeleteButton = (props: { claim: Claim; hoverColour: string }) => {
     return (
         <div className="desktop:ml-auto ml-2">
             <SmallIcon
-                width={30}
                 icon="bin"
                 title="Delete claim"
                 alt="Bin"
@@ -103,7 +100,7 @@ const ClaimButtons = (props: {
 }) => {
     const buttonHoverColour = "hover:bg-gray-100"
     const claimButtonsStyles =
-        "w-full desktop:w-1/4 mt-2 tablet:mt-0 flex items-center justify-end"
+        "w-full desktop:w-1/4 mt-2 tablet:mt-0 flex items-center justify-center"
     return (
         <div className={claimButtonsStyles}>
             <ClaimCompleteButton
@@ -230,6 +227,7 @@ export const ClaimCards = (props: {
     return (
         <Cards<Claim>
             title={props.title}
+            cardsAction={cardsAction}
             isLoading={props.isLoadingClaims}
             elements={claimsToComplete}
             getCardColour={getCardColour}

@@ -1,11 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import {
-    announceBreak,
-    deleteBreak,
-    setHoliday,
-    setHost,
-    submitClaim,
-} from "../api"
+import { setHoliday, setHost, submitClaim } from "../api"
 import {
     User,
     CookieBreak,
@@ -19,11 +13,14 @@ import {
     formatAsPrice,
     getDatetimeText,
     getShortDate,
-    isReimbursable,
 } from "../structs"
-import { BreakStatusIcons, SmallIcon } from "../icons"
 import {
-    ActionButton,
+    BreakControlIcons,
+    BreakStatusIcons,
+    DeleteBreakIcon,
+    SmallIcon,
+} from "../icons"
+import {
     CardAction,
     CardSelector,
     Cards,
@@ -75,7 +72,6 @@ export const TickCrossInputBox = (props: {
     return (
         <div className={divStyle}>
             <SmallIcon
-                width={30}
                 icon="cross"
                 styles=""
                 title="Close"
@@ -92,7 +88,6 @@ export const TickCrossInputBox = (props: {
                 size={props.size}
             />
             <SmallIcon
-                width={30}
                 icon="tick"
                 styles=""
                 title="Confirm"
@@ -120,7 +115,7 @@ const BreakContentEditor = (props: {
                 props.cb.holiday && text === "" ? "Holiday" : text
             request(
                 props.user,
-                props.cb,
+                props.cb.id,
                 currentValue,
                 props.updateBreaks,
                 props.setCardLoading
@@ -223,107 +218,6 @@ export const BreakDetails = (props: {
     )
 }
 
-const AnnounceBreakButton = (props: {
-    user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
-}) => {
-    const onClickAnnounce = (e: React.MouseEvent<HTMLButtonElement>) => {
-        props.user
-            ? announceBreak(
-                  props.user,
-                  props.cb,
-                  props.updateBreaks,
-                  props.setCardLoading
-              )
-            : undefined
-    }
-    return (
-        <ActionButton
-            style="mx-1"
-            hoverColour={getHoverColour(props.cb)}
-            onClick={onClickAnnounce}
-            icon="announce"
-            alt="Loudspeaker"
-            title="Announce this cookie break"
-        />
-    )
-}
-export const HolidayBreakButton = (props: {
-    user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
-}) => {
-    const onClickHoliday = (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (props.user) {
-            setHoliday(
-                props.user,
-                props.cb,
-                props.cb.holiday ? undefined : "Holiday",
-                props.updateBreaks,
-                props.setCardLoading
-            )
-        }
-    }
-    return (
-        <ActionButton
-            style="mx-1"
-            icon={props.cb.holiday ? "landing" : "takeoff"}
-            title={props.cb.holiday ? "Unset holiday" : "Set holiday"}
-            alt={props.cb.holiday ? "Plane landing" : "Plane taking off"}
-            onClick={onClickHoliday}
-            hoverColour={getHoverColour(props.cb)}
-        />
-    )
-}
-export const ReimburseBreakButton = (props: {
-    user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
-}) => {
-    const onClickReimburse = (e: React.MouseEvent<HTMLButtonElement>) => {}
-    return (
-        <ActionButton
-            style="mx-1"
-            icon={"reimburse"}
-            title={"Reimburse"}
-            alt={"Coin"}
-            onClick={onClickReimburse}
-            hoverColour={getHoverColour(props.cb)}
-        />
-    )
-}
-export const DeleteBreakButton = (props: {
-    user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
-}) => {
-    const onClickDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (props.user) {
-            deleteBreak(
-                props.user,
-                props.cb,
-                props.updateBreaks,
-                props.setCardLoading
-            )
-        }
-    }
-    return (
-        <ActionButton
-            style="mx-1"
-            icon="bin"
-            title="Delete break"
-            alt="Bin"
-            onClick={onClickDelete}
-            hoverColour={getHoverColour(props.cb)}
-        />
-    )
-}
-
 const AdminIcons = (props: {
     user: User | undefined
     cb: CookieBreak
@@ -331,44 +225,19 @@ const AdminIcons = (props: {
     setCardLoading: (loading: boolean) => void
 }) => {
     let adminIconsStyle =
-        "h-12 desktop:my-0 w-full justify-center desktop:justify-end items-center desktop:w-1/4 flex flex-row desktop:flex-end"
-
+        "h-12 desktop:my-0 w-full justify-center items-center desktop:w-1/4 flex flex-row desktop:flex-end"
     return (
         <div className={adminIconsStyle}>
-            {props.cb.holiday || breakInPast(props.cb) || props.cb.announced ? (
-                ""
-            ) : (
-                <AnnounceBreakButton
-                    user={props.user}
-                    cb={props.cb}
-                    updateBreaks={props.updateBreaks}
-                    setCardLoading={props.setCardLoading}
-                />
-            )}
-            {!isReimbursable(props.cb, false) ? (
-                ""
-            ) : (
-                <ReimburseBreakButton
-                    user={props.user}
-                    cb={props.cb}
-                    updateBreaks={props.updateBreaks}
-                    setCardLoading={props.setCardLoading}
-                />
-            )}
-            {breakInPast(props.cb) ? (
-                ""
-            ) : (
-                <HolidayBreakButton
-                    user={props.user}
-                    cb={props.cb}
-                    updateBreaks={props.updateBreaks}
-                    setCardLoading={props.setCardLoading}
-                />
-            )}
-            <DeleteBreakButton
-                user={props.user}
+            <BreakStatusIcons
                 cb={props.cb}
                 updateBreaks={props.updateBreaks}
+                user={props.user}
+                setCardLoading={props.setCardLoading}
+            />
+            <BreakControlIcons
+                cb={props.cb}
+                updateBreaks={props.updateBreaks}
+                user={props.user}
                 setCardLoading={props.setCardLoading}
             />
         </div>
@@ -381,7 +250,7 @@ const BreakCard = (props: {
     updateBreaks: UpdateBreaksFn
     setLoading: (loading: boolean) => void
 }) => (
-    <div className="flex flex-row align-center items-center mx-auto">
+    <>
         <BreakDetails
             cb={props.cb}
             user={props.user}
@@ -398,13 +267,13 @@ const BreakCard = (props: {
                 updateBreaks={props.updateBreaks}
             />
         )}
-    </div>
+    </>
 )
 
 export const getCardColour = (cb: CookieBreak) =>
     cb.holiday ? "bg-gray-200" : "bg-white"
 export const getSelectedColour = (_: CookieBreak) => "bg-gray-100"
-const getHoverColour = (_: CookieBreak) => "hover:bg-gray-400"
+const getHoverColour = (_: CookieBreak) => "hover:bg-gray-50"
 
 export const BreakCards = (props: {
     title: string
@@ -426,9 +295,21 @@ export const BreakCards = (props: {
             setLoading={setLoading}
         />
     )
+    let cardsActionProps: CardsActionProps<CookieBreak> =
+        props.buttons && props.buttons.length > 0
+            ? {
+                  type: CardAction.SELECT,
+                  buttons: props.buttons,
+                  getSelectedColour: getSelectedColour,
+                  getHoverColour: getHoverColour,
+              }
+            : {
+                  type: CardAction.NONE,
+              }
     return (
         <Cards<CookieBreak>
             title={props.title}
+            cardsAction={cardsActionProps}
             isLoading={props.isLoadingBreaks}
             elements={props.breaks}
             getCardColour={getCardColour}

@@ -50,9 +50,8 @@ export const replaceItems = <T>(
                 itemsToAdd.find((newItem) => eqCheck(oldItem, newItem)) ||
                 oldItem
         )
-        .filter(
-            (item) =>
-                !itemsToRemove.find((removedItem) => eqCheck(item, removedItem))
+        .filter((item) =>
+            itemsToRemove.find((removedItem) => eqCheck(item, removedItem))
         )
 
 export const getDateString = (datetime: Date) => {
@@ -93,10 +92,8 @@ export const getOutstandingBreaks = (cbs: CookieBreak[]) => {
         (cb) => !cb.success && cb.datetime.getTime() < date.getTime()
     )
 }
-export const isReimbursable = (cb: CookieBreak, past: boolean) =>
-    (!past || breakInPast(cb)) && cb.host && !cb.reimbursed
 export const getBreaksToReimburse = (cbs: CookieBreak[]) =>
-    cbs.filter((cb) => isReimbursable(cb, true))
+    cbs.filter((cb) => breakInPast(cb) && cb.host && !cb.reimbursed)
 export const getBreaksToClaim = (cbs: CookieBreak[]) =>
     cbs.filter((cb) => cb.reimbursed && !cb.claimed)
 export const getBreaksToComplete = (cbs: CookieBreak[]) =>

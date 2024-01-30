@@ -172,7 +172,7 @@ export const reimburseBreak = async (
 
 export const setHost = async (
     user: User,
-    cb: CookieBreak,
+    id: number,
     host: string,
     updateBreaks: UpdateBreaksFn,
     setLoadingCard: (loading: boolean) => void
@@ -181,7 +181,7 @@ export const setHost = async (
     let endpoint = `/api/breaks/host`
     let config = {
         params: {
-            break_id: cb.id,
+            break_id: id,
             host_name: actualHost,
         },
         headers: getHeaders(user),
@@ -195,7 +195,7 @@ export const setHost = async (
 
 export const setHoliday = async (
     user: User,
-    cb: CookieBreak,
+    id: number,
     reason: string | undefined,
     updateBreaks: UpdateBreaksFn,
     setLoadingCard: (loading: boolean) => void
@@ -203,7 +203,7 @@ export const setHoliday = async (
     let endpoint = `/api/breaks/holiday`
     let config = {
         params: {
-            break_id: cb.id,
+            break_id: id,
             reason,
         },
         headers: getHeaders(user),

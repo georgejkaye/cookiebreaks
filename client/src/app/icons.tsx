@@ -14,7 +14,6 @@ import { SetState } from "./page"
 
 export const SmallIcon = (props: {
     icon: string
-    width: number
     styles?: string
     title?: string
     alt: string
@@ -28,8 +27,8 @@ export const SmallIcon = (props: {
     return (
         <Image
             className={style}
-            width={props.width}
-            height={props.width}
+            width={30}
+            height={30}
             src={`/images/icons/${props.icon}.svg`}
             alt={props.alt}
             onClick={props.onClick}
@@ -57,7 +56,6 @@ export const BreakIcon = (props: {
     let style = `desktop:m-0 ${opacity}`
     return (
         <SmallIcon
-            width={30}
             styles={style}
             onClick={
                 props.onClick && props.clickable ? props.onClick : undefined
@@ -72,6 +70,90 @@ export const BreakIcon = (props: {
 
 export const getHoverColour = (cb: CookieBreak) =>
     cb.holiday ? "hover:bg-gray-500/50" : "hover:bg-gray-100"
+
+export const HolidayBreakIcon = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setCardLoading: (loading: boolean) => void
+}) => {
+    const onClickDelete = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (props.user) {
+            deleteBreak(
+                props.user,
+                props.cb,
+                props.updateBreaks,
+                props.setCardLoading
+            )
+        }
+    }
+    return (
+        <SmallIcon
+            icon={props.cb.holiday ? "landing" : "takeoff"}
+            title={props.cb.holiday ? "Unset holiday" : "Set holiday"}
+            alt={props.cb.holiday ? "Plane landing" : "Plane taking off"}
+            onClick={onClickDelete}
+            hoverColour={getHoverColour(props.cb)}
+        />
+    )
+}
+
+export const DeleteBreakIcon = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setCardLoading: (loading: boolean) => void
+}) => {
+    const onClickDelete = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (props.user) {
+            deleteBreak(
+                props.user,
+                props.cb,
+                props.updateBreaks,
+                props.setCardLoading
+            )
+        }
+    }
+    return (
+        <SmallIcon
+            icon="bin"
+            title="Delete break"
+            alt="Bin"
+            onClick={onClickDelete}
+            hoverColour={getHoverColour(props.cb)}
+        />
+    )
+}
+
+export const BreakControlIcons = (props: {
+    user: User | undefined
+    cb: CookieBreak
+    updateBreaks: UpdateBreaksFn
+    setCardLoading: (loading: boolean) => void
+}) => {
+    let breakControlStyle =
+        "flex flex-row w-16 desktop:justify-end justify-center"
+    return (
+        <div className={breakControlStyle}>
+            {dateInPast(props.cb.datetime) ? (
+                ""
+            ) : (
+                <HolidayBreakIcon
+                    user={props.user}
+                    cb={props.cb}
+                    updateBreaks={props.updateBreaks}
+                    setCardLoading={props.setCardLoading}
+                />
+            )}
+            <DeleteBreakIcon
+                user={props.user}
+                cb={props.cb}
+                updateBreaks={props.updateBreaks}
+                setCardLoading={props.setCardLoading}
+            />
+        </div>
+    )
+}
 
 const AnnounceIcon = (props: {
     cb: CookieBreak
