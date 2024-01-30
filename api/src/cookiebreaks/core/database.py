@@ -147,11 +147,9 @@ def row_to_break(row) -> Break:
         datetime,
         break_location,
         is_holiday,
+        break_announced,
         cost,
         host_reimbursed,
-        admin_claimed,
-        admin_reimbursed,
-        break_announced,
     ) = row
     timezone = "Europe/London"
     return Break(
@@ -163,8 +161,8 @@ def row_to_break(row) -> Break:
         arrow_or_none(break_announced, timezone),
         cost,
         arrow_or_none(host_reimbursed, timezone),
-        arrow_or_none(admin_claimed, timezone),
-        arrow_or_none(admin_reimbursed, timezone),
+        None,
+        None,
     )
 
 
@@ -282,7 +280,7 @@ def insert_missing_breaks() -> list[Break]:
             ) AS dates
             WHERE dates.days NOT IN (SELECT break_datetime FROM break)
         )
-        RETURNING *
+        RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
     """
     cur.execute(
         statement,
@@ -367,7 +365,7 @@ def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> list[Claim]:
     else:
         where_statement = ""
     statement = f"""
-        SELECT * FROM claim
+        SELECT  FROM claim
         {where_statement}
         ORDER BY claim_date ASC
     """
