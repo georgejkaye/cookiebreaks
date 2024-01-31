@@ -79,7 +79,9 @@ def insert_host(break_host: str | None, break_id: int) -> Break:
         UPDATE break
         SET break_host = %(host)s
         WHERE break_id = %(id)s
-        RETURNING *
+        RETURNING
+            break_id, break_host, break_datetime, break_location,
+            holiday_text, break_announced, break_cost, host_reimbursed
     """
     cur.execute(statement, {"host": break_host, "id": break_id})
     row = cur.fetchall()[0]
@@ -95,7 +97,7 @@ def reimburse_host(break_id: int, cost: float) -> Break:
             break_cost = %(cost)s,
             host_reimbursed = DATE_TRUNC('minute', NOW())
         WHERE break_id = %(id)s
-        RETURNING *
+        RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
     """
     cur.execute(statement, {"id": break_id, "cost": cost})
     row = cur.fetchall()[0]
@@ -110,7 +112,7 @@ def mask_host(break_id: int) -> Break:
         UPDATE break
         SET break_host = null
         WHERE break_id = %(is)s
-        RETURNING *
+        RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
     """
     cur.execute(statement, {"id": break_id})
     row = cur.fetchall()[0]
@@ -184,7 +186,9 @@ def rows_to_breaks(rows) -> list[Break]:
 def get_specific_breaks(breaks: list[int]) -> list[Break]:
     (conn, cur) = connect()
     statement = f"""
-        SELECT * FROM break WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
+        SELECT break_id, break_host, break_datetime, break_location,
+            holiday_text, break_announced, break_cost, host_reimbursed
+        FROM break WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
     """
     cur.execute(statement, {"ids": breaks})
     rows = cur.fetchall()
@@ -238,7 +242,8 @@ def get_breaks_statement(filters) -> str:
     else:
         limit_string = f"LIMIT {filters.number}"
     statement = f"""
-        SELECT *
+        SELECT break_id, break_host, break_datetime, break_location,
+            holiday_text, break_announced, break_cost, host_reimbursed
         FROM break
         {where_string}
         ORDER BY break_datetime ASC
@@ -312,7 +317,7 @@ def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
             UPDATE break
             SET holiday_text = %(text)s, break_host = NULL
             WHERE break_id = %(id)s
-            RETURNING *
+            RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
         """
         reason_text = reason
     else:
@@ -320,7 +325,7 @@ def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
             UPDATE break
             SET holiday_text = NULL
             WHERE break_id = %(id)s
-            RETURNING *
+            RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
         """
         reason_text = ""
     cur.execute(statement, {"id": break_id, "text": reason_text})
@@ -432,7 +437,8 @@ def after_announced_break(
         UPDATE break
         SET break_announced = NOW()
         WHERE break_id = %(id)s
-        RETURNING *
+        RETURNING break_id, break_host, break_datetime, break_location,
+            is_holiday, break_cost, host_reimbursed
     """
     cur.execute(statement, {"id": cookie_break.id})
     updated_break = cur.fetchall()[0]
