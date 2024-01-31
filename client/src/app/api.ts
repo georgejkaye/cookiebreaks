@@ -250,9 +250,9 @@ export const submitClaim = async (
     )
     let responseData = response.data
     let updatedBreaks = responseData.breaks
-    let updatedClaims = responseData.claims
+    let updatedClaim = responseData.claim
     let breaks = updateBreaks(responseToBreaks(updatedBreaks), [])
-    updateClaims([responseToClaim(updatedClaims, breaks)], [])
+    updateClaims([responseToClaim(updatedClaim, breaks)], [])
     setTimeout(() => setLoadingCards(false), 1)
 }
 

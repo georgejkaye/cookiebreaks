@@ -60,7 +60,7 @@ def insert_breaks(breaks: list[tuple[Arrow, str, Optional[str]]]) -> list[Break]
         {
             "datetimes": list(map(lambda b: b[0].datetime, breaks)),
             "locations": list(map(lambda b: b[1], breaks)),
-            "hosts": list(map(lambda b: b[1], breaks)),
+            "hosts": list(map(lambda b: b[2], breaks)),
         },
     )
     rows = cur.fetchall()
@@ -336,13 +336,13 @@ def get_maybe_cost(b: Break) -> Decimal:
     return b.cost
 
 
-def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], list[Claim]]:
+def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], Claim]:
     (conn, cur) = connect()
     break_table_statement = f"""
-        UPDATE break
-        SET admin_claimed = DATE_TRUNC('minute', NOW()), break_host = NULL
+        UPDATE Break
+        SET break_host = NULL
         WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
-        RETURNING *
+        RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
     """
     cur.execute(break_table_statement, {"ids": break_ids})
     rows = cur.fetchall()
@@ -350,16 +350,24 @@ def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], list[Claim]]:
     costs = list(map(lambda b: get_maybe_cost(b), updated_breaks))
     amount = sum(costs)
     claim_table_statement = f"""
-        INSERT INTO claim(claim_date, breaks_claimed, claim_amount)
-        VALUES(DATE_TRUNC('minute', NOW()), %(breaks)s, %(amount)s)
-        RETURNING *
+        INSERT INTO Claim(claim_date)
+        VALUES(DATE_TRUNC('minute', NOW()))
+        RETURNING claim_id, claim_date, claim_reimbursed
     """
     cur.execute(claim_table_statement, {"breaks": break_ids, "amount": amount})
-    rows = cur.fetchall()
-    updated_claims = rows_to_claims(rows)
+    row = cur.fetchall()[0]
+    updated_claim = Claim(row[0], arrow.get(row[1]), break_ids, amount, None)
+    claim_item_statement = f"""
+        INSERT INTO ClaimItem(claim_id, break_id) (
+            SELECT %(claim_id)s, unnest(%(break_ids)s)
+        )
+    """
+    cur.execute(
+        claim_item_statement, {"claim_id": updated_claim.id, "break_ids": break_ids}
+    )
     conn.commit()
     disconnect(conn, cur)
-    return (updated_breaks, updated_claims)
+    return (updated_breaks, updated_claim)
 
 
 def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> list[Claim]:
@@ -372,23 +380,27 @@ def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> list[Claim]:
         where_statement = f"WHERE claim_reimbursed IS{modifier} NULL"
     else:
         where_statement = ""
-    statement = f"""
-        SELECT  FROM claim
+    claims_statement = f"""
+        SELECT claim.claim_id, claim.claim_date, claim.claim_reimbursed, ARRAY_AGG(claimitem.break_id), SUM(break.break_cost)
+            FROM claim
+            INNER JOIN claimitem ON claim.claim_id = claimitem.claim_id
+            INNER JOIN break ON claimitem.break_id = break.break_id
+            GROUP BY claim.claim_id
         {where_statement}
-        ORDER BY claim_date ASC
+        ORDER BY claim.claim_date ASC
     """
-    cur.execute(statement)
+    cur.execute(claims_statement)
     rows = cur.fetchall()
-    disconnect(conn, cur)
     claims: list[Claim] = []
     for row in rows:
-        (claim_id, claim_date, breaks_claimed, claim_amount, claim_reimbursed) = row
+        (claim_id, claim_date, claim_reimbursed, breaks_claimed, claim_amount) = row
         if claim_reimbursed is not None:
             claim_reimbursed = arrow.get(claim_reimbursed)
-        claim_date = arrow.get(claim_date)
+        claim_arrow = arrow.get(claim_date)
         claims.append(
-            Claim(claim_id, claim_date, breaks_claimed, claim_amount, claim_reimbursed)
+            Claim(claim_id, claim_arrow, breaks_claimed, claim_amount, claim_reimbursed)
         )
+    disconnect(conn, cur)
     return claims
 
 

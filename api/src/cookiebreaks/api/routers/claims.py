@@ -34,7 +34,7 @@ async def request_claims(
 @dataclass
 class BreakAndClaim:
     breaks: list[BreakExternal]
-    claims: list[ClaimExternal]
+    claim: ClaimExternal
 
 
 @router.post(
@@ -43,12 +43,12 @@ class BreakAndClaim:
 async def claim_break(
     current_user: Annotated[User, Depends(is_admin)], break_ids: list[int]
 ):
-    (updated_breaks, updated_claims) = claim_for_breaks(break_ids)
+    (updated_breaks, updated_claim) = claim_for_breaks(break_ids)
     external_breaks = list(
         map(lambda c: break_internal_to_external(c, current_user), updated_breaks)
     )
-    external_claims = list(map(claim_internal_to_external, updated_claims))
-    return BreakAndClaim(external_breaks, external_claims)
+    external_claim = claim_internal_to_external(updated_claim)
+    return BreakAndClaim(external_breaks, external_claim)
 
 
 @router.post(
