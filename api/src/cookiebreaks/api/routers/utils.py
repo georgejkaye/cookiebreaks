@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Literal, Optional
 
 from arrow import Arrow
 from cookiebreaks.core.database import get_break_objects, get_claim_objects
@@ -75,7 +75,7 @@ class ClaimExternal:
     id: int
     claim_date: datetime
     breaks_claimed: list[int]
-    claim_amount: Decimal
+    claim_amount: Decimal | Literal[0]
     claim_reimbursed: Optional[datetime]
 
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Optional
+from typing import Literal, Optional
 from arrow import Arrow
 
 
@@ -58,7 +58,7 @@ class Claim:
     id: int
     claim_date: Arrow
     breaks_claimed: list[int]
-    claim_amount: Decimal
+    claim_amount: Decimal | Literal[0]
     claim_reimbursed: Optional[Arrow] = None
 
 
