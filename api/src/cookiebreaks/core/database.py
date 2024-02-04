@@ -152,27 +152,31 @@ def arrow_or_none(candidate, timezone: str) -> Optional[Arrow]:
 
 def row_to_break(row) -> Break:
     (
-        id,
+        break_id,
         break_host,
-        datetime,
+        break_datetime,
         break_location,
-        is_holiday,
+        holiday_text,
         break_announced,
-        cost,
+        break_cost,
         host_reimbursed,
+        claim_id,
+        claim_date,
+        claim_reimbursed,
     ) = row
     timezone = "Europe/London"
     return Break(
-        id,
-        arrow.get(datetime, timezone),
+        break_id,
+        arrow.get(break_datetime, timezone),
         break_location,
-        is_holiday,
+        holiday_text,
         break_host,
         arrow_or_none(break_announced, timezone),
-        cost,
+        break_cost,
         arrow_or_none(host_reimbursed, timezone),
-        None,
-        None,
+        arrow_or_none(claim_date, timezone),
+        claim_id,
+        claim_reimbursed,
     )
 
 
@@ -242,9 +246,12 @@ def get_breaks_statement(filters) -> str:
     else:
         limit_string = f"LIMIT {filters.number}"
     statement = f"""
-        SELECT break_id, break_host, break_datetime, break_location,
-            holiday_text, break_announced, break_cost, host_reimbursed
-        FROM break
+        SELECT Break.break_id, break_host, break_datetime, break_location,
+            holiday_text, break_announced, break_cost, host_reimbursed,
+            Claim.claim_id, claim_date, claim_reimbursed
+        FROM Break
+        LEFT JOIN ClaimItem ON Break.break_id = ClaimItem.break_id
+        LEFT JOIN Claim ON ClaimItem.claim_id = Claim.claim_id
         {where_string}
         ORDER BY break_datetime ASC
         {limit_string}

@@ -98,7 +98,7 @@ export const Card = <T,>(props: {
             ? setExpanded(!isExpanded)
             : () => {}
     return (
-        <div className={cardStyle} onClick={onClickCard}>
+        <div key={props.index} className={cardStyle} onClick={onClickCard}>
             {props.isLoading ? (
                 <Loader size={2} styles="h-10 my-1" />
             ) : isExpanded && props.cardAction.type === CardAction.EXPAND ? (

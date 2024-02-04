@@ -27,6 +27,7 @@ class Break:
     cost: Optional[Decimal] = None
     host_reimbursed: Optional[Arrow] = None
     admin_claimed: Optional[Arrow] = None
+    claim_id: Optional[int] = None
     admin_reimbursed: Optional[Arrow] = None
 
     def get_break_time(self) -> str:

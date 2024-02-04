@@ -24,6 +24,7 @@ class BreakExternal:
     cost: Optional[Decimal]
     host_reimbursed: Optional[datetime]
     admin_claimed: Optional[datetime]
+    claim_id: Optional[int]
     admin_reimbursed: Optional[datetime]
 
 
@@ -50,12 +51,14 @@ def break_internal_to_external(
         host_reimbursed = maybe_arrow_to_datetime(internal.host_reimbursed)
         admin_claimed = maybe_arrow_to_datetime(internal.admin_claimed)
         admin_reimbursed = maybe_arrow_to_datetime(internal.admin_reimbursed)
+        claim_id = internal.claim_id
     else:
         break_announced = None
         cost = None
         host_reimbursed = None
         admin_claimed = None
         admin_reimbursed = None
+        claim_id = None
     return BreakExternal(
         internal.id,
         internal.break_time.datetime,
@@ -66,6 +69,7 @@ def break_internal_to_external(
         cost,
         host_reimbursed,
         admin_claimed,
+        claim_id,
         admin_reimbursed,
     )
 
