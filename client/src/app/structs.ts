@@ -42,7 +42,8 @@ export const replaceItems = <T>(
     oldItems: T[],
     itemsToAdd: T[],
     itemsToRemove: T[],
-    eqCheck: (t1: T, t2: T) => boolean
+    eqCheck: (t1: T, t2: T) => boolean,
+    sortFn: (t1: T, t2: T) => number
 ) =>
     oldItems
         .filter(
@@ -51,6 +52,7 @@ export const replaceItems = <T>(
                 !itemsToRemove.find((remItem) => eqCheck(oldItem, remItem))
         )
         .concat(itemsToAdd)
+        .sort(sortFn)
 
 export const getDateString = (datetime: Date) => {
     let weekday = datetime.toLocaleDateString("en-GB", {
