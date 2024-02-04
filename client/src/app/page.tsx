@@ -55,7 +55,8 @@ const Home = () => {
             data.breaks,
             newBreaks,
             breaksToRemove,
-            (b1, b2) => b1.id === b2.id
+            (b1, b2) => b1.id === b2.id,
+            (b1, b2) => b1.datetime.getTime() - b2.datetime.getTime()
         )
         setData({ breaks: updatedBreaks, claims: data.claims })
         return updatedBreaks
@@ -65,7 +66,8 @@ const Home = () => {
             data.claims,
             newClaims,
             claimsToRemove,
-            (c1, c2) => c1.id === c2.id
+            (c1, c2) => c1.id === c2.id,
+            (c1, c2) => c1.date.getTime() - c2.date.getTime()
         )
         setClaims(updatedClaims)
         return updatedClaims
