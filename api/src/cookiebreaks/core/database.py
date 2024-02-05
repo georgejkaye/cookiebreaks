@@ -1,4 +1,5 @@
 from decimal import Decimal
+from unittest.util import strclass
 import arrow
 import psycopg2
 
@@ -217,7 +218,7 @@ def rows_to_claims(rows) -> list[Claim]:
     return claims
 
 
-def get_breaks_statement(filters) -> str:
+def get_breaks_statement(filters: BreakFilters = BreakFilters()) -> str:
     where_clauses = []
     if filters.past is not None:
         if filters.past:
@@ -284,6 +285,15 @@ def to_postgres_day(day: int) -> int:
         return day + 1
 
 
+def get_returning_statement() -> str:
+    return f"""
+        data.break_id, data.break_host, data.break_datetime,
+        data.break_location, data.holiday_text, data.break_announced,
+        data.break_cost, data.host_reimbursed, data.claim_id,
+        data.claim_date, data.claim_reimbursed
+    """
+
+
 def insert_missing_breaks() -> list[Break]:
     (conn, cur) = connect()
     statement = f"""
@@ -300,7 +310,9 @@ def insert_missing_breaks() -> list[Break]:
             ) AS dates
             WHERE dates.days NOT IN (SELECT break_datetime FROM break)
         )
-        RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
+        RETURNING
+            break_id, break_host, break_datetime, break_location,
+            holiday_text, break_announced, break_cost, host_reimbursed
     """
     cur.execute(
         statement,
@@ -320,21 +332,18 @@ def insert_missing_breaks() -> list[Break]:
 def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
     (conn, cur) = connect()
     if reason:
-        statement = f"""
-            UPDATE break
-            SET holiday_text = %(text)s, break_host = NULL
-            WHERE break_id = %(id)s
-            RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
-        """
+        set_statement = "holiday_text = %(text)s, break_host = NULL"
         reason_text = reason
     else:
-        statement = f"""
-            UPDATE break
-            SET holiday_text = NULL
-            WHERE break_id = %(id)s
-            RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
-        """
+        set_statement = "holiday_text = NULL"
         reason_text = ""
+    statement = f"""
+            UPDATE break
+            SET {set_statement}
+            FROM ({get_breaks_statement(BreakFilters())}) data
+            WHERE break.break_id = %(id)s
+            RETURNING {get_returning_statement()}
+        """
     cur.execute(statement, {"id": break_id, "text": reason_text})
     row = cur.fetchall()[0]
     conn.commit()
@@ -353,8 +362,9 @@ def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], Claim]:
     break_table_statement = f"""
         UPDATE Break
         SET break_host = NULL
+        FROM ({get_breaks_statement(BreakFilters())}) data
         WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
-        RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
+        RETURNING {get_returning_statement()}
     """
     cur.execute(break_table_statement, {"ids": break_ids})
     rows = cur.fetchall()
