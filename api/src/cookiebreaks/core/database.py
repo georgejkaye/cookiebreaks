@@ -48,6 +48,57 @@ def get_user(username: str) -> Optional[User]:
     return User(row[0], row[1], row[2], row[3])
 
 
+def get_breaks_statement(filters: BreakFilters = BreakFilters()) -> str:
+    where_clauses = []
+    if filters.past is not None:
+        if filters.past:
+            op = "<"
+        else:
+            op = ">"
+        where_clauses.append(f"break_datetime {op} NOW()")
+    if filters.hosted is not None:
+        if filters.hosted:
+            op = "!="
+            var = " NOT"
+        else:
+            op = "="
+            var = ""
+        where_clauses.append(f"(break_host {op} '' OR host_reimbursed IS{var} NULL)")
+    get_exists_where_clause(where_clauses, filters.holiday, "holiday_text")
+    get_exists_where_clause(where_clauses, filters.host_reimbursed, "host_reimbursed")
+    get_exists_where_clause(where_clauses, filters.admin_claimed, "admin_claimed")
+    get_exists_where_clause(where_clauses, filters.admin_reimbursed, "admin_reimbursed")
+    if len(where_clauses) == 0:
+        where_string = ""
+    else:
+        where_string = "WHERE " + " AND ".join(where_clauses)
+    if filters.number is None:
+        limit_string = ""
+    else:
+        limit_string = f"LIMIT {filters.number}"
+    statement = f"""
+        SELECT Break.break_id, break_host, break_datetime, break_location,
+            holiday_text, break_announced, break_cost, host_reimbursed,
+            Claim.claim_id, claim_date, claim_reimbursed
+        FROM Break
+        LEFT JOIN ClaimItem ON Break.break_id = ClaimItem.break_id
+        LEFT JOIN Claim ON ClaimItem.claim_id = Claim.claim_id
+        {where_string}
+        ORDER BY break_datetime ASC
+        {limit_string}
+    """
+    return statement
+
+
+def get_returning_statement() -> str:
+    return f"""
+        data.break_id, data.break_host, data.break_datetime,
+        data.break_location, data.holiday_text, data.break_announced,
+        data.break_cost, data.host_reimbursed, data.claim_id,
+        data.claim_date, data.claim_reimbursed
+    """
+
+
 def insert_breaks(breaks: list[tuple[Arrow, str, Optional[str]]]) -> list[Break]:
     (conn, cur) = connect()
     statement = """
@@ -93,12 +144,12 @@ def insert_host(break_host: str | None, break_id: int) -> Break:
 
 def reimburse_host(break_id: int, cost: float) -> Break:
     (conn, cur) = connect()
-    statement = """
-        UPDATE break SET
-            break_cost = %(cost)s,
-            host_reimbursed = DATE_TRUNC('minute', NOW())
+    statement = f"""
+        UPDATE break
+        SET break_cost = %(cost)s, host_reimbursed = DATE_TRUNC('minute', NOW())
+        FROM {get_breaks_statement()} data
         WHERE break_id = %(id)s
-        RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
+        RETURNING {get_returning_statement()}
     """
     cur.execute(statement, {"id": break_id, "cost": cost})
     row = cur.fetchall()[0]
@@ -109,11 +160,12 @@ def reimburse_host(break_id: int, cost: float) -> Break:
 
 def mask_host(break_id: int) -> Break:
     (conn, cur) = connect()
-    statement = """
+    statement = f"""
         UPDATE break
         SET break_host = null
+        FROM {get_breaks_statement()} data
         WHERE break_id = %(is)s
-        RETURNING break_id, break_host, break_datetime, break_location, holiday_text, break_announced, break_cost, host_reimbursed
+        RETURNING {get_returning_statement()}
     """
     cur.execute(statement, {"id": break_id})
     row = cur.fetchall()[0]
@@ -218,48 +270,6 @@ def rows_to_claims(rows) -> list[Claim]:
     return claims
 
 
-def get_breaks_statement(filters: BreakFilters = BreakFilters()) -> str:
-    where_clauses = []
-    if filters.past is not None:
-        if filters.past:
-            op = "<"
-        else:
-            op = ">"
-        where_clauses.append(f"break_datetime {op} NOW()")
-    if filters.hosted is not None:
-        if filters.hosted:
-            op = "!="
-            var = " NOT"
-        else:
-            op = "="
-            var = ""
-        where_clauses.append(f"(break_host {op} '' OR host_reimbursed IS{var} NULL)")
-    get_exists_where_clause(where_clauses, filters.holiday, "holiday_text")
-    get_exists_where_clause(where_clauses, filters.host_reimbursed, "host_reimbursed")
-    get_exists_where_clause(where_clauses, filters.admin_claimed, "admin_claimed")
-    get_exists_where_clause(where_clauses, filters.admin_reimbursed, "admin_reimbursed")
-    if len(where_clauses) == 0:
-        where_string = ""
-    else:
-        where_string = "WHERE " + " AND ".join(where_clauses)
-    if filters.number is None:
-        limit_string = ""
-    else:
-        limit_string = f"LIMIT {filters.number}"
-    statement = f"""
-        SELECT Break.break_id, break_host, break_datetime, break_location,
-            holiday_text, break_announced, break_cost, host_reimbursed,
-            Claim.claim_id, claim_date, claim_reimbursed
-        FROM Break
-        LEFT JOIN ClaimItem ON Break.break_id = ClaimItem.break_id
-        LEFT JOIN Claim ON ClaimItem.claim_id = Claim.claim_id
-        {where_string}
-        ORDER BY break_datetime ASC
-        {limit_string}
-    """
-    return statement
-
-
 def get_break_dicts(filters: BreakFilters = BreakFilters()) -> list[dict]:
     (conn, cur) = connect()
     statement = get_breaks_statement(filters)
@@ -283,15 +293,6 @@ def to_postgres_day(day: int) -> int:
         return 0
     else:
         return day + 1
-
-
-def get_returning_statement() -> str:
-    return f"""
-        data.break_id, data.break_host, data.break_datetime,
-        data.break_location, data.holiday_text, data.break_announced,
-        data.break_cost, data.host_reimbursed, data.claim_id,
-        data.claim_date, data.claim_reimbursed
-    """
 
 
 def insert_missing_breaks() -> list[Break]:
@@ -403,7 +404,9 @@ def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> list[Claim]:
     else:
         where_statement = ""
     claims_statement = f"""
-        SELECT claim.claim_id, claim.claim_date, claim.claim_reimbursed, ARRAY_AGG(claimitem.break_id), SUM(break.break_cost)
+        SELECT
+            claim.claim_id, claim.claim_date, claim.claim_reimbursed,
+            ARRAY_AGG(claimitem.break_id), SUM(break.break_cost)
             FROM claim
             INNER JOIN claimitem ON claim.claim_id = claimitem.claim_id
             INNER JOIN break ON claimitem.break_id = break.break_id
