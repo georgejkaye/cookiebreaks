@@ -98,7 +98,12 @@ const Home = () => {
     return (
         <>
             <main className={`text-fg ${manrope.className}`}>
-                <TopBar setUser={setUser} user={user} setData={setData} />
+                <TopBar
+                    setUser={setUser}
+                    user={user}
+                    setData={setData}
+                    setLoadingData={setLoadingData}
+                />
                 <div className="text-center m-5 w-mobileContent tablet:w-tabletContent desktop:w-content mx-auto">
                     <div>
                         The cookie break is the school's longest running social

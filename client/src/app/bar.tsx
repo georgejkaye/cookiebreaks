@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from "react"
 import { User, CookieBreak, Claim } from "./structs"
 import Loader from "./loader"
-import { login } from "./api"
+import { getData, login } from "./api"
 import { LoginModal, LogoutModal } from "./modals/login"
 import { Data, SetState } from "./page"
 
@@ -77,14 +77,14 @@ const LoginButton = (props: {
     )
 }
 
-const LoginBar = (props: {
+const LoginRegion = (props: {
     setUser: SetState<User | undefined>
     setData: SetState<Data>
     user: User | undefined
 }) => {
     const [isLoadingLogin, setLoadingLogin] = useState(false)
     return (
-        <div className="ml-auto">
+        <div>
             {isLoadingLogin ? (
                 <Loader size={10} />
             ) : (
@@ -99,17 +99,51 @@ const LoginBar = (props: {
     )
 }
 
+const RefreshButton = (props: {
+    user: User | undefined
+    setData: SetState<Data>
+    setLoadingData: SetState<boolean>
+}) => {
+    const onClickRefresh = (e: React.MouseEvent<HTMLButtonElement>) =>
+        getData(props.user, props.setData, props.setLoadingData)
+    return <button onClick={onClickRefresh}>Refresh</button>
+}
+
+const RightButtons = (props: {
+    setUser: SetState<User | undefined>
+    setData: SetState<Data>
+    setLoadingData: SetState<boolean>
+    user: User | undefined
+}) => {
+    return (
+        <div className="ml-auto flex flex-row">
+            <RefreshButton
+                user={props.user}
+                setData={props.setData}
+                setLoadingData={props.setLoadingData}
+            />
+            <LoginRegion
+                user={props.user}
+                setData={props.setData}
+                setUser={props.setUser}
+            />
+        </div>
+    )
+}
+
 export const TopBar = (props: {
     setUser: SetState<User | undefined>
     setData: SetState<Data>
+    setLoadingData: SetState<boolean>
     user: User | undefined
 }) => {
     return (
         <div className="flex items-center h-10 p-4 pr-2 bg-bg2 text-fg2">
             <div className="text-lg font-bold">Cookie breaks</div>
-            <LoginBar
+            <RightButtons
                 user={props.user}
                 setData={props.setData}
+                setLoadingData={props.setLoadingData}
                 setUser={props.setUser}
             />
         </div>
