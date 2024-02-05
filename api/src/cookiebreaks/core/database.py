@@ -397,8 +397,8 @@ def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> list[Claim]:
             FROM claim
             INNER JOIN claimitem ON claim.claim_id = claimitem.claim_id
             INNER JOIN break ON claimitem.break_id = break.break_id
+            {where_statement}
             GROUP BY claim.claim_id
-        {where_statement}
         ORDER BY claim.claim_date ASC
     """
     cur.execute(claims_statement)
