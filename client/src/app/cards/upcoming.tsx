@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react"
 import { announceBreak, submitClaim } from "../api"
 import { getSelectedColour, getCardColour, BreakDetails } from "./breaks"
-import {
-    SelectableCardsProps,
-    CardAction,
-    Cards,
-    ActionButton,
-    NoneCardProps,
-    NoneCardsProps,
-} from "./cards"
+import { ActionButton } from "./cards"
 import { getHoverColour } from "../icons"
 import {
     User,
@@ -20,61 +13,69 @@ import {
     getOutstandingBreaks,
     getFutureBreaks,
 } from "../structs"
+import { SetState } from "../page"
+import { AnnounceButton, DeleteButton, HolidayButton } from "./buttons"
 
-const buttonHoverColour = "hover:bg-gray-300"
-
-const AnnounceButton = (props: {
+const UpcomingBreakButtons = (props: {
+    index: number
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setLoading: (loading: boolean) => void
-}) => {
-    const onClickAnnounce = (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (props.user) {
-            announceBreak(
-                props.user,
-                props.cb,
-                props.updateBreaks,
-                props.setLoading
-            )
-        }
-    }
-    return (
-        <ActionButton
-            name="Announce"
-            hoverColour={buttonHoverColour}
-            onClick={onClickAnnounce}
+    setLoadingCard: SetState<boolean>
+}) => (
+    <div className="w-36 flex justify-end">
+        {props.index > 0 ? (
+            ""
+        ) : (
+            <AnnounceButton
+                user={props.user}
+                cb={props.cb}
+                updateBreaks={props.updateBreaks}
+                setLoading={props.setLoadingCard}
+            />
+        )}
+        <HolidayButton
+            user={props.user}
+            cb={props.cb}
+            updateBreaks={props.updateBreaks}
+            holidayText={""}
+            setLoading={props.setLoadingCard}
         />
-    )
-}
+        <DeleteButton
+            user={props.user}
+            cb={props.cb}
+            updateBreaks={props.updateBreaks}
+            setLoading={props.setLoadingCard}
+        />
+    </div>
+)
 
 export const UpcomingBreakCard = (props: {
+    index: number
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setLoading: (loading: boolean) => void
-    isLoadingBreaks: boolean
 }) => {
+    const [isLoadingCard, setLoadingCard] = useState(false)
     return (
-        <div className="flex flex-row">
-            <div className="flex flex-col desktop:flex-row">
-                <BreakDetails
-                    cb={props.cb}
+        <div className="flex align-stretch flex-col justify-evenly items-center desktop:flex-row">
+            <BreakDetails
+                cb={props.cb}
+                user={props.user}
+                setCardLoading={setLoadingCard}
+                updateBreaks={props.updateBreaks}
+            />
+            {!props.user?.admin ? (
+                ""
+            ) : (
+                <UpcomingBreakButtons
                     user={props.user}
-                    setCardLoading={props.setLoading}
+                    index={props.index}
+                    cb={props.cb}
+                    setLoadingCard={setLoadingCard}
                     updateBreaks={props.updateBreaks}
                 />
-                {!props.user?.admin ? (
-                    ""
-                ) : (
-                    <AnnounceButton
-                        user={props.user}
-                        cb={props.cb}
-                        updateBreaks={props.updateBreaks}
-                        setLoading={props.setLoading}
-                    />
-                )}
-            </div>
+            )}
         </div>
     )
 }
@@ -83,35 +84,22 @@ export const UpcomingBreaksCards = (props: {
     user: User | undefined
     breaks: CookieBreak[]
     updateBreaks: UpdateBreaksFn
-    isLoadingBreaks: boolean
 }) => {
-    const [upcomingBreaks, setUpcomingBreaks] = useState<CookieBreak[]>()
+    const [upcomingBreaks, setUpcomingBreaks] = useState<CookieBreak[]>([])
     useEffect(() => {
         setUpcomingBreaks(getFutureBreaks(props.breaks))
     }, [props.breaks])
-    const getCardContent = (
-        cb: CookieBreak,
-        setLoading: (loading: boolean) => void
-    ) => (
-        <UpcomingBreakCard
-            user={props.user}
-            cb={cb}
-            setLoading={setLoading}
-            updateBreaks={props.updateBreaks}
-            isLoadingBreaks={props.isLoadingBreaks}
-        />
-    )
-    const cardsAction: NoneCardsProps = {
-        type: CardAction.NONE,
-    }
     return (
-        <Cards<CookieBreak>
-            title="Awaiting claim"
-            getCardColour={getCardColour}
-            getCardContent={getCardContent}
-            cardsAction={cardsAction}
-            isLoading={props.isLoadingBreaks}
-            elements={upcomingBreaks}
-        />
+        <div>
+            {upcomingBreaks.map((b, i) => (
+                <UpcomingBreakCard
+                    index={i}
+                    key={i}
+                    user={props.user}
+                    cb={b}
+                    updateBreaks={props.updateBreaks}
+                />
+            ))}
+        </div>
     )
 }

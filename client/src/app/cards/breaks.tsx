@@ -20,16 +20,6 @@ import {
     DeleteBreakIcon,
     SmallIcon,
 } from "../icons"
-import {
-    CardAction,
-    CardSelector,
-    Cards,
-    CardsActionProps,
-    ExpandableCardProps,
-    ExpandableCardsProps,
-    SelectableCardsProps,
-    SmallInfoCard,
-} from "./cards"
 import { ClaimBreakCost } from "./claimed"
 import { SetState } from "../page"
 
@@ -103,7 +93,7 @@ const BreakContentEditor = (props: {
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     setEditingText: SetState<boolean>
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
 }) => {
     const discardContentText = () => {
         props.setEditingText(false)
@@ -115,7 +105,7 @@ const BreakContentEditor = (props: {
                 props.cb.holiday && text === "" ? "Holiday" : text
             request(
                 props.user,
-                props.cb.id,
+                props.cb,
                 currentValue,
                 props.updateBreaks,
                 props.setCardLoading
@@ -139,7 +129,7 @@ const BreakContent = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
 }) => {
     const [editingText, setEditingText] = useState(false)
     let isHoliday = props.cb.holiday
@@ -201,7 +191,7 @@ export const BreakDetails = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
 }) => {
     let detailsStyle =
         "flex flex-col justify-around tablet:flex-row items-center flex-1"
@@ -222,7 +212,7 @@ const AdminIcons = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
 }) => {
     let adminIconsStyle =
         "h-12 desktop:my-0 w-full justify-center items-center desktop:w-1/4 flex flex-row desktop:flex-end"
@@ -248,7 +238,7 @@ const BreakCard = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setLoading: (loading: boolean) => void
+    setLoading: SetState<boolean>
 }) => (
     <>
         <BreakDetails
@@ -274,62 +264,3 @@ export const getCardColour = (cb: CookieBreak) =>
     cb.holiday ? "bg-gray-200" : "bg-white"
 export const getSelectedColour = (_: CookieBreak) => "bg-gray-100"
 const getHoverColour = (_: CookieBreak) => "hover:bg-gray-50"
-
-export const BreakCards = (props: {
-    title: string
-    user: User | undefined
-    breaks: CookieBreak[]
-    updateBreaks: UpdateBreaksFn
-    isLoadingBreaks: boolean
-    reverseBreaks: boolean
-    buttons?: CardSelector<CookieBreak>[]
-}) => {
-    const getCardContent = (
-        cb: CookieBreak,
-        setLoading: (loading: boolean) => void
-    ) => (
-        <BreakCard
-            user={props.user}
-            cb={cb}
-            updateBreaks={props.updateBreaks}
-            setLoading={setLoading}
-        />
-    )
-    let cardsActionProps: CardsActionProps<CookieBreak> =
-        props.buttons && props.buttons.length > 0
-            ? {
-                  type: CardAction.SELECT,
-                  buttons: props.buttons,
-                  getSelectedColour: getSelectedColour,
-                  getHoverColour: getHoverColour,
-              }
-            : {
-                  type: CardAction.NONE,
-              }
-    return (
-        <Cards<CookieBreak>
-            title={props.title}
-            cardsAction={cardsActionProps}
-            isLoading={props.isLoadingBreaks}
-            elements={props.breaks}
-            getCardColour={getCardColour}
-            getCardContent={getCardContent}
-        />
-    )
-}
-
-const BreakReimbursedDate = (props: { cb: CookieBreak }) => {
-    const content = (
-        <span className="mr-6">
-            {!props.cb.reimbursed ? "" : getShortDate(props.cb.reimbursed)}
-        </span>
-    )
-    return (
-        <SmallInfoCard
-            width="w-7/12"
-            icon="reimburse"
-            alt="Coin"
-            content={content}
-        />
-    )
-}

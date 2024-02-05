@@ -14,7 +14,6 @@ import {
     replaceItems,
 } from "./structs"
 import { getBreaks, getClaims, getData, submitClaim } from "./api"
-import { BreakCards } from "./cards/breaks"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
 import { ClaimCards } from "./cards/claimed"
@@ -112,19 +111,16 @@ const Home = () => {
                         Thanks to the gracious funding of Research Committee,
                         they get reimbursed for their troubles!
                     </div>
-                    <BreakCards
-                        title="Upcoming"
+                    <UpcomingBreaksCards
                         user={user}
                         breaks={upcomingBreaks}
                         updateBreaks={updateBreaks}
-                        isLoadingBreaks={isLoadingData}
-                        reverseBreaks={false}
                     />
                     {!user?.admin ? (
                         ""
                     ) : (
                         <>
-                            <BreakCards
+                            {/* <BreakCards
                                 title="Awaiting reimbursement"
                                 user={user}
                                 breaks={breaksToReimburse}
@@ -146,7 +142,7 @@ const Home = () => {
                                 breaks={data.breaks}
                                 updateClaims={updateClaims}
                                 isLoadingClaims={isLoadingData}
-                            />
+                            /> */}
                         </>
                     )}
                     <div className="text-center m-5">

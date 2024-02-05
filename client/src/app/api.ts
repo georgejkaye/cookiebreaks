@@ -132,7 +132,7 @@ export const announceBreak = async (
     user: User,
     cb: CookieBreak,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
 ) => {
     let endpoint = `/api/breaks/announce`
     let config = {
@@ -153,7 +153,7 @@ export const reimburseBreak = async (
     id: number,
     cost: number,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
 ) => {
     let endpoint = `/api/breaks/reimburse`
     let config = {
@@ -172,16 +172,16 @@ export const reimburseBreak = async (
 
 export const setHost = async (
     user: User,
-    id: number,
+    cb: CookieBreak,
     host: string,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
 ) => {
     let actualHost = host === "" ? undefined : host
     let endpoint = `/api/breaks/host`
     let config = {
         params: {
-            break_id: id,
+            break_id: cb.id,
             host_name: actualHost,
         },
         headers: getHeaders(user),
@@ -195,15 +195,15 @@ export const setHost = async (
 
 export const setHoliday = async (
     user: User,
-    id: number,
+    cb: CookieBreak,
     reason: string | undefined,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
 ) => {
     let endpoint = `/api/breaks/holiday`
     let config = {
         params: {
-            break_id: id,
+            break_id: cb.id,
             reason,
         },
         headers: getHeaders(user),
@@ -219,7 +219,7 @@ export const deleteBreak = async (
     user: User,
     cb: CookieBreak,
     updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
 ) => {
     let endpoint = `/api/breaks/${cb.id}`
     let config = {
@@ -261,7 +261,7 @@ export const completeClaim = async (
     claim: Claim,
     breaks: CookieBreak[],
     updateClaims: UpdateClaimsFn,
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
 ) => {
     let endpoint = `api/claims/success`
     let config = {

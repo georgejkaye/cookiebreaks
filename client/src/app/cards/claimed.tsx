@@ -53,7 +53,7 @@ const ClaimCompleteButton = (props: {
     breaks: CookieBreak[]
     hoverColour: string
     updateClaims: UpdateClaimsFn
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
 }) => {
     const onClickComplete = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (props.user) {
@@ -95,7 +95,7 @@ const ClaimButtons = (props: {
     user: User | undefined
     claim: Claim
     breaks: CookieBreak[]
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
     updateClaims: UpdateClaimsFn
 }) => {
     const buttonHoverColour = "hover:bg-gray-100"
@@ -133,7 +133,7 @@ const ClaimCard = (props: {
     claim: Claim
     breaks: CookieBreak[]
     updateClaims: UpdateClaimsFn
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
 }) => {
     const claimCardStyles =
         "flex flex-col desktop:flex-row w-full justify-center " +
@@ -156,7 +156,7 @@ const ClaimCardExpanded = (props: {
     claim: Claim
     breaks: CookieBreak[]
     updateClaims: UpdateClaimsFn
-    setLoadingCard: (loading: boolean) => void
+    setLoadingCard: SetState<boolean>
 }) => {
     const claimCardExpandedStyles = "flex w-full flex-col"
     const claimBreaksStyles =

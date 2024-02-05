@@ -75,7 +75,7 @@ export const HolidayBreakIcon = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
 }) => {
     const onClickDelete = (e: React.MouseEvent<HTMLDivElement>) => {
         if (props.user) {
@@ -102,7 +102,7 @@ export const DeleteBreakIcon = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
 }) => {
     const onClickDelete = (e: React.MouseEvent<HTMLDivElement>) => {
         if (props.user) {
@@ -129,7 +129,7 @@ export const BreakControlIcons = (props: {
     user: User | undefined
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
 }) => {
     let breakControlStyle =
         "flex flex-row w-16 desktop:justify-end justify-center"
@@ -159,7 +159,7 @@ const AnnounceIcon = (props: {
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     user: User | undefined
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
 }) => {
     const onClickAnnounce = () => {
         props.user
@@ -197,7 +197,7 @@ const ReimburseIcon = (props: {
     cb: CookieBreak
     user: User | undefined
     updateBreaks: UpdateBreaksFn
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
     setReimbursing: () => void
 }) => {
     const onClickReimburse = () => {
@@ -246,7 +246,7 @@ const ReimburseHostBox = (props: {
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     user: User | undefined
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
     setMode: SetState<StatusIconsMode>
 }) => {
     const onClickConfirmReimburse = (text: string) => {
@@ -286,7 +286,7 @@ export const BreakStatusIcons = (props: {
     cb: CookieBreak
     updateBreaks: UpdateBreaksFn
     user: User | undefined
-    setCardLoading: (loading: boolean) => void
+    setCardLoading: SetState<boolean>
 }) => {
     let iconBoxStyle = `flex mr-4 desktop:w-40 h-10 justify-center`
     const [mode, setMode] = useState(StatusIconsMode.Normal)
