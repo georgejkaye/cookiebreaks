@@ -92,9 +92,9 @@ def get_breaks_statement(filters: BreakFilters = BreakFilters()) -> str:
 
 def get_returning_statement() -> str:
     return f"""
-        data.break_id, data.break_host, data.break_datetime,
-        data.break_location, data.holiday_text, data.break_announced,
-        data.break_cost, data.host_reimbursed, data.claim_id,
+        break.break_id, break.break_host, break.break_datetime,
+        break.break_location, break.holiday_text, break.break_announced,
+        break.break_cost, break.host_reimbursed, data.claim_id,
         data.claim_date, data.claim_reimbursed
     """
 
