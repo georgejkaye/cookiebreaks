@@ -6,10 +6,9 @@ import {
     getCookieBreakDate,
     getCookieBreakTime,
     breakInPast,
-    UpdateBreaksFn,
+    UpdateFn,
     getBreaksToClaim,
     Claim,
-    UpdateClaimsFn,
     formatAsPrice,
     getDatetimeText,
     getShortDate,
@@ -20,7 +19,6 @@ import {
     DeleteBreakIcon,
     SmallIcon,
 } from "../icons"
-import { ClaimBreakCost } from "./claimed"
 import { SetState } from "../page"
 
 export const TickCrossInputBox = (props: {
@@ -90,8 +88,8 @@ export const TickCrossInputBox = (props: {
 
 const BreakContentEditor = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setEditingText: SetState<boolean>
     setCardLoading: SetState<boolean>
 }) => {
@@ -100,12 +98,12 @@ const BreakContentEditor = (props: {
     }
     const submitContentText = (text: string) => {
         if (props.user) {
-            let request = props.cb.holiday ? setHoliday : setHost
+            let request = props.cookieBreak.holiday ? setHoliday : setHost
             let currentValue =
-                props.cb.holiday && text === "" ? "Holiday" : text
+                props.cookieBreak.holiday && text === "" ? "Holiday" : text
             request(
                 props.user,
-                props.cb,
+                props.cookieBreak,
                 currentValue,
                 props.updateBreaks,
                 props.setCardLoading
@@ -119,7 +117,9 @@ const BreakContentEditor = (props: {
             onClickConfirm={submitContentText}
             divStyle="h=10"
             inputStyle="text-sm"
-            placeholder={props.cb.holiday ? "Holiday" : "Host required"}
+            placeholder={
+                props.cookieBreak.holiday ? "Holiday" : "Host required"
+            }
             size={16}
         />
     )
@@ -127,28 +127,28 @@ const BreakContentEditor = (props: {
 
 const BreakContent = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
     const [editingText, setEditingText] = useState(false)
-    let isHoliday = props.cb.holiday
-    let hasHost = props.cb.host
+    let isHoliday = props.cookieBreak.holiday
+    let hasHost = props.cookieBreak.host
     let isAdmin = props.user?.admin
     let contentTextStyle =
         isHoliday || !hasHost ? "text-sm" : editingText ? "" : "font-bold"
-    let clickable = isAdmin && !breakInPast(props.cb)
-    let hoverColour = getHoverColour(props.cb)
+    let clickable = isAdmin && !breakInPast(props.cookieBreak)
+    let hoverColour = getHoverColour(props.cookieBreak)
     let clickableStyle = clickable
         ? `cursor-pointer ${hoverColour} rounded-md`
         : ""
     let contentText = isHoliday
-        ? props.cb.holiday
+        ? props.cookieBreak.holiday
         : !hasHost
-        ? breakInPast(props.cb)
+        ? breakInPast(props.cookieBreak)
             ? "Host reimbursed"
             : "Host required"
-        : props.cb.host
+        : props.cookieBreak.host
     const onClickText = (e: React.MouseEvent<HTMLDivElement>) => {
         if (clickable) {
             setEditingText(true)
@@ -167,7 +167,7 @@ const BreakContent = (props: {
                 </span>
             ) : (
                 <BreakContentEditor
-                    cb={props.cb}
+                    cookieBreak={props.cookieBreak}
                     user={props.user}
                     updateBreaks={props.updateBreaks}
                     setCardLoading={props.setCardLoading}
@@ -178,29 +178,30 @@ const BreakContent = (props: {
     )
 }
 
-const BreakDate = (props: { cb: CookieBreak }) => {
+const BreakDate = (props: { cookieBreak: CookieBreak }) => {
     let dateStyle = "w-full desktop:my-2 text-center font-bold"
     return (
         <div className={dateStyle}>
-            {getCookieBreakDate(props.cb)}, {getCookieBreakTime(props.cb)}
+            {getCookieBreakDate(props.cookieBreak)},{" "}
+            {getCookieBreakTime(props.cookieBreak)}
         </div>
     )
 }
 
 export const BreakDetails = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
     let detailsStyle =
         "flex flex-col justify-around tablet:flex-row items-center flex-1"
     return (
         <div className={detailsStyle}>
-            <BreakDate cb={props.cb} />
+            <BreakDate cookieBreak={props.cookieBreak} />
             <BreakContent
                 user={props.user}
-                cb={props.cb}
+                cookieBreak={props.cookieBreak}
                 setCardLoading={props.setCardLoading}
                 updateBreaks={props.updateBreaks}
             />
@@ -210,8 +211,8 @@ export const BreakDetails = (props: {
 
 const AdminIcons = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
     let adminIconsStyle =
@@ -219,13 +220,13 @@ const AdminIcons = (props: {
     return (
         <div className={adminIconsStyle}>
             <BreakStatusIcons
-                cb={props.cb}
+                cookieBreak={props.cookieBreak}
                 updateBreaks={props.updateBreaks}
                 user={props.user}
                 setCardLoading={props.setCardLoading}
             />
             <BreakControlIcons
-                cb={props.cb}
+                cookieBreak={props.cookieBreak}
                 updateBreaks={props.updateBreaks}
                 user={props.user}
                 setCardLoading={props.setCardLoading}
@@ -236,13 +237,13 @@ const AdminIcons = (props: {
 
 const BreakCard = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setLoading: SetState<boolean>
 }) => (
     <>
         <BreakDetails
-            cb={props.cb}
+            cookieBreak={props.cookieBreak}
             user={props.user}
             setCardLoading={props.setLoading}
             updateBreaks={props.updateBreaks}
@@ -251,7 +252,7 @@ const BreakCard = (props: {
             ""
         ) : (
             <AdminIcons
-                cb={props.cb}
+                cookieBreak={props.cookieBreak}
                 user={props.user}
                 setCardLoading={props.setLoading}
                 updateBreaks={props.updateBreaks}
@@ -260,7 +261,7 @@ const BreakCard = (props: {
     </>
 )
 
-export const getCardColour = (cb: CookieBreak) =>
-    cb.holiday ? "bg-gray-200" : "bg-white"
+export const getCardColour = (cookieBreak: CookieBreak) =>
+    cookieBreak.holiday ? "bg-gray-200" : "bg-white"
 export const getSelectedColour = (_: CookieBreak) => "bg-gray-100"
 const getHoverColour = (_: CookieBreak) => "hover:bg-gray-50"

@@ -1,21 +1,21 @@
 import { announceBreak, deleteBreak, setHoliday } from "../api"
 import { SetState } from "../page"
-import { User, CookieBreak, UpdateBreaksFn } from "../structs"
+import { User, CookieBreak, UpdateFn } from "../structs"
 import { ActionButton } from "./cards"
 
 const buttonHoverColour = "hover:bg-gray-300"
 
 export const DeleteButton = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setLoading: SetState<boolean>
 }) => {
     const onClickDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (props.user) {
             deleteBreak(
                 props.user,
-                props.cb,
+                props.cookieBreak,
                 props.updateBreaks,
                 props.setLoading
             )
@@ -32,8 +32,8 @@ export const DeleteButton = (props: {
 
 export const HolidayButton = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     holidayText: string | undefined
     setLoading: SetState<boolean>
 }) => {
@@ -41,14 +41,14 @@ export const HolidayButton = (props: {
         if (props.user) {
             setHoliday(
                 props.user,
-                props.cb,
-                props.cb.holiday ? undefined : "Holiday",
+                props.cookieBreak,
+                props.cookieBreak.holiday ? undefined : "Holiday",
                 props.updateBreaks,
                 props.setLoading
             )
         }
     }
-    const icon = props.cb.holiday ? "landing" : "takeoff"
+    const icon = props.cookieBreak.holiday ? "landing" : "takeoff"
     return (
         <ActionButton
             icon={icon}
@@ -60,15 +60,15 @@ export const HolidayButton = (props: {
 
 export const AnnounceButton = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setLoading: SetState<boolean>
 }) => {
     const onClickAnnounce = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (props.user) {
             announceBreak(
                 props.user,
-                props.cb,
+                props.cookieBreak,
                 props.updateBreaks,
                 props.setLoading
             )

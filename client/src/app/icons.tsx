@@ -1,7 +1,7 @@
 import Image from "next/image"
 import {
     CookieBreak,
-    UpdateBreaksFn,
+    UpdateFn,
     User,
     breakInPast,
     dateInPast,
@@ -68,20 +68,20 @@ export const BreakIcon = (props: {
     )
 }
 
-export const getHoverColour = (cb: CookieBreak) =>
-    cb.holiday ? "hover:bg-gray-500/50" : "hover:bg-gray-100"
+export const getHoverColour = (cookieBreak: CookieBreak) =>
+    cookieBreak.holiday ? "hover:bg-gray-500/50" : "hover:bg-gray-100"
 
 export const HolidayBreakIcon = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
     const onClickDelete = (e: React.MouseEvent<HTMLDivElement>) => {
         if (props.user) {
             deleteBreak(
                 props.user,
-                props.cb,
+                props.cookieBreak,
                 props.updateBreaks,
                 props.setCardLoading
             )
@@ -89,26 +89,28 @@ export const HolidayBreakIcon = (props: {
     }
     return (
         <SmallIcon
-            icon={props.cb.holiday ? "landing" : "takeoff"}
-            title={props.cb.holiday ? "Unset holiday" : "Set holiday"}
-            alt={props.cb.holiday ? "Plane landing" : "Plane taking off"}
+            icon={props.cookieBreak.holiday ? "landing" : "takeoff"}
+            title={props.cookieBreak.holiday ? "Unset holiday" : "Set holiday"}
+            alt={
+                props.cookieBreak.holiday ? "Plane landing" : "Plane taking off"
+            }
             onClick={onClickDelete}
-            hoverColour={getHoverColour(props.cb)}
+            hoverColour={getHoverColour(props.cookieBreak)}
         />
     )
 }
 
 export const DeleteBreakIcon = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
     const onClickDelete = (e: React.MouseEvent<HTMLDivElement>) => {
         if (props.user) {
             deleteBreak(
                 props.user,
-                props.cb,
+                props.cookieBreak,
                 props.updateBreaks,
                 props.setCardLoading
             )
@@ -120,34 +122,34 @@ export const DeleteBreakIcon = (props: {
             title="Delete break"
             alt="Bin"
             onClick={onClickDelete}
-            hoverColour={getHoverColour(props.cb)}
+            hoverColour={getHoverColour(props.cookieBreak)}
         />
     )
 }
 
 export const BreakControlIcons = (props: {
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
     let breakControlStyle =
         "flex flex-row w-16 desktop:justify-end justify-center"
     return (
         <div className={breakControlStyle}>
-            {dateInPast(props.cb.datetime) ? (
+            {dateInPast(props.cookieBreak.datetime) ? (
                 ""
             ) : (
                 <HolidayBreakIcon
                     user={props.user}
-                    cb={props.cb}
+                    cookieBreak={props.cookieBreak}
                     updateBreaks={props.updateBreaks}
                     setCardLoading={props.setCardLoading}
                 />
             )}
             <DeleteBreakIcon
                 user={props.user}
-                cb={props.cb}
+                cookieBreak={props.cookieBreak}
                 updateBreaks={props.updateBreaks}
                 setCardLoading={props.setCardLoading}
             />
@@ -156,8 +158,8 @@ export const BreakControlIcons = (props: {
 }
 
 const AnnounceIcon = (props: {
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     user: User | undefined
     setCardLoading: SetState<boolean>
 }) => {
@@ -165,7 +167,7 @@ const AnnounceIcon = (props: {
         props.user
             ? announceBreak(
                   props.user,
-                  props.cb,
+                  props.cookieBreak,
                   props.updateBreaks,
                   props.setCardLoading
               )
@@ -176,27 +178,31 @@ const AnnounceIcon = (props: {
             icon="announce"
             doneText="Announced"
             waitingText="Not announced yet"
-            datetime={props.cb.announced}
-            clickable={props.cb.announced === undefined}
+            datetime={props.cookieBreak.announced}
+            clickable={props.cookieBreak.announced === undefined}
             onClick={onClickAnnounce}
-            hoverColour={getHoverColour(props.cb)}
+            hoverColour={getHoverColour(props.cookieBreak)}
         />
     )
 }
 
-const HeldIcon = (props: { cb: CookieBreak }) => (
+const HeldIcon = (props: { cookieBreak: CookieBreak }) => (
     <BreakIcon
         icon="cookie"
         doneText="Break held"
         waitingText="Break not held yet"
-        datetime={breakInPast(props.cb) ? props.cb.datetime : undefined}
+        datetime={
+            breakInPast(props.cookieBreak)
+                ? props.cookieBreak.datetime
+                : undefined
+        }
     />
 )
 
 const ReimburseIcon = (props: {
-    cb: CookieBreak
+    cookieBreak: CookieBreak
     user: User | undefined
-    updateBreaks: UpdateBreaksFn
+    updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
     setReimbursing: () => void
 }) => {
@@ -207,44 +213,44 @@ const ReimburseIcon = (props: {
         <BreakIcon
             icon="reimburse"
             doneText={`Reimbursed host £${
-                props.cb.cost
-                    ? ((props.cb.cost * 100) / 100).toFixed(2)
+                props.cookieBreak.cost
+                    ? ((props.cookieBreak.cost * 100) / 100).toFixed(2)
                     : "0.00"
             }`}
             waitingText="Host not reimbursed yet"
-            datetime={props.cb.reimbursed}
-            clickable={props.cb.reimbursed === undefined}
+            datetime={props.cookieBreak.reimbursed}
+            clickable={props.cookieBreak.reimbursed === undefined}
             onClick={onClickReimburse}
-            hoverColour={getHoverColour(props.cb)}
+            hoverColour={getHoverColour(props.cookieBreak)}
         />
     )
 }
 
-const ClaimIcon = (props: { cb: CookieBreak }) => {
+const ClaimIcon = (props: { cookieBreak: CookieBreak }) => {
     return (
         <BreakIcon
             icon="claim"
             doneText="Claimed"
             waitingText="Not claimed yet"
-            datetime={props.cb.claimed}
+            datetime={props.cookieBreak.claimed}
         />
     )
 }
 
-const SuccessIcon = (props: { cb: CookieBreak }) => {
+const SuccessIcon = (props: { cookieBreak: CookieBreak }) => {
     return (
         <BreakIcon
             icon="success"
             doneText="Admin reimbursed"
             waitingText="Admin not reimbursed yet"
-            datetime={props.cb.success}
+            datetime={props.cookieBreak.success}
         />
     )
 }
 
 const ReimburseHostBox = (props: {
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     user: User | undefined
     setCardLoading: SetState<boolean>
     setMode: SetState<StatusIconsMode>
@@ -254,7 +260,7 @@ const ReimburseHostBox = (props: {
             let amount = parseFloat(text)
             reimburseBreak(
                 props.user,
-                props.cb.id,
+                props.cookieBreak,
                 amount,
                 props.updateBreaks,
                 props.setCardLoading
@@ -283,8 +289,8 @@ enum StatusIconsMode {
 }
 
 export const BreakStatusIcons = (props: {
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     user: User | undefined
     setCardLoading: SetState<boolean>
 }) => {
@@ -292,19 +298,19 @@ export const BreakStatusIcons = (props: {
     const [mode, setMode] = useState(StatusIconsMode.Normal)
     return (
         <div className={iconBoxStyle}>
-            {props.cb.holiday || !props.user?.admin ? (
+            {props.cookieBreak.holiday || !props.user?.admin ? (
                 ""
             ) : mode === StatusIconsMode.Normal ? (
                 <>
                     <AnnounceIcon
-                        cb={props.cb}
+                        cookieBreak={props.cookieBreak}
                         updateBreaks={props.updateBreaks}
                         user={props.user}
                         setCardLoading={props.setCardLoading}
                     />
-                    <HeldIcon cb={props.cb} />
+                    <HeldIcon cookieBreak={props.cookieBreak} />
                     <ReimburseIcon
-                        cb={props.cb}
+                        cookieBreak={props.cookieBreak}
                         updateBreaks={props.updateBreaks}
                         user={props.user}
                         setCardLoading={props.setCardLoading}
@@ -312,13 +318,13 @@ export const BreakStatusIcons = (props: {
                             setMode(StatusIconsMode.Reimburse)
                         }
                     />
-                    <ClaimIcon cb={props.cb} />
-                    <SuccessIcon cb={props.cb} />
+                    <ClaimIcon cookieBreak={props.cookieBreak} />
+                    <SuccessIcon cookieBreak={props.cookieBreak} />
                 </>
             ) : (
                 <ReimburseHostBox
                     user={props.user}
-                    cb={props.cb}
+                    cookieBreak={props.cookieBreak}
                     setMode={setMode}
                     setCardLoading={props.setCardLoading}
                     updateBreaks={props.updateBreaks}

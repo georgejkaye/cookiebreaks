@@ -1,31 +1,16 @@
 import { useState, useEffect } from "react"
-import { User, CookieBreak, UpdateFn, getBreaksToReimburse } from "../structs"
-import { BreakDetails } from "./breaks"
 import { SetState } from "../page"
-import { Card, BreaksHeader, CardButtonProps, CardButtons } from "./cards"
-import { reimburseBreak } from "../api"
+import { User, CookieBreak, UpdateFn, getBreaksToClaim } from "../structs"
+import { BreakDetails } from "./breaks"
+import { BreaksHeader, Card } from "./cards"
 
-const AwaitingReimbursementCard = (props: {
+const AwaitingClaimCard = (props: {
     index: number
     user: User | undefined
     cookieBreak: CookieBreak
     updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
-    const buttons: CardButtonProps[] = [
-        {
-            isVisible: true,
-            icon: "reimburse",
-            onClick: () =>
-                reimburseBreak(
-                    props.user,
-                    props.cookieBreak,
-                    10.0,
-                    props.updateBreaks,
-                    props.setCardLoading
-                ),
-        },
-    ]
     return (
         <div className="flex align-stretch flex-col justify-evenly items-center desktop:flex-row">
             <BreakDetails
@@ -34,33 +19,26 @@ const AwaitingReimbursementCard = (props: {
                 setCardLoading={props.setCardLoading}
                 updateBreaks={props.updateBreaks}
             />
-            {!props.user?.admin ? (
-                ""
-            ) : (
-                <CardButtons width="w-36" buttons={buttons} />
-            )}
         </div>
     )
 }
 
-export const AwaitingReimbursementCards = (props: {
+export const AwaitingClaimCards = (props: {
     user: User | undefined
     cookieBreaks: CookieBreak[]
     updateBreaks: UpdateFn<CookieBreak>
 }) => {
-    const [breaksToReimburse, setBreaksToReimburse] = useState<CookieBreak[]>(
-        []
-    )
+    const [breaksToClaim, setBreaksToClaim] = useState<CookieBreak[]>([])
     useEffect(() => {
-        setBreaksToReimburse(getBreaksToReimburse(props.cookieBreaks))
+        setBreaksToClaim(getBreaksToClaim(props.cookieBreaks))
     }, [props.cookieBreaks])
     return (
         <div>
-            <BreaksHeader title={"Awaiting reimbursement"} />
-            {breaksToReimburse.map((b, i) => (
+            <BreaksHeader title={"Awaiting claim"} />
+            {breaksToClaim.map((b, i) => (
                 <Card
                     content={(setCardLoading) => (
-                        <AwaitingReimbursementCard
+                        <AwaitingClaimCard
                             index={i}
                             user={props.user}
                             cookieBreak={b}

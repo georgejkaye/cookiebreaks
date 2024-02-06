@@ -1,67 +1,57 @@
 import { useState, useEffect } from "react"
-import { announceBreak, submitClaim } from "../api"
-import { getSelectedColour, getCardColour, BreakDetails } from "./breaks"
-import { ActionButton, BreaksHeader, Card } from "./cards"
-import { getHoverColour } from "../icons"
-import {
-    User,
-    CookieBreak,
-    UpdateBreaksFn,
-    UpdateClaimsFn,
-    getBreaksToClaim,
-    formatAsPrice,
-    getOutstandingBreaks,
-    getFutureBreaks,
-} from "../structs"
+import { BreakDetails } from "./breaks"
+import { BreaksHeader, Card, CardButtonProps, CardButtons } from "./cards"
+import { User, CookieBreak, UpdateFn, getFutureBreaks } from "../structs"
 import { SetState } from "../page"
-import { AnnounceButton, DeleteButton, HolidayButton } from "./buttons"
-import { TailSpin } from "react-loader-spinner"
-
-const UpcomingBreakButtons = (props: {
-    index: number
-    user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
-    setCardLoading: SetState<boolean>
-}) => (
-    <div className="w-36 flex justify-end">
-        {props.index > 0 ? (
-            ""
-        ) : (
-            <AnnounceButton
-                user={props.user}
-                cb={props.cb}
-                updateBreaks={props.updateBreaks}
-                setLoading={props.setCardLoading}
-            />
-        )}
-        <HolidayButton
-            user={props.user}
-            cb={props.cb}
-            updateBreaks={props.updateBreaks}
-            holidayText={""}
-            setLoading={props.setCardLoading}
-        />
-        <DeleteButton
-            user={props.user}
-            cb={props.cb}
-            updateBreaks={props.updateBreaks}
-            setLoading={props.setCardLoading}
-        />
-    </div>
-)
+import { announceBreak, deleteBreak, setHoliday } from "../api"
 
 export const UpcomingBreakCard = (props: {
     index: number
     user: User | undefined
-    cb: CookieBreak
-    updateBreaks: UpdateBreaksFn
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
+    const buttons: CardButtonProps[] = [
+        {
+            isVisible: props.index === 0,
+            icon: "announce",
+            onClick: () =>
+                announceBreak(
+                    props.user,
+                    props.cookieBreak,
+                    props.updateBreaks,
+                    props.setCardLoading
+                ),
+        },
+        {
+            isVisible: true,
+            icon: props.cookieBreak.holiday ? "landing" : "takeoff",
+            onClick: () =>
+                setHoliday(
+                    props.user,
+                    props.cookieBreak,
+                    props.cookieBreak.holiday ? undefined : "Holiday",
+                    props.updateBreaks,
+                    props.setCardLoading
+                ),
+        },
+        {
+            isVisible: true,
+            icon: "bin",
+            onClick: () =>
+                deleteBreak(
+                    props.user,
+                    props.cookieBreak,
+                    props.updateBreaks,
+                    props.setCardLoading
+                ),
+        },
+    ]
     return (
         <div className="flex align-stretch flex-col justify-evenly items-center desktop:flex-row">
             <BreakDetails
-                cb={props.cb}
+                cookieBreak={props.cookieBreak}
                 user={props.user}
                 setCardLoading={props.setCardLoading}
                 updateBreaks={props.updateBreaks}
@@ -69,13 +59,7 @@ export const UpcomingBreakCard = (props: {
             {!props.user?.admin ? (
                 ""
             ) : (
-                <UpcomingBreakButtons
-                    user={props.user}
-                    index={props.index}
-                    cb={props.cb}
-                    setCardLoading={props.setCardLoading}
-                    updateBreaks={props.updateBreaks}
-                />
+                <CardButtons width={"w-36"} buttons={buttons} />
             )}
         </div>
     )
@@ -83,13 +67,13 @@ export const UpcomingBreakCard = (props: {
 
 export const UpcomingBreaksCards = (props: {
     user: User | undefined
-    breaks: CookieBreak[]
-    updateBreaks: UpdateBreaksFn
+    cookieBreaks: CookieBreak[]
+    updateBreaks: UpdateFn<CookieBreak>
 }) => {
     const [upcomingBreaks, setUpcomingBreaks] = useState<CookieBreak[]>([])
     useEffect(() => {
-        setUpcomingBreaks(getFutureBreaks(props.breaks))
-    }, [props.breaks])
+        setUpcomingBreaks(getFutureBreaks(props.cookieBreaks))
+    }, [props.cookieBreaks])
     return (
         <div>
             <BreaksHeader title={"Upcoming breaks"} />
@@ -99,7 +83,7 @@ export const UpcomingBreaksCards = (props: {
                         <UpcomingBreakCard
                             index={i}
                             user={props.user}
-                            cb={b}
+                            cookieBreak={b}
                             updateBreaks={props.updateBreaks}
                             setCardLoading={setCardLoading}
                         />

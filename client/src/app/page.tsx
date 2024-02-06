@@ -1,25 +1,14 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import {
-    Claim,
-    CookieBreak,
-    User,
-    formatAsPrice,
-    getBreaksToClaim,
-    getBreaksToComplete,
-    getBreaksToReimburse,
-    getFutureBreaks,
-    getOutstandingBreaks,
-    replaceItems,
-} from "./structs"
-import { getBreaks, getClaims, getData, submitClaim } from "./api"
+import { Claim, CookieBreak, User, replaceItems } from "./structs"
+import { getData, submitClaim } from "./api"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
-import { ClaimCards } from "./cards/claimed"
 import { UpcomingBreaksCards } from "./cards/upcoming"
-import { AwaitingClaimCards } from "./cards/reimbursed"
 import { AwaitingReimbursementCards } from "./cards/reimbursement"
+import { AwaitingClaimCards } from "./cards/awaiting"
+import { AwaitingCompletionCards } from "./cards/completion"
 
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
@@ -101,7 +90,7 @@ const Home = () => {
                     </div>
                     <UpcomingBreaksCards
                         user={user}
-                        breaks={data.breaks}
+                        cookieBreaks={data.breaks}
                         updateBreaks={updateBreaks}
                     />
                     {!user?.admin ? (
@@ -110,32 +99,19 @@ const Home = () => {
                         <>
                             <AwaitingReimbursementCards
                                 user={user}
-                                breaks={data.breaks}
+                                cookieBreaks={data.breaks}
                                 updateBreaks={updateBreaks}
-                            />
-                            {/* <BreakCards
-                                title="Awaiting reimbursement"
-                                user={user}
-                                breaks={breaksToReimburse}
-                                updateBreaks={updateBreaks}
-                                isLoadingBreaks={isLoadingData}
-                                reverseBreaks={false}
                             />
                             <AwaitingClaimCards
                                 user={user}
-                                breaks={data.breaks}
+                                cookieBreaks={data.breaks}
                                 updateBreaks={updateBreaks}
-                                updateClaims={updateClaims}
-                                isLoadingBreaks={isLoadingData}
                             />
-                            <ClaimCards
-                                title="Outstanding claims"
+                            <AwaitingCompletionCards
                                 user={user}
                                 claims={data.claims}
-                                breaks={data.breaks}
                                 updateClaims={updateClaims}
-                                isLoadingClaims={isLoadingData}
-                            /> */}
+                            />
                         </>
                     )}
                     <div className="text-center m-5">

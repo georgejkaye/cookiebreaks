@@ -1,8 +1,9 @@
 import React, { ReactNode, useState } from "react"
 import Loader from "../loader"
-import { SmallIcon } from "../icons"
+import { SmallIcon, getHoverColour } from "../icons"
 import { SetState } from "../page"
 import { TailSpin } from "react-loader-spinner"
+import { CookieBreak, UpdateFn, User } from "../structs"
 
 export const ActionButton = (props: {
     hoverColour: string
@@ -28,6 +29,35 @@ export const ActionButton = (props: {
         </button>
     )
 }
+
+export interface CardButtonProps {
+    isVisible: boolean
+    icon: string
+    onClick: () => Promise<void>
+}
+
+const buttonHoverColour = "hover:bg-gray-300"
+
+export const CardButtons = (props: {
+    width: string
+    buttons: CardButtonProps[]
+}) => (
+    <div className="w-36 flex justify-end">
+        {props.buttons.map(({ isVisible, icon, onClick }) => (
+            <div className="w-10">
+                {!isVisible ? (
+                    ""
+                ) : (
+                    <ActionButton
+                        hoverColour={buttonHoverColour}
+                        onClick={(e) => onClick()}
+                        icon={icon}
+                    />
+                )}
+            </div>
+        ))}
+    </div>
+)
 
 export const Card = (props: {
     content: (setCardLoading: SetState<boolean>) => ReactNode

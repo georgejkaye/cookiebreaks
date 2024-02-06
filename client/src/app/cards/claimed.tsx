@@ -8,7 +8,7 @@ import {
 import {
     Claim,
     CookieBreak,
-    UpdateClaimsFn,
+    UpdateFn<Claim>,
     User,
     getClaimsToComplete,
     getDateString,
@@ -16,26 +16,28 @@ import {
 import { SmallIcon } from "../icons"
 import { completeClaim } from "../api"
 import { useEffect, useState } from "react"
-const ClaimBreakDate = (props: { cb: CookieBreak }) => {
+const ClaimBreakDate = (props: { cookieBreak: CookieBreak }) => {
     const claimBreakDateStyles = "mx-2 flex-1 line-height-0"
     return (
         <div className={claimBreakDateStyles}>
-            {getDateString(props.cb.datetime)}
+            {getDateString(props.cookieBreak.datetime)}
         </div>
     )
 }
-export const ClaimBreakCost = (props: { cb: CookieBreak }) => {
-    console.log(props.cb.cost)
-    const breakCost = !props.cb.cost ? "" : `£${props.cb.cost.toFixed(2)}`
+export const ClaimBreakCost = (props: { cookieBreak: CookieBreak }) => {
+    console.log(props.cookieBreak.cost)
+    const breakCost = !props.cookieBreak.cost
+        ? ""
+        : `£${props.cookieBreak.cost.toFixed(2)}`
     const claimBreakCostStyles =
         "mx-2 bg-bg2 rounded text-white font-bold px-2 py-1"
     return <span className={claimBreakCostStyles}>{breakCost}</span>
 }
-const ClaimBreak = (props: { cb: CookieBreak }) => {
+const ClaimBreak = (props: { cookieBreak: CookieBreak }) => {
     let content = (
         <>
-            <ClaimBreakDate cb={props.cb} />
-            <ClaimBreakCost cb={props.cb} />
+            <ClaimBreakDate cookieBreak={props.cookieBreak} />
+            <ClaimBreakCost cookieBreak={props.cookieBreak} />
         </>
     )
     return (
@@ -52,7 +54,7 @@ const ClaimCompleteButton = (props: {
     claim: Claim
     breaks: CookieBreak[]
     hoverColour: string
-    updateClaims: UpdateClaimsFn
+    updateClaims: UpdateFn<Claim>
     setLoadingCard: SetState<boolean>
 }) => {
     const onClickComplete = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -60,7 +62,7 @@ const ClaimCompleteButton = (props: {
             completeClaim(
                 props.user,
                 props.claim,
-                props.breaks,
+                props.cookieBreaks,
                 props.updateClaims,
                 props.setLoadingCard
             )
@@ -96,7 +98,7 @@ const ClaimButtons = (props: {
     claim: Claim
     breaks: CookieBreak[]
     setLoadingCard: SetState<boolean>
-    updateClaims: UpdateClaimsFn
+    updateClaims: UpdateFn<Claim>
 }) => {
     const buttonHoverColour = "hover:bg-gray-100"
     const claimButtonsStyles =
@@ -106,7 +108,7 @@ const ClaimButtons = (props: {
             <ClaimCompleteButton
                 user={props.user}
                 claim={props.claim}
-                breaks={props.breaks}
+                breaks={props.cookieBreaks}
                 hoverColour={buttonHoverColour}
                 setLoadingCard={props.setLoadingCard}
                 updateClaims={props.updateClaims}
@@ -132,7 +134,7 @@ const ClaimCard = (props: {
     user: User | undefined
     claim: Claim
     breaks: CookieBreak[]
-    updateClaims: UpdateClaimsFn
+    updateClaims: UpdateFn<Claim>
     setLoadingCard: SetState<boolean>
 }) => {
     const claimCardStyles =
@@ -144,7 +146,7 @@ const ClaimCard = (props: {
             <ClaimButtons
                 user={props.user}
                 claim={props.claim}
-                breaks={props.breaks}
+                breaks={props.cookieBreaks}
                 updateClaims={props.updateClaims}
                 setLoadingCard={props.setLoadingCard}
             />
@@ -155,7 +157,7 @@ const ClaimCardExpanded = (props: {
     user: User | undefined
     claim: Claim
     breaks: CookieBreak[]
-    updateClaims: UpdateClaimsFn
+    updateClaims: UpdateFn<Claim>
     setLoadingCard: SetState<boolean>
 }) => {
     const claimCardExpandedStyles = "flex w-full flex-col"
@@ -166,13 +168,13 @@ const ClaimCardExpanded = (props: {
             <ClaimCard
                 user={props.user}
                 claim={props.claim}
-                breaks={props.breaks}
+                breaks={props.cookieBreaks}
                 updateClaims={props.updateClaims}
                 setLoadingCard={props.setLoadingCard}
             />
             <div className={claimBreaksStyles}>
-                {props.claim.breaks.map((cb: CookieBreak) => (
-                    <ClaimBreak cb={cb} />
+                {props.claim.breaks.map((cookieBreak: CookieBreak) => (
+                    <ClaimBreak cookieBreak={cb} />
                 ))}
             </div>
         </div>
@@ -182,7 +184,7 @@ export const ClaimCards = (props: {
     title: string
     user: User | undefined
     claims: Claim[]
-    updateClaims: UpdateClaimsFn
+    updateClaims: UpdateFn<Claim>
     isLoadingClaims: boolean
     breaks: CookieBreak[]
 }) => {
@@ -202,7 +204,7 @@ export const ClaimCards = (props: {
         <ClaimCard
             user={props.user}
             claim={c}
-            breaks={props.breaks}
+            breaks={props.cookieBreaks}
             updateClaims={props.updateClaims}
             setLoadingCard={setLoading}
         />
@@ -214,7 +216,7 @@ export const ClaimCards = (props: {
         <ClaimCardExpanded
             user={props.user}
             claim={c}
-            breaks={props.breaks}
+            breaks={props.cookieBreaks}
             updateClaims={props.updateClaims}
             setLoadingCard={setLoading}
         />
