@@ -19,6 +19,7 @@ import { Manrope } from "next/font/google"
 import { ClaimCards } from "./cards/claimed"
 import { UpcomingBreaksCards } from "./cards/upcoming"
 import { AwaitingClaimCards } from "./cards/reimbursed"
+import { AwaitingReimbursementCards } from "./cards/reimbursement"
 
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
@@ -81,19 +82,6 @@ const Home = () => {
             )
         }
     }
-    const [upcomingBreaks, setUpcomingBreaks] = useState<CookieBreak[]>([])
-    const [breaksToReimburse, setBreaksToReimburse] = useState<CookieBreak[]>(
-        []
-    )
-    const [breaksToClaim, setBreaksToClaim] = useState<CookieBreak[]>([])
-    const [breaksToComplete, setBreaksToComplete] = useState<CookieBreak[]>([])
-    // Loading while retrieving content
-    useEffect(() => {
-        setUpcomingBreaks(getFutureBreaks(data.breaks))
-        setBreaksToReimburse(getBreaksToReimburse(data.breaks))
-        setBreaksToClaim(getBreaksToClaim(data.breaks))
-        setBreaksToComplete(getBreaksToComplete(data.breaks))
-    }, [data])
     return (
         <>
             <main className={`text-fg ${manrope.className}`}>
@@ -113,13 +101,18 @@ const Home = () => {
                     </div>
                     <UpcomingBreaksCards
                         user={user}
-                        breaks={upcomingBreaks}
+                        breaks={data.breaks}
                         updateBreaks={updateBreaks}
                     />
                     {!user?.admin ? (
                         ""
                     ) : (
                         <>
+                            <AwaitingReimbursementCards
+                                user={user}
+                                breaks={data.breaks}
+                                updateBreaks={updateBreaks}
+                            />
                             {/* <BreakCards
                                 title="Awaiting reimbursement"
                                 user={user}

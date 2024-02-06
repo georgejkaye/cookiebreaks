@@ -1,7 +1,8 @@
-import React, { useState } from "react"
+import React, { ReactNode, useState } from "react"
 import Loader from "../loader"
 import { SmallIcon } from "../icons"
 import { SetState } from "../page"
+import { TailSpin } from "react-loader-spinner"
 
 export const ActionButton = (props: {
     hoverColour: string
@@ -27,3 +28,22 @@ export const ActionButton = (props: {
         </button>
     )
 }
+
+export const Card = (props: {
+    content: (setCardLoading: SetState<boolean>) => ReactNode
+}) => {
+    const [isCardLoading, setCardLoading] = useState(false)
+    return (
+        <div className="py-2">
+            {isCardLoading ? (
+                <TailSpin wrapperClass="justify-center" height={30} />
+            ) : (
+                props.content(setCardLoading)
+            )}
+        </div>
+    )
+}
+
+export const BreaksHeader = (props: { title: string }) => (
+    <h2 className="text-xl font-bold">{props.title}</h2>
+)
