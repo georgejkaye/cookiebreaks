@@ -154,8 +154,7 @@ const BreakContent = (props: {
             setEditingText(true)
         }
     }
-    let breakContentStyle =
-        "w-full flex flex-row justify-center items-center mx-4"
+    let breakContentStyle = "flex flex-row justify-center items-center mx-4"
     return (
         <div className={breakContentStyle}>
             {!editingText ? (
@@ -179,7 +178,7 @@ const BreakContent = (props: {
 }
 
 const BreakDate = (props: { cookieBreak: CookieBreak }) => {
-    let dateStyle = "w-full desktop:my-2 text-center font-bold"
+    let dateStyle = "w-full desktop:w-1/2 desktop:my-2 font-bold"
     return (
         <div className={dateStyle}>
             {getCookieBreakDate(props.cookieBreak)},{" "}
@@ -194,8 +193,7 @@ export const BreakDetails = (props: {
     updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
-    let detailsStyle =
-        "flex flex-col justify-around tablet:flex-row items-center flex-1"
+    let detailsStyle = "flex flex-col desktop:flex-row flex-1"
     return (
         <div className={detailsStyle}>
             <BreakDate cookieBreak={props.cookieBreak} />
@@ -216,7 +214,7 @@ const AdminIcons = (props: {
     setCardLoading: SetState<boolean>
 }) => {
     let adminIconsStyle =
-        "h-12 desktop:my-0 w-full justify-center items-center desktop:w-1/4 flex flex-row desktop:flex-end"
+        "h-12 desktop:my-0 w-full desktop:w-1/4 flex flex-row desktop:flex-end"
     return (
         <div className={adminIconsStyle}>
             <BreakStatusIcons

@@ -76,11 +76,12 @@ export const UpcomingBreaksCards = (props: {
     }, [props.cookieBreaks])
     return (
         <div>
-            <BreaksHeader title={"Upcoming breaks"} />
+            <BreaksHeader title={"Upcoming breaks"} first={true} />
             {upcomingBreaks.map((b, i) => (
                 <Card
                     content={(setCardLoading) => (
                         <UpcomingBreakCard
+                            key={b.id}
                             index={i}
                             user={props.user}
                             cookieBreak={b}
@@ -88,6 +89,7 @@ export const UpcomingBreaksCards = (props: {
                             setCardLoading={setCardLoading}
                         />
                     )}
+                    colour={!b.holiday ? "bg-white" : "bg-gray-200"}
                 />
             ))}
         </div>

@@ -42,29 +42,30 @@ export const CardButtons = (props: {
     width: string
     buttons: CardButtonProps[]
 }) => (
-    <div className="w-36 flex justify-end">
-        {props.buttons.map(({ isVisible, icon, onClick }) => (
-            <div className="w-10">
-                {!isVisible ? (
-                    ""
-                ) : (
+    <div className="w-36 flex justify-center desktop:justify-end">
+        {props.buttons.map(({ isVisible, icon, onClick }) =>
+            !isVisible ? (
+                ""
+            ) : (
+                <div className="w-10">
                     <ActionButton
                         hoverColour={buttonHoverColour}
                         onClick={(e) => onClick()}
                         icon={icon}
                     />
-                )}
-            </div>
-        ))}
+                </div>
+            )
+        )}
     </div>
 )
 
 export const Card = (props: {
     content: (setCardLoading: SetState<boolean>) => ReactNode
+    colour: string
 }) => {
     const [isCardLoading, setCardLoading] = useState(false)
     return (
-        <div className="py-2">
+        <div className={`${props.colour} border-t py-2 px-4`}>
             {isCardLoading ? (
                 <TailSpin wrapperClass="justify-center" height={30} />
             ) : (
@@ -74,6 +75,7 @@ export const Card = (props: {
     )
 }
 
-export const BreaksHeader = (props: { title: string }) => (
-    <h2 className="text-xl font-bold">{props.title}</h2>
-)
+export const BreaksHeader = (props: { title: string; first?: boolean }) => {
+    let border = props.first === undefined || !props.first ? "border-t" : ""
+    return <h2 className={`${border} p-4 text-2xl font-bold`}>{props.title}</h2>
+}
