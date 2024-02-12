@@ -59,6 +59,7 @@ export const AwaitingReimbursementCards = (props: {
             <BreaksHeader title={"Awaiting reimbursement"} />
             {breaksToReimburse.map((b, i) => (
                 <Card
+                    key={b.id}
                     content={(setCardLoading) => (
                         <AwaitingReimbursementCard
                             index={i}

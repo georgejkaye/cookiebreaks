@@ -43,11 +43,11 @@ export const CardButtons = (props: {
     buttons: CardButtonProps[]
 }) => (
     <div className="w-36 flex justify-center desktop:justify-end">
-        {props.buttons.map(({ isVisible, icon, onClick }) =>
+        {props.buttons.map(({ isVisible, icon, onClick }, i) =>
             !isVisible ? (
                 ""
             ) : (
-                <div className="w-10">
+                <div key={i} className="w-10">
                     <ActionButton
                         hoverColour={buttonHoverColour}
                         onClick={(e) => onClick()}

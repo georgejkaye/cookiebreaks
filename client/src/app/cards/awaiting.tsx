@@ -43,6 +43,7 @@ export const AwaitingClaimCards = (props: {
             <BreaksHeader title={"Awaiting claim"} />
             {breaksToClaim.map((b, i) => (
                 <Card
+                    key={b.id}
                     content={(setCardLoading) => (
                         <AwaitingClaimCard
                             index={i}

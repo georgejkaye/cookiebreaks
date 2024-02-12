@@ -75,6 +75,7 @@ export const AwaitingCompletionCards = (props: {
             <BreaksHeader title={"Awaiting completion"} />
             {claimsToComplete.map((c, i) => (
                 <Card
+                    key={c.id}
                     content={(setCardLoading) => (
                         <AwaitingCompletionCard
                             index={i}
