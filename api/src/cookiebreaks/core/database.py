@@ -312,8 +312,7 @@ def insert_missing_breaks() -> list[Break]:
             WHERE dates.days NOT IN (SELECT break_datetime FROM break)
         )
         RETURNING
-            break_id, break_host, break_datetime, break_location,
-            holiday_text, break_announced, break_cost, host_reimbursed
+            break_id, break_datetime, break_location
     """
     cur.execute(
         statement,
@@ -327,7 +326,12 @@ def insert_missing_breaks() -> list[Break]:
     rows = cur.fetchall()
     conn.commit()
     disconnect(conn, cur)
-    return list(map(row_to_break, rows))
+    breaks = []
+    for row in rows:
+        (break_id, break_datetime, break_location) = row
+        break_obj = Break(break_id, arrow.get(break_datetime), break_location)
+        breaks.append(break_obj)
+    return breaks
 
 
 def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:

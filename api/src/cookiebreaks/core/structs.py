@@ -21,7 +21,7 @@ class Break:
     id: int
     break_time: Arrow
     location: str
-    holiday: Optional[str]
+    holiday: Optional[str] = None
     host: Optional[str] = None
     break_announced: Optional[Arrow] = None
     cost: Optional[Decimal] = None
