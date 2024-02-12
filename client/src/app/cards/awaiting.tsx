@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { SetState } from "../page"
 import { User, CookieBreak, UpdateFn, getBreaksToClaim } from "../structs"
 import { BreakDetails } from "./breaks"
-import { BreaksHeader, Card } from "./cards"
+import { BreaksHeader, Card, CardButtons } from "./cards"
 
 const AwaitingClaimCard = (props: {
     index: number
@@ -12,13 +12,18 @@ const AwaitingClaimCard = (props: {
     setCardLoading: SetState<boolean>
 }) => {
     return (
-        <div className="flex align-stretch flex-col justify-evenly items-center desktop:flex-row">
+        <div className="flex flex-col items-center desktop:flex-row">
             <BreakDetails
                 cookieBreak={props.cookieBreak}
                 user={props.user}
                 setCardLoading={props.setCardLoading}
                 updateBreaks={props.updateBreaks}
             />
+            {!props.user?.admin ? (
+                ""
+            ) : (
+                <CardButtons width={"w-36"} buttons={[]} />
+            )}
         </div>
     )
 }
@@ -29,6 +34,7 @@ export const AwaitingClaimCards = (props: {
     updateBreaks: UpdateFn<CookieBreak>
 }) => {
     const [breaksToClaim, setBreaksToClaim] = useState<CookieBreak[]>([])
+
     useEffect(() => {
         setBreaksToClaim(getBreaksToClaim(props.cookieBreaks))
     }, [props.cookieBreaks])

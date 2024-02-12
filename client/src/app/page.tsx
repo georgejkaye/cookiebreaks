@@ -111,6 +111,7 @@ const Home = () => {
                                 <AwaitingCompletionCards
                                     user={user}
                                     claims={data.claims}
+                                    breaks={data.breaks}
                                     updateClaims={updateClaims}
                                 />
                             </>

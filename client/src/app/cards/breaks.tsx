@@ -131,17 +131,9 @@ const BreakContent = (props: {
     updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
 }) => {
-    const [editingText, setEditingText] = useState(false)
     let isHoliday = props.cookieBreak.holiday
     let hasHost = props.cookieBreak.host
-    let isAdmin = props.user?.admin
-    let contentTextStyle =
-        isHoliday || !hasHost ? "text-sm" : editingText ? "" : "font-bold"
-    let clickable = isAdmin && !breakInPast(props.cookieBreak)
-    let hoverColour = getHoverColour(props.cookieBreak)
-    let clickableStyle = clickable
-        ? `cursor-pointer ${hoverColour} rounded-md`
-        : ""
+    let contentTextStyle = isHoliday || !hasHost ? "text-sm" : "font-bold"
     let contentText = isHoliday
         ? props.cookieBreak.holiday
         : !hasHost
@@ -149,36 +141,13 @@ const BreakContent = (props: {
             ? "Host reimbursed"
             : "Host required"
         : props.cookieBreak.host
-    const onClickText = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (clickable) {
-            setEditingText(true)
-        }
-    }
-    let breakContentStyle = "flex flex-row justify-center items-center mx-4"
-    return (
-        <div className={breakContentStyle}>
-            {!editingText ? (
-                <span
-                    className={`p-2 m-1 ${clickableStyle} ${contentTextStyle}`}
-                    onClick={onClickText}
-                >
-                    {contentText}
-                </span>
-            ) : (
-                <BreakContentEditor
-                    cookieBreak={props.cookieBreak}
-                    user={props.user}
-                    updateBreaks={props.updateBreaks}
-                    setCardLoading={props.setCardLoading}
-                    setEditingText={setEditingText}
-                />
-            )}
-        </div>
-    )
+    let breakContentStyle =
+        "flex flex-row justify-center items-center mx-4 mb-2 desktop:my-0"
+    return <div className={breakContentStyle}>{contentText}</div>
 }
 
 const BreakDate = (props: { cookieBreak: CookieBreak }) => {
-    let dateStyle = "w-full desktop:w-1/2 desktop:my-2 font-bold"
+    let dateStyle = "w-full desktop:w-1/2 my-2 font-bold"
     return (
         <div className={dateStyle}>
             {getCookieBreakDate(props.cookieBreak)},{" "}

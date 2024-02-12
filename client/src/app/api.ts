@@ -258,22 +258,24 @@ export const submitClaim = async (
 }
 
 export const completeClaim = async (
-    user: User,
+    user: User | undefined,
     claim: Claim,
     breaks: CookieBreak[],
     updateClaims: UpdateFn<Claim>,
     setLoadingCard: SetState<boolean>
 ) => {
-    let endpoint = `api/claims/success`
-    let config = {
-        headers: getHeaders(user),
-        params: {
-            claim_id: claim.id,
-        },
+    if (user) {
+        let endpoint = `api/claims/success`
+        let config = {
+            headers: getHeaders(user),
+            params: {
+                claim_id: claim.id,
+            },
+        }
+        setLoadingCard(true)
+        let response = await axios.post(endpoint, null, config)
+        let responseData = response.data
+        updateClaims([], [responseToClaim(responseData[0], breaks)])
+        setTimeout(() => setLoadingCard(false), 1)
     }
-    setLoadingCard(true)
-    let response = await axios.post(endpoint, null, config)
-    let responseData = response.data
-    updateClaims([], [responseToClaim(responseData[0], breaks)])
-    setTimeout(() => setLoadingCard(false), 1)
 }

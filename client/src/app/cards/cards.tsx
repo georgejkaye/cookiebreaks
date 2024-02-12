@@ -61,11 +61,15 @@ export const CardButtons = (props: {
 
 export const Card = (props: {
     content: (setCardLoading: SetState<boolean>) => ReactNode
-    colour: string
+    colour?: string
 }) => {
     const [isCardLoading, setCardLoading] = useState(false)
     return (
-        <div className={`${props.colour} border-t py-2 px-4`}>
+        <div
+            className={`${
+                !props.colour ? "" : props.colour
+            } border-t py-2 px-4`}
+        >
             {isCardLoading ? (
                 <TailSpin wrapperClass="justify-center" height={30} />
             ) : (

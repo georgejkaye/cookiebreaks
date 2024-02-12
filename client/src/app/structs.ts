@@ -69,6 +69,8 @@ export const getTimeString = (datetime: Date) => {
     })
     return time
 }
+export const getDatetimeString = (datetime: Date) =>
+    `${getDateString(datetime)}, ${getTimeString(datetime)}`
 export const getCookieBreakDate = (cookieBreak: CookieBreak) =>
     getDateString(cookieBreak.datetime)
 export const getCookieBreakTime = (cookieBreak: CookieBreak) =>

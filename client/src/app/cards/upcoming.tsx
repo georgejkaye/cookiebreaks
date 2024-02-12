@@ -79,9 +79,9 @@ export const UpcomingBreaksCards = (props: {
             <BreaksHeader title={"Upcoming breaks"} first={true} />
             {upcomingBreaks.map((b, i) => (
                 <Card
+                    key={b.id}
                     content={(setCardLoading) => (
                         <UpcomingBreakCard
-                            key={b.id}
                             index={i}
                             user={props.user}
                             cookieBreak={b}
