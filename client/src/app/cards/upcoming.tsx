@@ -14,7 +14,7 @@ export const UpcomingBreakCard = (props: {
 }) => {
     const buttons: CardButtonProps[] = [
         {
-            isVisible: props.index === 0,
+            isVisible: props.index === 0 && !props.cookieBreak.announced,
             icon: "announce",
             onClick: () =>
                 announceBreak(
