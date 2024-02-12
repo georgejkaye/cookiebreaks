@@ -243,14 +243,47 @@ def rows_to_breaks(rows) -> list[Break]:
 def get_specific_breaks(breaks: list[int]) -> list[Break]:
     (conn, cur) = connect()
     statement = f"""
-        SELECT break_id, break_host, break_datetime, break_location,
-            holiday_text, break_announced, break_cost, host_reimbursed
-        FROM break WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
+        SELECT break.break_id, break_host, break_datetime, break_location,
+            holiday_text, break_announced, break_cost, host_reimbursed,
+            claim.claim_id, claim_date, claim_reimbursed
+        FROM break
+        LEFT JOIN claimitem ON break.break_id = claimitem.break_id
+        LEFT JOIN claim ON claimitem.claim_id = claim.claim_id
+        WHERE break.break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
     """
     cur.execute(statement, {"ids": breaks})
     rows = cur.fetchall()
     disconnect(conn, cur)
-    return rows_to_breaks(rows)
+    break_objs = []
+    for row in rows:
+        (
+            break_id,
+            break_host,
+            break_datetime,
+            break_location,
+            holiday_text,
+            break_announced,
+            break_cost,
+            host_reimbursed,
+            claim_id,
+            claim_date,
+            claim_reimbursed,
+        ) = row
+        break_obj = Break(
+            break_id,
+            arrow.get(break_datetime),
+            break_location,
+            holiday_text,
+            break_host,
+            arrow_or_none(break_announced, "Europe/London"),
+            break_cost,
+            arrow_or_none(host_reimbursed, "Europe/London"),
+            claim_date,
+            claim_id,
+            arrow_or_none(claim_reimbursed, "Europe/London"),
+        )
+        break_objs.append(break_obj)
+    return break_objs
 
 
 def rows_to_claims(rows) -> list[Claim]:
@@ -457,12 +490,12 @@ def after_announced_break(
     cookie_break: Break, filters: BreakFilters = BreakFilters()
 ) -> Break:
     (conn, cur) = connect()
-    statement = """
+    statement = f"""
         UPDATE break
         SET break_announced = NOW()
-        WHERE break_id = %(id)s
-        RETURNING break_id, break_host, break_datetime, break_location,
-            is_holiday, break_cost, host_reimbursed
+        FROM ({get_breaks_statement(BreakFilters())}) data
+        WHERE break.break_id = %(id)s
+        RETURNING {get_returning_statement()}
     """
     cur.execute(statement, {"id": cookie_break.id})
     updated_break = cur.fetchall()[0]
