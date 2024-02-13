@@ -3,7 +3,6 @@ import Loader from "../loader"
 import { SmallIcon, getHoverColour } from "../icons"
 import { SetState } from "../page"
 import { TailSpin } from "react-loader-spinner"
-import { CookieBreak, UpdateFn, User } from "../structs"
 
 export const ActionButton = (props: {
     hoverColour: string
@@ -33,7 +32,7 @@ export const ActionButton = (props: {
 export interface CardButtonProps {
     isVisible: boolean
     icon: string
-    onClick: () => Promise<void>
+    onClick: () => void
 }
 
 const buttonHoverColour = "hover:bg-gray-300"
@@ -60,20 +59,24 @@ export const CardButtons = (props: {
 )
 
 export const Card = (props: {
-    content: (setCardLoading: SetState<boolean>) => ReactNode
+    content: (
+        setCardLoading: SetState<boolean>,
+        setColour: SetState<string | undefined>
+    ) => ReactNode
     colour?: string
 }) => {
     const [isCardLoading, setCardLoading] = useState(false)
+    const [colour, setColour] = useState<string | undefined>(undefined)
     return (
         <div
             className={`${
-                !props.colour ? "" : props.colour
+                !colour ? (!props.colour ? "" : props.colour) : colour
             } border-t py-2 px-4`}
         >
             {isCardLoading ? (
                 <TailSpin wrapperClass="justify-center" height={30} />
             ) : (
-                props.content(setCardLoading)
+                props.content(setCardLoading, setColour)
             )}
         </div>
     )
