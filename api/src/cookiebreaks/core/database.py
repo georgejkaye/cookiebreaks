@@ -110,9 +110,9 @@ def insert_breaks(breaks: list[tuple[Arrow, str, Optional[str]]]) -> list[Break]
     cur.execute(
         statement,
         {
-            "datetimes": list(map(lambda b: b[0].datetime, breaks)),
-            "locations": list(map(lambda b: b[1], breaks)),
-            "hosts": list(map(lambda b: b[2], breaks)),
+            "datetimes": [b[0].datetime for b in breaks],
+            "locations": [b[1] for b in breaks],
+            "hosts": [b[2] for b in breaks],
         },
     )
     rows = cur.fetchall()
@@ -147,8 +147,8 @@ def reimburse_host(break_id: int, cost: float) -> Break:
     statement = f"""
         UPDATE break
         SET break_cost = %(cost)s, host_reimbursed = DATE_TRUNC('minute', NOW())
-        FROM {get_breaks_statement()} data
-        WHERE break_id = %(id)s
+        FROM ({get_breaks_statement()}) data
+        WHERE break.break_id = %(id)s
         RETURNING {get_returning_statement()}
     """
     cur.execute(statement, {"id": break_id, "cost": cost})
@@ -163,8 +163,8 @@ def mask_host(break_id: int) -> Break:
     statement = f"""
         UPDATE break
         SET break_host = null
-        FROM {get_breaks_statement()} data
-        WHERE break_id = %(is)s
+        FROM ({get_breaks_statement()}) data
+        WHERE break.break_id = %(is)s
         RETURNING {get_returning_statement()}
     """
     cur.execute(statement, {"id": break_id})
