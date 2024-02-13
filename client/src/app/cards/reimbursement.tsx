@@ -2,7 +2,14 @@ import { useState, useEffect, useRef } from "react"
 import { User, CookieBreak, UpdateFn, getBreaksToReimburse } from "../structs"
 import { BreakDetails } from "./breaks"
 import { SetState } from "../page"
-import { Card, BreaksHeader, CardButtonProps, CardButtons } from "./cards"
+import {
+    Card,
+    BreaksHeader,
+    CardButtonProps,
+    CardButtons,
+    ActionButton,
+    buttonHoverColour,
+} from "./cards"
 import { reimburseBreak } from "../api"
 
 const AwaitingReimbursementCard = (props: {
@@ -21,6 +28,8 @@ const AwaitingReimbursementCard = (props: {
             props.setColour("bg-gray-200")
         } else {
             props.setColour(undefined)
+            setBreakCostText("")
+            setErrorText("")
         }
     }, [isReimbursing])
 
@@ -71,18 +80,30 @@ const AwaitingReimbursementCard = (props: {
             {!isReimbursing ? (
                 ""
             ) : (
-                <div className="flex flex-col desktop:flex-row items-center">
+                <div className="flex flex-col desktop:flex-row items-center my-2">
                     <div className="font-bold mr-2">Break cost</div>
-                    <input
-                        autoFocus
-                        className="m-1 rounded p-1"
-                        size={5}
-                        type="text"
-                        value={breakCostText}
-                        onKeyDown={onKeyDownCostBox}
-                        onChange={onChangeCostBox}
-                    />
-                    <div>{errorText}</div>
+                    <div className="flex flex-row items-center">
+                        <input
+                            autoFocus
+                            className="m-1 rounded p-1 border-2 bg-white border-bg2 "
+                            size={5}
+                            type="text"
+                            value={breakCostText}
+                            onKeyDown={onKeyDownCostBox}
+                            onChange={onChangeCostBox}
+                        />
+                        <ActionButton
+                            hoverColour={buttonHoverColour}
+                            icon={"tick"}
+                            onClick={(e) => onReimburse()}
+                        />
+                        <ActionButton
+                            hoverColour={buttonHoverColour}
+                            icon={"cross"}
+                            onClick={(e) => setReimbursing(false)}
+                        />
+                    </div>
+                    <div className="p-2">{errorText}</div>
                 </div>
             )}
         </>

@@ -35,7 +35,7 @@ export interface CardButtonProps {
     onClick: () => void
 }
 
-const buttonHoverColour = "hover:bg-gray-300"
+export const buttonHoverColour = "hover:bg-gray-300"
 
 export const CardButtons = (props: {
     width: string
