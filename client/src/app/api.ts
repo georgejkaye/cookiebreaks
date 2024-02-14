@@ -233,28 +233,31 @@ export const deleteBreak = async (
 }
 
 export const submitClaim = async (
-    user: User,
+    user: User | undefined,
     cbs: CookieBreak[],
     updateBreaks: UpdateFn<CookieBreak>,
     updateClaims: UpdateFn<Claim>,
     setLoadingCards: (loading: boolean) => void
 ) => {
-    let endpoint = `api/claims/claim`
-    let config = {
-        headers: getHeaders(user),
+    if (user) {
+        let endpoint = `api/claims/claim`
+        let config = {
+            headers: getHeaders(user),
+        }
+        setLoadingCards(true)
+        let response = await axios.post(
+            endpoint,
+            cbs.map((cookieBreak) => cookieBreak.id),
+            config
+        )
+        let responseData = response.data
+        let updatedBreaks = responseData.breaks
+        let updatedClaim = responseData.claim
+        console.log(responseToBreaks(updatedBreaks))
+        let breaks = updateBreaks(responseToBreaks(updatedBreaks), [])
+        updateClaims([responseToClaim(updatedClaim, breaks)], [])
+        setTimeout(() => setLoadingCards(false), 1)
     }
-    setLoadingCards(true)
-    let response = await axios.post(
-        endpoint,
-        cbs.map((cookieBreak) => cookieBreak.id),
-        config
-    )
-    let responseData = response.data
-    let updatedBreaks = responseData.breaks
-    let updatedClaim = responseData.claim
-    let breaks = updateBreaks(responseToBreaks(updatedBreaks), [])
-    updateClaims([responseToClaim(updatedClaim, breaks)], [])
-    setTimeout(() => setLoadingCards(false), 1)
 }
 
 export const completeClaim = async (

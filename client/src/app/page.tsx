@@ -105,8 +105,9 @@ const Home = () => {
                                 />
                                 <AwaitingClaimCards
                                     user={user}
-                                    cookieBreaks={data.breaks}
+                                    data={data}
                                     updateBreaks={updateBreaks}
+                                    updateClaims={updateClaims}
                                 />
                                 <AwaitingCompletionCards
                                     user={user}

@@ -32,7 +32,6 @@ const AwaitingReimbursementCard = (props: {
             setErrorText("")
         }
     }, [isReimbursing])
-
     const buttons: CardButtonProps[] = [
         {
             isVisible: true,
@@ -48,7 +47,7 @@ const AwaitingReimbursementCard = (props: {
             reimburseBreak(
                 props.user,
                 props.cookieBreak,
-                10.0,
+                number,
                 props.updateBreaks,
                 props.setCardLoading
             )

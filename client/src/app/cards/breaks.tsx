@@ -146,7 +146,7 @@ const BreakContent = (props: {
     return <div className={breakContentStyle}>{contentText}</div>
 }
 
-const BreakDate = (props: { cookieBreak: CookieBreak }) => {
+export const BreakDate = (props: { cookieBreak: CookieBreak }) => {
     let dateStyle = "w-full desktop:w-1/2 my-2 font-bold"
     return (
         <div className={dateStyle}>

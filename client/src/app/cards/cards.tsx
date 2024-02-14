@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from "react"
+import React, { ReactNode, useEffect, useState } from "react"
 import Loader from "../loader"
 import { SmallIcon, getHoverColour } from "../icons"
 import { SetState } from "../page"
@@ -64,8 +64,18 @@ export const Card = (props: {
         setColour: SetState<string | undefined>
     ) => ReactNode
     colour?: string
+    isLoading?: boolean
 }) => {
-    const [isCardLoading, setCardLoading] = useState(false)
+    const [isCardLoading, setCardLoading] = useState(
+        props.isLoading ? props.isLoading : false
+    )
+    useEffect(() => {
+        if (props.isLoading) {
+            setCardLoading(props.isLoading)
+        } else {
+            setCardLoading(false)
+        }
+    }, [props.isLoading])
     const [colour, setColour] = useState<string | undefined>(undefined)
     return (
         <div
@@ -84,5 +94,9 @@ export const Card = (props: {
 
 export const BreaksHeader = (props: { title: string; first?: boolean }) => {
     let border = props.first === undefined || !props.first ? "border-t" : ""
-    return <h2 className={`${border} p-4 text-2xl font-bold`}>{props.title}</h2>
+    return (
+        <h2 className={`${border} flex-1 p-4 text-2xl font-bold`}>
+            {props.title}
+        </h2>
+    )
 }
