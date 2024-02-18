@@ -1,25 +1,14 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import {
-    Claim,
-    CookieBreak,
-    User,
-    formatAsPrice,
-    getBreaksToClaim,
-    getBreaksToComplete,
-    getBreaksToReimburse,
-    getFutureBreaks,
-    getOutstandingBreaks,
-    replaceItems,
-} from "./structs"
-import { getBreaks, getClaims, getData, submitClaim } from "./api"
-import { BreakCards } from "./cards/breaks"
+import { Claim, CookieBreak, User, replaceItems } from "./structs"
+import { getData, submitClaim } from "./api"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
-import { ClaimCards } from "./cards/claimed"
 import { UpcomingBreaksCards } from "./cards/upcoming"
-import { AwaitingClaimCards } from "./cards/reimbursed"
+import { AwaitingReimbursementCards } from "./cards/reimbursement"
+import { AwaitingClaimCards } from "./cards/awaiting"
+import { AwaitingCompletionCards } from "./cards/completion"
 
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>
 
@@ -38,37 +27,41 @@ export interface Data {
 const Home = () => {
     const [user, setUser] = useState<User | undefined>(undefined)
     // All data
-    const [data, setData] = useState<Data>({ breaks: [], claims: [] })
-    const setBreaks = (breaks: CookieBreak[]) =>
-        setData({ breaks: breaks, claims: data.claims })
-    const setClaims = (claims: Claim[]) =>
-        setData({ breaks: data.breaks, claims: claims })
+    const [claims, setClaims] = useState<Claim[]>([])
+    const [breaks, setBreaks] = useState<CookieBreak[]>([])
     const [isLoadingData, setLoadingData] = useState(false)
     useEffect(() => {
-        getData(user, setData, setLoadingData)
+        getData(user, setBreaks, setClaims, setLoadingData)
     }, [])
+    useEffect(() => {
+        console.log(claims)
+    }, [claims])
+    useEffect(() => {
+        console.log(claims)
+    }, [breaks])
     const updateBreaks = (
         newBreaks: CookieBreak[],
         breaksToRemove: CookieBreak[]
     ) => {
         let updatedBreaks = replaceItems(
-            data.breaks,
+            breaks,
             newBreaks,
             breaksToRemove,
             (b1, b2) => b1.id === b2.id,
             (b1, b2) => b1.datetime.getTime() - b2.datetime.getTime()
         )
-        setData({ breaks: updatedBreaks, claims: data.claims })
+        setBreaks(updatedBreaks)
         return updatedBreaks
     }
     const updateClaims = (newClaims: Claim[], claimsToRemove: Claim[]) => {
         let updatedClaims = replaceItems(
-            data.claims,
+            claims,
             newClaims,
             claimsToRemove,
             (c1, c2) => c1.id === c2.id,
             (c1, c2) => c1.date.getTime() - c2.date.getTime()
         )
+        console.log("Updated claims are", updatedClaims)
         setClaims(updatedClaims)
         return updatedClaims
     }
@@ -77,73 +70,59 @@ const Home = () => {
         setLoadingCards: (cbs: CookieBreak[], loading: boolean) => void
     ) => {
         if (user) {
-            submitClaim(user, cbs, updateBreaks, updateClaims, (b) =>
+            submitClaim(user, cbs, updateClaims, updateBreaks, (b) =>
                 setLoadingCards(cbs, b)
             )
         }
     }
-    const [upcomingBreaks, setUpcomingBreaks] = useState<CookieBreak[]>([])
-    const [breaksToReimburse, setBreaksToReimburse] = useState<CookieBreak[]>(
-        []
-    )
-    const [breaksToClaim, setBreaksToClaim] = useState<CookieBreak[]>([])
-    const [breaksToComplete, setBreaksToComplete] = useState<CookieBreak[]>([])
-    // Loading while retrieving content
-    useEffect(() => {
-        setUpcomingBreaks(getFutureBreaks(data.breaks))
-        setBreaksToReimburse(getBreaksToReimburse(data.breaks))
-        setBreaksToClaim(getBreaksToClaim(data.breaks))
-        setBreaksToComplete(getBreaksToComplete(data.breaks))
-    }, [data])
     return (
         <>
             <main className={`text-fg ${manrope.className}`}>
-                <TopBar setUser={setUser} user={user} setData={setData} />
-                <div className="text-center m-5 w-mobileContent tablet:w-tabletContent desktop:w-content mx-auto">
-                    <div>
+                <TopBar
+                    setUser={setUser}
+                    user={user}
+                    setBreaks={setBreaks}
+                    setClaims={setClaims}
+                    setLoadingData={setLoadingData}
+                />
+                <div className="m-5 w-mobileContent tablet:w-tabletContent desktop:w-content mx-auto">
+                    <div className="text-center">
                         The cookie break is the school's longest running social
                         event: every week a different host buys some biscuits up
                         to the amount of £10 and shares them with everyone else.
                         Thanks to the gracious funding of Research Committee,
                         they get reimbursed for their troubles!
                     </div>
-                    <BreakCards
-                        title="Upcoming"
-                        user={user}
-                        breaks={upcomingBreaks}
-                        updateBreaks={updateBreaks}
-                        isLoadingBreaks={isLoadingData}
-                        reverseBreaks={false}
-                    />
-                    {!user?.admin ? (
-                        ""
-                    ) : (
-                        <>
-                            <BreakCards
-                                title="Awaiting reimbursement"
-                                user={user}
-                                breaks={breaksToReimburse}
-                                updateBreaks={updateBreaks}
-                                isLoadingBreaks={isLoadingData}
-                                reverseBreaks={false}
-                            />
-                            <AwaitingClaimCards
-                                user={user}
-                                breaks={data.breaks}
-                                updateBreaks={updateBreaks}
-                                updateClaims={updateClaims}
-                                isLoadingBreaks={isLoadingData}
-                            />
-                            <ClaimCards
-                                title="Outstanding claims"
-                                user={user}
-                                claims={data.claims}
-                                breaks={data.breaks}
-                                updateClaims={updateClaims}
-                                isLoadingClaims={isLoadingData}
-                            />
-                        </>
-                    )}
+                    <div className="my-4 border rounded-lg">
+                        <UpcomingBreaksCards
+                            user={user}
+                            cookieBreaks={breaks}
+                            updateBreaks={updateBreaks}
+                        />
+                        {!user?.admin ? (
+                            ""
+                        ) : (
+                            <>
+                                <AwaitingReimbursementCards
+                                    user={user}
+                                    cookieBreaks={breaks}
+                                    updateBreaks={updateBreaks}
+                                />
+                                <AwaitingClaimCards
+                                    user={user}
+                                    breaks={breaks}
+                                    updateBreaks={updateBreaks}
+                                    updateClaims={updateClaims}
+                                />
+                                <AwaitingCompletionCards
+                                    user={user}
+                                    claims={claims}
+                                    breaks={breaks}
+                                    updateClaims={updateClaims}
+                                />
+                            </>
+                        )}
+                    </div>
                     <div className="text-center m-5">
                         This tool is in{" "}
                         <span className="text-red-600 font-bold">beta</span>!

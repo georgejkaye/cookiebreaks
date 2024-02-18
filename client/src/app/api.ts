@@ -1,12 +1,5 @@
 import axios from "axios"
-import { Dispatch, SetStateAction } from "react"
-import {
-    Claim,
-    CookieBreak,
-    UpdateBreaksFn,
-    UpdateClaimsFn,
-    User,
-} from "./structs"
+import { Claim, CookieBreak, UpdateFn, User } from "./structs"
 import { Data, SetState } from "./page"
 
 const dateOrUndefined = (datetime: string | undefined) =>
@@ -26,22 +19,28 @@ const responseToBreak = (b: any) => ({
 })
 const responseToBreaks = (bs: any[]) => bs.map(responseToBreak)
 
-const responseToClaim = (c: any, breaks: CookieBreak[]) => ({
-    id: c.id,
-    date: new Date(c.claim_date),
-    breaks: c.breaks_claimed.map((id: number) =>
-        breaks.find((cb) => cb.id === id)
-    ),
-    amount: parseFloat(c.claim_amount),
-    reimbursed: dateOrUndefined(c.claim_reimbursed),
-})
+const responseToClaim = (c: any, breaks: CookieBreak[]): Claim => {
+    let date = new Date(c.claim_date)
+    let claimBreaks = c.breaks_claimed.map((id: number) => {
+        const oldBreak = breaks.find((cookieBreak) => cookieBreak.id === id)
+        return { ...oldBreak, claimed: date }
+    })
+    return {
+        id: c.id,
+        date: new Date(c.claim_date),
+        breaks: claimBreaks,
+        amount: parseFloat(c.claim_amount),
+        reimbursed: dateOrUndefined(c.claim_reimbursed),
+    }
+}
 
 export const login = async (
     username: string,
     password: string,
     setUser: SetState<User | undefined>,
     setStatus: SetState<string>,
-    setData: SetState<Data>,
+    setBreaks: SetState<CookieBreak[]>,
+    setClaims: SetState<Claim[]>,
     setLoading: SetState<boolean>
 ) => {
     let endpoint = `/api/users/token`
@@ -69,7 +68,8 @@ export const login = async (
             let claimObjects = responseData.claims.map((c: any) =>
                 responseToClaim(c, breakObjects)
             )
-            setData({ breaks: breakObjects, claims: claimObjects })
+            setBreaks(breakObjects)
+            setClaims(claimObjects)
         } catch (err) {
             console.log(err)
             setStatus("Could not log in...")
@@ -81,13 +81,15 @@ export const login = async (
 
 export const getData = async (
     user: User | undefined,
-    setData: SetState<Data>,
+    setBreaks: SetState<CookieBreak[]>,
+    setClaims: SetState<Claim[]>,
     setLoadingData: SetState<boolean>
 ) => {
     setLoadingData(true)
     let breaks = await getBreaks(user)
     let claims = await getClaims(user, breaks)
-    setData({ breaks: breaks, claims: claims })
+    setBreaks(breaks)
+    setClaims(claims)
     setTimeout(() => setLoadingData(false))
 }
 
@@ -129,59 +131,64 @@ const getHeaders = (user: User | undefined) =>
           }
 
 export const announceBreak = async (
-    user: User,
-    cb: CookieBreak,
-    updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    user: User | undefined,
+    cookieBreak: CookieBreak,
+    updateBreaks: UpdateFn<CookieBreak>,
+    setLoadingCard: SetState<boolean>
 ) => {
-    let endpoint = `/api/breaks/announce`
-    let config = {
-        params: {
-            break_id: cb.id,
-        },
-        headers: getHeaders(user),
+    if (user) {
+        let endpoint = `/api/breaks/announce`
+        let config = {
+            params: {
+                break_id: cookieBreak.id,
+            },
+            headers: getHeaders(user),
+        }
+        setLoadingCard(true)
+        let response = await axios.post(endpoint, null, config)
+        let responseData = response.data
+        updateBreaks([responseToBreak(responseData)], [])
+        setTimeout(() => setLoadingCard(false), 1)
     }
-    setLoadingCard(true)
-    let response = await axios.post(endpoint, null, config)
-    let responseData = response.data
-    updateBreaks([responseToBreak(responseData)], [])
-    setTimeout(() => setLoadingCard(false), 1)
 }
 
 export const reimburseBreak = async (
-    user: User,
-    id: number,
+    user: User | undefined,
+    cookieBreak: CookieBreak,
     cost: number,
-    updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    updateBreaks: UpdateFn<CookieBreak>,
+    setLoadingCard: SetState<boolean>
 ) => {
-    let endpoint = `/api/breaks/reimburse`
-    let config = {
-        params: {
-            break_id: id,
-            cost,
-        },
-        headers: getHeaders(user),
+    if (user) {
+        let endpoint = `/api/breaks/reimburse`
+        let config = {
+            params: {
+                break_id: cookieBreak.id,
+                cost,
+            },
+            headers: getHeaders(user),
+        }
+        setLoadingCard(true)
+        let response = await axios.post(endpoint, null, config)
+        let responseData = response.data
+        let newBreak = responseToBreak(responseData)
+        updateBreaks([newBreak], [])
+        setTimeout(() => setLoadingCard(false), 1)
     }
-    setLoadingCard(true)
-    let response = await axios.post(endpoint, null, config)
-    let responseData = response.data
-    updateBreaks([responseToBreak(responseData)], [])
-    setTimeout(() => setLoadingCard(false), 1)
 }
 
 export const setHost = async (
     user: User,
-    id: number,
+    cookieBreak: CookieBreak,
     host: string,
-    updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    updateBreaks: UpdateFn<CookieBreak>,
+    setLoadingCard: SetState<boolean>
 ) => {
     let actualHost = host === "" ? undefined : host
     let endpoint = `/api/breaks/host`
     let config = {
         params: {
-            break_id: id,
+            break_id: cookieBreak.id,
             host_name: actualHost,
         },
         headers: getHeaders(user),
@@ -194,85 +201,93 @@ export const setHost = async (
 }
 
 export const setHoliday = async (
-    user: User,
-    id: number,
+    user: User | undefined,
+    cookieBreak: CookieBreak,
     reason: string | undefined,
-    updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    updateBreaks: UpdateFn<CookieBreak>,
+    setLoadingCard: SetState<boolean>
 ) => {
-    let endpoint = `/api/breaks/holiday`
-    let config = {
-        params: {
-            break_id: id,
-            reason,
-        },
-        headers: getHeaders(user),
+    if (user) {
+        let endpoint = `/api/breaks/holiday`
+        let config = {
+            params: {
+                break_id: cookieBreak.id,
+                reason,
+            },
+            headers: getHeaders(user),
+        }
+        setLoadingCard(true)
+        let response = await axios.post(endpoint, null, config)
+        let responseData = response.data
+        updateBreaks([responseToBreak(responseData)], [])
+        setTimeout(() => setLoadingCard(false), 1)
     }
-    setLoadingCard(true)
-    let response = await axios.post(endpoint, null, config)
-    let responseData = response.data
-    updateBreaks([responseToBreak(responseData)], [])
-    setTimeout(() => setLoadingCard(false), 1)
 }
 
 export const deleteBreak = async (
-    user: User,
-    cb: CookieBreak,
-    updateBreaks: UpdateBreaksFn,
-    setLoadingCard: (loading: boolean) => void
+    user: User | undefined,
+    cookieBreak: CookieBreak,
+    updateBreaks: UpdateFn<CookieBreak>,
+    setLoadingCard: SetState<boolean>
 ) => {
-    let endpoint = `/api/breaks/${cb.id}`
-    let config = {
-        headers: getHeaders(user),
+    if (user) {
+        let endpoint = `/api/breaks/${cookieBreak.id}`
+        let config = {
+            headers: getHeaders(user),
+        }
+        setLoadingCard(true)
+        await axios.delete(endpoint, config)
+        updateBreaks([], [cookieBreak])
+        setTimeout(() => setLoadingCard(false), 1)
     }
-    setLoadingCard(true)
-    await axios.delete(endpoint, config)
-    updateBreaks([], [cb])
-    setTimeout(() => setLoadingCard(false), 1)
 }
 
 export const submitClaim = async (
-    user: User,
-    cbs: CookieBreak[],
-    updateBreaks: UpdateBreaksFn,
-    updateClaims: UpdateClaimsFn,
+    user: User | undefined,
+    breaksToClaim: CookieBreak[],
+    updateClaims: UpdateFn<Claim>,
+    updateBreaks: UpdateFn<CookieBreak>,
     setLoadingCards: (loading: boolean) => void
 ) => {
-    let endpoint = `api/claims/claim`
-    let config = {
-        headers: getHeaders(user),
+    if (user) {
+        let endpoint = `api/claims/claim`
+        let config = {
+            headers: getHeaders(user),
+        }
+        setLoadingCards(true)
+        let response = await axios.post(
+            endpoint,
+            breaksToClaim.map((cookieBreak) => cookieBreak.id),
+            config
+        )
+        let responseData = response.data
+        let newClaim = responseToClaim(responseData, breaksToClaim)
+        let claims = updateClaims([newClaim], [])
+        console.log("the new claims after submitting are are", claims)
+        updateBreaks(newClaim.breaks, [])
+        setTimeout(() => setLoadingCards(false), 1)
     }
-    setLoadingCards(true)
-    let response = await axios.post(
-        endpoint,
-        cbs.map((cb) => cb.id),
-        config
-    )
-    let responseData = response.data
-    let updatedBreaks = responseData.breaks
-    let updatedClaim = responseData.claim
-    let breaks = updateBreaks(responseToBreaks(updatedBreaks), [])
-    updateClaims([responseToClaim(updatedClaim, breaks)], [])
-    setTimeout(() => setLoadingCards(false), 1)
 }
 
 export const completeClaim = async (
-    user: User,
+    user: User | undefined,
     claim: Claim,
     breaks: CookieBreak[],
-    updateClaims: UpdateClaimsFn,
-    setLoadingCard: (loading: boolean) => void
+    updateClaims: UpdateFn<Claim>,
+    setLoadingCard: SetState<boolean>
 ) => {
-    let endpoint = `api/claims/success`
-    let config = {
-        headers: getHeaders(user),
-        params: {
-            claim_id: claim.id,
-        },
+    if (user) {
+        let endpoint = `api/claims/success`
+        let config = {
+            headers: getHeaders(user),
+            params: {
+                claim_id: claim.id,
+            },
+        }
+        setLoadingCard(true)
+        let response = await axios.post(endpoint, null, config)
+        let responseData = response.data
+        updateClaims([], [responseToClaim(responseData[0], breaks)])
+        setTimeout(() => setLoadingCard(false), 1)
     }
-    setLoadingCard(true)
-    let response = await axios.post(endpoint, null, config)
-    let responseData = response.data
-    updateClaims([], [responseToClaim(responseData[0], breaks)])
-    setTimeout(() => setLoadingCard(false), 1)
 }

@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from "react"
 import { User, CookieBreak, Claim } from "./structs"
 import Loader from "./loader"
-import { login } from "./api"
+import { getData, login } from "./api"
 import { LoginModal, LogoutModal } from "./modals/login"
 import { Data, SetState } from "./page"
 
@@ -26,7 +26,8 @@ const InputBox = (props: {
 
 const LoginButton = (props: {
     setUser: SetState<User | undefined>
-    setData: SetState<Data>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
     setLoadingLogin: SetState<boolean>
     user: User | undefined
 }) => {
@@ -43,7 +44,8 @@ const LoginButton = (props: {
             passwordText,
             props.setUser,
             setStatus,
-            props.setData,
+            props.setBreaks,
+            props.setClaims,
             props.setLoadingLogin
         )
         setPasswordText("")
@@ -61,7 +63,8 @@ const LoginButton = (props: {
                     isOpen={isActive}
                     setOpen={setActive}
                     setUser={props.setUser}
-                    setData={props.setData}
+                    setBreaks={props.setBreaks}
+                    setClaims={props.setClaims}
                     setLoading={props.setLoadingLogin}
                     setStatus={setStatus}
                 />
@@ -77,20 +80,22 @@ const LoginButton = (props: {
     )
 }
 
-const LoginBar = (props: {
+const LoginRegion = (props: {
     setUser: SetState<User | undefined>
-    setData: SetState<Data>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
     user: User | undefined
 }) => {
     const [isLoadingLogin, setLoadingLogin] = useState(false)
     return (
-        <div className="ml-auto">
+        <div>
             {isLoadingLogin ? (
                 <Loader size={10} />
             ) : (
                 <LoginButton
                     user={props.user}
-                    setData={props.setData}
+                    setBreaks={props.setBreaks}
+                    setClaims={props.setClaims}
                     setUser={props.setUser}
                     setLoadingLogin={setLoadingLogin}
                 />
@@ -99,17 +104,62 @@ const LoginBar = (props: {
     )
 }
 
+const RefreshButton = (props: {
+    user: User | undefined
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
+    setLoadingData: SetState<boolean>
+}) => {
+    const onClickRefresh = (e: React.MouseEvent<HTMLButtonElement>) =>
+        getData(
+            props.user,
+            props.setBreaks,
+            props.setClaims,
+            props.setLoadingData
+        )
+    return <button onClick={onClickRefresh}>Refresh</button>
+}
+
+const RightButtons = (props: {
+    setUser: SetState<User | undefined>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
+    setLoadingData: SetState<boolean>
+    user: User | undefined
+}) => {
+    return (
+        <div className="ml-auto flex flex-row">
+            <RefreshButton
+                user={props.user}
+                setBreaks={props.setBreaks}
+                setClaims={props.setClaims}
+                setLoadingData={props.setLoadingData}
+            />
+            <LoginRegion
+                user={props.user}
+                setBreaks={props.setBreaks}
+                setClaims={props.setClaims}
+                setUser={props.setUser}
+            />
+        </div>
+    )
+}
+
 export const TopBar = (props: {
     setUser: SetState<User | undefined>
-    setData: SetState<Data>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
+    setLoadingData: SetState<boolean>
     user: User | undefined
 }) => {
     return (
         <div className="flex items-center h-10 p-4 pr-2 bg-bg2 text-fg2">
             <div className="text-lg font-bold">Cookie breaks</div>
-            <LoginBar
+            <RightButtons
                 user={props.user}
-                setData={props.setData}
+                setBreaks={props.setBreaks}
+                setClaims={props.setClaims}
+                setLoadingData={props.setLoadingData}
                 setUser={props.setUser}
             />
         </div>

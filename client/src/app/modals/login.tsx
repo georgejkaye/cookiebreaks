@@ -19,7 +19,8 @@ export const LoginModal = (props: {
     setOpen: SetState<boolean>
     setUser: SetState<User | undefined>
     setStatus: SetState<string>
-    setData: SetState<Data>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
     setLoading: SetState<boolean>
 }) => {
     const focusInputRef = useRef<HTMLInputElement | null>(null)
@@ -48,7 +49,8 @@ export const LoginModal = (props: {
             formState.password,
             props.setUser,
             props.setStatus,
-            props.setData,
+            props.setBreaks,
+            props.setClaims,
             props.setLoading
         )
     }

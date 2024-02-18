@@ -26,17 +26,10 @@ export interface Claim {
     reimbursed?: Date
 }
 
-export const breakInPast = (cb: CookieBreak) => dateInPast(cb.datetime)
+export const breakInPast = (cookieBreak: CookieBreak) =>
+    dateInPast(cookieBreak.datetime)
 
-export type UpdateBreaksFn = (
-    breaksToAdd: CookieBreak[],
-    breaksToRemove: CookieBreak[]
-) => CookieBreak[]
-
-export type UpdateClaimsFn = (
-    claimsToAdd: Claim[],
-    claimsToRemove: Claim[]
-) => Claim[]
+export type UpdateFn<T> = (toAdd: T[], toRemove: T[]) => T[]
 
 export const replaceItems = <T>(
     oldItems: T[],
@@ -76,28 +69,39 @@ export const getTimeString = (datetime: Date) => {
     })
     return time
 }
-export const getCookieBreakDate = (cb: CookieBreak) =>
-    getDateString(cb.datetime)
-export const getCookieBreakTime = (cb: CookieBreak) =>
-    getTimeString(cb.datetime)
+export const getDatetimeString = (datetime: Date) =>
+    `${getDateString(datetime)}, ${getTimeString(datetime)}`
+export const getCookieBreakDate = (cookieBreak: CookieBreak) =>
+    getDateString(cookieBreak.datetime)
+export const getCookieBreakTime = (cookieBreak: CookieBreak) =>
+    getTimeString(cookieBreak.datetime)
 export const getFutureBreaks = (cbs: CookieBreak[]) => {
     let date = new Date()
     date.setHours(0, 0, 0, 0)
-    return cbs.filter((cb) => cb.datetime.getTime() > date.getTime())
+    return cbs.filter(
+        (cookieBreak) => cookieBreak.datetime.getTime() > date.getTime()
+    )
 }
 export const getOutstandingBreaks = (cbs: CookieBreak[]) => {
     let date = new Date()
     date.setHours(0, 0, 0, 0)
     return cbs.filter(
-        (cb) => !cb.success && cb.datetime.getTime() < date.getTime()
+        (cookieBreak) =>
+            !cookieBreak.success &&
+            cookieBreak.datetime.getTime() < date.getTime()
     )
 }
 export const getBreaksToReimburse = (cbs: CookieBreak[]) =>
-    cbs.filter((cb) => breakInPast(cb) && cb.host && !cb.reimbursed)
+    cbs.filter(
+        (cookieBreak) =>
+            breakInPast(cookieBreak) &&
+            cookieBreak.host &&
+            !cookieBreak.reimbursed
+    )
 export const getBreaksToClaim = (cbs: CookieBreak[]) =>
-    cbs.filter((cb) => cb.reimbursed && !cb.claimed)
+    cbs.filter((cookieBreak) => cookieBreak.reimbursed && !cookieBreak.claimed)
 export const getBreaksToComplete = (cbs: CookieBreak[]) =>
-    cbs.filter((cb) => cb.claimed && !cb.success)
+    cbs.filter((cookieBreak) => cookieBreak.claimed && !cookieBreak.success)
 
 export interface User {
     user: string
