@@ -26,7 +26,8 @@ const InputBox = (props: {
 
 const LoginButton = (props: {
     setUser: SetState<User | undefined>
-    setData: SetState<Data>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
     setLoadingLogin: SetState<boolean>
     user: User | undefined
 }) => {
@@ -43,7 +44,8 @@ const LoginButton = (props: {
             passwordText,
             props.setUser,
             setStatus,
-            props.setData,
+            props.setBreaks,
+            props.setClaims,
             props.setLoadingLogin
         )
         setPasswordText("")
@@ -61,7 +63,8 @@ const LoginButton = (props: {
                     isOpen={isActive}
                     setOpen={setActive}
                     setUser={props.setUser}
-                    setData={props.setData}
+                    setBreaks={props.setBreaks}
+                    setClaims={props.setClaims}
                     setLoading={props.setLoadingLogin}
                     setStatus={setStatus}
                 />
@@ -79,7 +82,8 @@ const LoginButton = (props: {
 
 const LoginRegion = (props: {
     setUser: SetState<User | undefined>
-    setData: SetState<Data>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
     user: User | undefined
 }) => {
     const [isLoadingLogin, setLoadingLogin] = useState(false)
@@ -90,7 +94,8 @@ const LoginRegion = (props: {
             ) : (
                 <LoginButton
                     user={props.user}
-                    setData={props.setData}
+                    setBreaks={props.setBreaks}
+                    setClaims={props.setClaims}
                     setUser={props.setUser}
                     setLoadingLogin={setLoadingLogin}
                 />
@@ -101,17 +106,24 @@ const LoginRegion = (props: {
 
 const RefreshButton = (props: {
     user: User | undefined
-    setData: SetState<Data>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
     setLoadingData: SetState<boolean>
 }) => {
     const onClickRefresh = (e: React.MouseEvent<HTMLButtonElement>) =>
-        getData(props.user, props.setData, props.setLoadingData)
+        getData(
+            props.user,
+            props.setBreaks,
+            props.setClaims,
+            props.setLoadingData
+        )
     return <button onClick={onClickRefresh}>Refresh</button>
 }
 
 const RightButtons = (props: {
     setUser: SetState<User | undefined>
-    setData: SetState<Data>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
     setLoadingData: SetState<boolean>
     user: User | undefined
 }) => {
@@ -119,12 +131,14 @@ const RightButtons = (props: {
         <div className="ml-auto flex flex-row">
             <RefreshButton
                 user={props.user}
-                setData={props.setData}
+                setBreaks={props.setBreaks}
+                setClaims={props.setClaims}
                 setLoadingData={props.setLoadingData}
             />
             <LoginRegion
                 user={props.user}
-                setData={props.setData}
+                setBreaks={props.setBreaks}
+                setClaims={props.setClaims}
                 setUser={props.setUser}
             />
         </div>
@@ -133,7 +147,8 @@ const RightButtons = (props: {
 
 export const TopBar = (props: {
     setUser: SetState<User | undefined>
-    setData: SetState<Data>
+    setBreaks: SetState<CookieBreak[]>
+    setClaims: SetState<Claim[]>
     setLoadingData: SetState<boolean>
     user: User | undefined
 }) => {
@@ -142,7 +157,8 @@ export const TopBar = (props: {
             <div className="text-lg font-bold">Cookie breaks</div>
             <RightButtons
                 user={props.user}
-                setData={props.setData}
+                setBreaks={props.setBreaks}
+                setClaims={props.setClaims}
                 setLoadingData={props.setLoadingData}
                 setUser={props.setUser}
             />

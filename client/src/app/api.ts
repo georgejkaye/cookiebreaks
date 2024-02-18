@@ -19,22 +19,28 @@ const responseToBreak = (b: any) => ({
 })
 const responseToBreaks = (bs: any[]) => bs.map(responseToBreak)
 
-const responseToClaim = (c: any, breaks: CookieBreak[]) => ({
-    id: c.id,
-    date: new Date(c.claim_date),
-    breaks: c.breaks_claimed.map((id: number) =>
-        breaks.find((cookieBreak) => cookieBreak.id === id)
-    ),
-    amount: parseFloat(c.claim_amount),
-    reimbursed: dateOrUndefined(c.claim_reimbursed),
-})
+const responseToClaim = (c: any, breaks: CookieBreak[]): Claim => {
+    let date = new Date(c.claim_date)
+    let claimBreaks = c.breaks_claimed.map((id: number) => {
+        const oldBreak = breaks.find((cookieBreak) => cookieBreak.id === id)
+        return { ...oldBreak, claimed: date }
+    })
+    return {
+        id: c.id,
+        date: new Date(c.claim_date),
+        breaks: claimBreaks,
+        amount: parseFloat(c.claim_amount),
+        reimbursed: dateOrUndefined(c.claim_reimbursed),
+    }
+}
 
 export const login = async (
     username: string,
     password: string,
     setUser: SetState<User | undefined>,
     setStatus: SetState<string>,
-    setData: SetState<Data>,
+    setBreaks: SetState<CookieBreak[]>,
+    setClaims: SetState<Claim[]>,
     setLoading: SetState<boolean>
 ) => {
     let endpoint = `/api/users/token`
@@ -62,7 +68,8 @@ export const login = async (
             let claimObjects = responseData.claims.map((c: any) =>
                 responseToClaim(c, breakObjects)
             )
-            setData({ breaks: breakObjects, claims: claimObjects })
+            setBreaks(breakObjects)
+            setClaims(claimObjects)
         } catch (err) {
             console.log(err)
             setStatus("Could not log in...")
@@ -74,13 +81,15 @@ export const login = async (
 
 export const getData = async (
     user: User | undefined,
-    setData: SetState<Data>,
+    setBreaks: SetState<CookieBreak[]>,
+    setClaims: SetState<Claim[]>,
     setLoadingData: SetState<boolean>
 ) => {
     setLoadingData(true)
     let breaks = await getBreaks(user)
     let claims = await getClaims(user, breaks)
-    setData({ breaks: breaks, claims: claims })
+    setBreaks(breaks)
+    setClaims(claims)
     setTimeout(() => setLoadingData(false))
 }
 
@@ -162,7 +171,8 @@ export const reimburseBreak = async (
         setLoadingCard(true)
         let response = await axios.post(endpoint, null, config)
         let responseData = response.data
-        updateBreaks([responseToBreak(responseData)], [])
+        let newBreak = responseToBreak(responseData)
+        updateBreaks([newBreak], [])
         setTimeout(() => setLoadingCard(false), 1)
     }
 }
@@ -234,9 +244,9 @@ export const deleteBreak = async (
 
 export const submitClaim = async (
     user: User | undefined,
-    cbs: CookieBreak[],
-    updateBreaks: UpdateFn<CookieBreak>,
+    breaksToClaim: CookieBreak[],
     updateClaims: UpdateFn<Claim>,
+    updateBreaks: UpdateFn<CookieBreak>,
     setLoadingCards: (loading: boolean) => void
 ) => {
     if (user) {
@@ -247,15 +257,14 @@ export const submitClaim = async (
         setLoadingCards(true)
         let response = await axios.post(
             endpoint,
-            cbs.map((cookieBreak) => cookieBreak.id),
+            breaksToClaim.map((cookieBreak) => cookieBreak.id),
             config
         )
         let responseData = response.data
-        let updatedBreaks = responseData.breaks
-        let updatedClaim = responseData.claim
-        console.log(responseToBreaks(updatedBreaks))
-        let breaks = updateBreaks(responseToBreaks(updatedBreaks), [])
-        updateClaims([responseToClaim(updatedClaim, breaks)], [])
+        let newClaim = responseToClaim(responseData, breaksToClaim)
+        let claims = updateClaims([newClaim], [])
+        console.log("the new claims after submitting are are", claims)
+        updateBreaks(newClaim.breaks, [])
         setTimeout(() => setLoadingCards(false), 1)
     }
 }

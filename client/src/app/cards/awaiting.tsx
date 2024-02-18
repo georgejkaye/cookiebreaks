@@ -49,7 +49,7 @@ const AwaitingClaimCard = (props: {
 
 export const AwaitingClaimCards = (props: {
     user: User | undefined
-    data: Data
+    breaks: CookieBreak[]
     updateBreaks: UpdateFn<CookieBreak>
     updateClaims: UpdateFn<Claim>
 }) => {
@@ -76,19 +76,19 @@ export const AwaitingClaimCards = (props: {
         }
     }
     useEffect(() => {
-        console.log("CHANGE")
-        if (props.data) {
-            setBreaksToClaim(getBreaksToClaim(props.data.breaks))
-        }
-    }, [props.data])
+        console.log("Updatingo claimos")
+        setBreaksToClaim(getBreaksToClaim(props.breaks))
+    }, [props.breaks])
     const onClickClaimButton = (e: React.MouseEvent<HTMLButtonElement>) => {
         submitClaim(
             props.user,
             selectedBreaks,
-            props.updateBreaks,
             props.updateClaims,
+            props.updateBreaks,
             (loading) => toggleLoadingCards(loading, selectedBreaks)
         )
+        setClaimTotal(0)
+        setSelectedBreaks([])
     }
     return (
         <div>

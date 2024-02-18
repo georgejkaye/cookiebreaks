@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { SetState } from "../page"
+import { Data, SetState } from "../page"
 import {
     User,
     CookieBreak,
@@ -63,11 +63,13 @@ const AwaitingCompletionCard = (props: {
 export const AwaitingCompletionCards = (props: {
     user: User | undefined
     claims: Claim[]
-    updateClaims: UpdateFn<Claim>
     breaks: CookieBreak[]
+    updateClaims: UpdateFn<Claim>
 }) => {
     const [claimsToComplete, setClaimsToComplete] = useState<Claim[]>([])
     useEffect(() => {
+        console.log("Upading claims")
+        console.log("The claims seen by awaiting completion are", props.claims)
         setClaimsToComplete(getClaimsToComplete(props.claims))
     }, [props.claims])
     return (

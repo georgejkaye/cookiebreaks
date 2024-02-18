@@ -27,37 +27,41 @@ export interface Data {
 const Home = () => {
     const [user, setUser] = useState<User | undefined>(undefined)
     // All data
-    const [data, setData] = useState<Data>({ breaks: [], claims: [] })
-    const setBreaks = (breaks: CookieBreak[]) =>
-        setData({ breaks: breaks, claims: data.claims })
-    const setClaims = (claims: Claim[]) =>
-        setData({ breaks: data.breaks, claims: claims })
+    const [claims, setClaims] = useState<Claim[]>([])
+    const [breaks, setBreaks] = useState<CookieBreak[]>([])
     const [isLoadingData, setLoadingData] = useState(false)
     useEffect(() => {
-        getData(user, setData, setLoadingData)
+        getData(user, setBreaks, setClaims, setLoadingData)
     }, [])
+    useEffect(() => {
+        console.log(claims)
+    }, [claims])
+    useEffect(() => {
+        console.log(claims)
+    }, [breaks])
     const updateBreaks = (
         newBreaks: CookieBreak[],
         breaksToRemove: CookieBreak[]
     ) => {
         let updatedBreaks = replaceItems(
-            data.breaks,
+            breaks,
             newBreaks,
             breaksToRemove,
             (b1, b2) => b1.id === b2.id,
             (b1, b2) => b1.datetime.getTime() - b2.datetime.getTime()
         )
-        setData({ breaks: updatedBreaks, claims: data.claims })
+        setBreaks(updatedBreaks)
         return updatedBreaks
     }
     const updateClaims = (newClaims: Claim[], claimsToRemove: Claim[]) => {
         let updatedClaims = replaceItems(
-            data.claims,
+            claims,
             newClaims,
             claimsToRemove,
             (c1, c2) => c1.id === c2.id,
             (c1, c2) => c1.date.getTime() - c2.date.getTime()
         )
+        console.log("Updated claims are", updatedClaims)
         setClaims(updatedClaims)
         return updatedClaims
     }
@@ -66,7 +70,7 @@ const Home = () => {
         setLoadingCards: (cbs: CookieBreak[], loading: boolean) => void
     ) => {
         if (user) {
-            submitClaim(user, cbs, updateBreaks, updateClaims, (b) =>
+            submitClaim(user, cbs, updateClaims, updateBreaks, (b) =>
                 setLoadingCards(cbs, b)
             )
         }
@@ -77,7 +81,8 @@ const Home = () => {
                 <TopBar
                     setUser={setUser}
                     user={user}
-                    setData={setData}
+                    setBreaks={setBreaks}
+                    setClaims={setClaims}
                     setLoadingData={setLoadingData}
                 />
                 <div className="m-5 w-mobileContent tablet:w-tabletContent desktop:w-content mx-auto">
@@ -91,7 +96,7 @@ const Home = () => {
                     <div className="my-4 border rounded-lg">
                         <UpcomingBreaksCards
                             user={user}
-                            cookieBreaks={data.breaks}
+                            cookieBreaks={breaks}
                             updateBreaks={updateBreaks}
                         />
                         {!user?.admin ? (
@@ -100,19 +105,19 @@ const Home = () => {
                             <>
                                 <AwaitingReimbursementCards
                                     user={user}
-                                    cookieBreaks={data.breaks}
+                                    cookieBreaks={breaks}
                                     updateBreaks={updateBreaks}
                                 />
                                 <AwaitingClaimCards
                                     user={user}
-                                    data={data}
+                                    breaks={breaks}
                                     updateBreaks={updateBreaks}
                                     updateClaims={updateClaims}
                                 />
                                 <AwaitingCompletionCards
                                     user={user}
-                                    claims={data.claims}
-                                    breaks={data.breaks}
+                                    claims={claims}
+                                    breaks={breaks}
                                     updateClaims={updateClaims}
                                 />
                             </>
