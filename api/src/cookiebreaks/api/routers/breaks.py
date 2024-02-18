@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Annotated, Optional
 import arrow
 from fastapi import APIRouter, Depends, HTTPException
@@ -99,7 +100,7 @@ async def announce_break(
     summary="Record the reimbursement of someone who hosted a cookie break",
 )
 async def reimburse_break(
-    current_user: Annotated[User, Depends(is_admin)], break_id: int, cost: float
+    current_user: Annotated[User, Depends(is_admin)], break_id: int, cost: Decimal
 ):
     reimbursed_break = reimburse_host(break_id, cost)
     return break_internal_to_external(reimbursed_break, current_user)

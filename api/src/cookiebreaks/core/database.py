@@ -142,20 +142,34 @@ def insert_host(break_host: str | None, break_id: int) -> Break:
     return row_to_break(row)
 
 
-def reimburse_host(break_id: int, cost: float) -> Break:
+def reimburse_host(break_id: int, cost: Decimal) -> Break:
     (conn, cur) = connect()
     statement = f"""
         UPDATE break
         SET break_cost = %(cost)s, host_reimbursed = DATE_TRUNC('minute', NOW())
-        FROM ({get_breaks_statement()}) data
         WHERE break.break_id = %(id)s
-        RETURNING {get_returning_statement()}
+        RETURNING break_datetime, break_location, break_host, break_announced, host_reimbursed
     """
     cur.execute(statement, {"id": break_id, "cost": cost})
-    row = cur.fetchall()[0]
+    (break_datetime, break_location, break_host, break_announced, host_reimbursed) = (
+        cur.fetchall()[0]
+    )
     conn.commit()
     disconnect(conn, cur)
-    return row_to_break(row)
+    updated_break = Break(
+        break_id,
+        arrow.get(break_datetime),
+        break_location,
+        None,
+        break_host,
+        arrow.get(break_announced),
+        cost,
+        arrow.get(host_reimbursed),
+        None,
+        None,
+        None,
+    )
+    return updated_break
 
 
 def mask_host(break_id: int) -> Break:
@@ -395,13 +409,26 @@ def get_maybe_cost(b: Break) -> Decimal:
     return b.cost
 
 
-def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], Claim]:
+def claim_for_breaks(break_ids: list[int]) -> Claim:
     (conn, cur) = connect()
+    claim_table_statement = f"""
+        INSERT INTO Claim(claim_date)
+        VALUES(DATE_TRUNC('minute', NOW()))
+        RETURNING claim_id, claim_date, claim_reimbursed
+    """
+    cur.execute(claim_table_statement, {"breaks": break_ids})
+    row = cur.fetchall()[0]
+    claim_item_statement = f"""
+        INSERT INTO ClaimItem(claim_id, break_id) (
+            SELECT %(claim_id)s, unnest(%(break_ids)s)
+        )
+    """
+    cur.execute(claim_item_statement, {"claim_id": row[0], "break_ids": break_ids})
     break_table_statement = f"""
         UPDATE Break
         SET break_host = NULL
         FROM ({get_breaks_statement(BreakFilters())}) data
-        WHERE break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
+        WHERE break.break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
         RETURNING {get_returning_statement()}
     """
     cur.execute(break_table_statement, {"ids": break_ids})
@@ -409,25 +436,10 @@ def claim_for_breaks(break_ids: list[int]) -> tuple[list[Break], Claim]:
     updated_breaks = rows_to_breaks(rows)
     costs = list(map(lambda b: get_maybe_cost(b), updated_breaks))
     amount = sum(costs)
-    claim_table_statement = f"""
-        INSERT INTO Claim(claim_date)
-        VALUES(DATE_TRUNC('minute', NOW()))
-        RETURNING claim_id, claim_date, claim_reimbursed
-    """
-    cur.execute(claim_table_statement, {"breaks": break_ids, "amount": amount})
-    row = cur.fetchall()[0]
     updated_claim = Claim(row[0], arrow.get(row[1]), break_ids, amount, None)
-    claim_item_statement = f"""
-        INSERT INTO ClaimItem(claim_id, break_id) (
-            SELECT %(claim_id)s, unnest(%(break_ids)s)
-        )
-    """
-    cur.execute(
-        claim_item_statement, {"claim_id": updated_claim.id, "break_ids": break_ids}
-    )
     conn.commit()
     disconnect(conn, cur)
-    return (updated_breaks, updated_claim)
+    return updated_claim
 
 
 def get_claim_objects(filters: ClaimFilters = ClaimFilters()) -> list[Claim]:
