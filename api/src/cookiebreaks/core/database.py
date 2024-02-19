@@ -132,14 +132,18 @@ def insert_host(break_host: str | None, break_id: int) -> Break:
         SET break_host = %(host)s
         WHERE break_id = %(id)s
         RETURNING
-            break_id, break_host, break_datetime, break_location,
-            holiday_text, break_announced, break_cost, host_reimbursed
+            break_id, break_host, break_datetime, break_location
     """
     cur.execute(statement, {"host": break_host, "id": break_id})
-    row = cur.fetchall()[0]
+    (
+        break_id,
+        break_host,
+        break_datetime,
+        break_location,
+    ) = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
-    return row_to_break(row)
+    return Break(break_id, arrow.get(break_datetime), break_location, None, break_host)
 
 
 def reimburse_host(break_id: int, cost: Decimal) -> Break:
@@ -165,9 +169,6 @@ def reimburse_host(break_id: int, cost: Decimal) -> Break:
         arrow.get(break_announced),
         cost,
         arrow.get(host_reimbursed),
-        None,
-        None,
-        None,
     )
     return updated_break
 
@@ -182,10 +183,34 @@ def mask_host(break_id: int) -> Break:
         RETURNING {get_returning_statement()}
     """
     cur.execute(statement, {"id": break_id})
-    row = cur.fetchall()[0]
+    (
+        break_id,
+        break_host,
+        break_datetime,
+        break_location,
+        holiday_text,
+        break_announced,
+        break_cost,
+        host_reimbursed,
+        claim_id,
+        claim_date,
+        claim_reimbursed,
+    ) = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
-    return row_to_break(row)
+    return Break(
+        break_id,
+        arrow.get(break_datetime),
+        break_location,
+        holiday_text,
+        break_host,
+        arrow_or_none(break_announced, "Europe/London"),
+        break_cost,
+        arrow_or_none(host_reimbursed, "Europe/London"),
+        arrow_or_none(claim_date, "Europe/London"),
+        claim_id,
+        arrow_or_none(claim_reimbursed, "Europe/London"),
+    )
 
 
 def get_exists_where_clause(
@@ -215,43 +240,6 @@ def arrow_or_none(candidate, timezone: str) -> Optional[Arrow]:
         return None
     else:
         return arrow.get(candidate, timezone)
-
-
-def row_to_break(row) -> Break:
-    (
-        break_id,
-        break_host,
-        break_datetime,
-        break_location,
-        holiday_text,
-        break_announced,
-        break_cost,
-        host_reimbursed,
-        claim_id,
-        claim_date,
-        claim_reimbursed,
-    ) = row
-    timezone = "Europe/London"
-    return Break(
-        break_id,
-        arrow.get(break_datetime, timezone),
-        break_location,
-        holiday_text,
-        break_host,
-        arrow_or_none(break_announced, timezone),
-        break_cost,
-        arrow_or_none(host_reimbursed, timezone),
-        arrow_or_none(claim_date, timezone),
-        claim_id,
-        claim_reimbursed,
-    )
-
-
-def rows_to_breaks(rows) -> list[Break]:
-    next_breaks = []
-    for row in rows:
-        next_breaks.append(row_to_break(row))
-    return next_breaks
 
 
 def get_specific_breaks(breaks: list[int]) -> list[Break]:
@@ -426,10 +414,34 @@ def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
             RETURNING {get_returning_statement()}
         """
     cur.execute(statement, {"id": break_id, "text": reason_text})
-    row = cur.fetchall()[0]
+    (
+        break_id,
+        break_host,
+        break_datetime,
+        break_location,
+        holiday_text,
+        break_announced,
+        break_cost,
+        host_reimbursed,
+        claim_id,
+        claim_date,
+        claim_reimbursed,
+    ) = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
-    return row_to_break(row)
+    return Break(
+        break_id,
+        arrow.get(break_datetime),
+        break_location,
+        holiday_text,
+        break_host,
+        arrow_or_none(break_announced, "Europe/London"),
+        break_cost,
+        arrow_or_none(host_reimbursed, "Europe/London"),
+        arrow_or_none(claim_date, "Europe/London"),
+        claim_id,
+        arrow_or_none(claim_reimbursed, "Europe/London"),
+    )
 
 
 def get_maybe_cost(b: Break) -> Decimal:
@@ -443,29 +455,31 @@ def claim_for_breaks(break_ids: list[int]) -> Claim:
     claim_table_statement = f"""
         INSERT INTO Claim(claim_date)
         VALUES(DATE_TRUNC('minute', NOW()))
-        RETURNING claim_id, claim_date, claim_reimbursed
+        RETURNING claim_id, claim_date
     """
     cur.execute(claim_table_statement, {"breaks": break_ids})
-    row = cur.fetchall()[0]
+    claim_row = cur.fetchall()[0]
+    claim_id = claim_row[0]
+    claim_date = arrow.get(claim_row[1])
     claim_item_statement = f"""
         INSERT INTO ClaimItem(claim_id, break_id) (
             SELECT %(claim_id)s, unnest(%(break_ids)s)
         )
     """
-    cur.execute(claim_item_statement, {"claim_id": row[0], "break_ids": break_ids})
+    cur.execute(claim_item_statement, {"claim_id": claim_id, "break_ids": break_ids})
     break_table_statement = f"""
         UPDATE Break
         SET break_host = NULL
-        FROM ({get_breaks_statement(BreakFilters())}) data
         WHERE break.break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
-        RETURNING {get_returning_statement()}
+        RETURNING break_cost
     """
     cur.execute(break_table_statement, {"ids": break_ids})
-    rows = cur.fetchall()
-    updated_breaks = rows_to_breaks(rows)
-    costs = list(map(lambda b: get_maybe_cost(b), updated_breaks))
-    amount = sum(costs)
-    updated_claim = Claim(row[0], arrow.get(row[1]), break_ids, amount, None)
+    break_rows = cur.fetchall()
+    total_cost = 0
+    for row in break_rows:
+        break_cost = row[0]
+        total_cost = total_cost + break_cost
+    updated_claim = Claim(claim_id, claim_date, break_ids, total_cost, None)
     conn.commit()
     disconnect(conn, cur)
     return updated_claim
@@ -515,14 +529,6 @@ def claim_reimbursed(claim_id: int) -> None:
         WHERE claim_id = %(id)s
     """
     cur.execute(claim_statement, {"id": claim_id})
-    break_statement = """
-        UPDATE break
-        SET admin_reimbursed = DATE_TRUNC('minute', NOW())
-        WHERE break_id IN (
-            SELECT UNNEST(breaks_claimed) FROM claim WHERE claim.claim_id = %(id)s
-        )
-    """
-    cur.execute(break_statement, {"id": claim_id})
     conn.commit()
     disconnect(conn, cur)
 
@@ -539,10 +545,35 @@ def after_announced_break(
         RETURNING {get_returning_statement()}
     """
     cur.execute(statement, {"id": cookie_break.id})
-    updated_break = cur.fetchall()[0]
+    disconnect(conn, cur)
+    (
+        break_id,
+        break_host,
+        break_datetime,
+        break_location,
+        holiday_text,
+        break_announced,
+        break_cost,
+        host_reimbursed,
+        claim_id,
+        claim_date,
+        claim_reimbursed,
+    ) = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
-    return row_to_break(updated_break)
+    return Break(
+        break_id,
+        arrow.get(break_datetime),
+        break_location,
+        holiday_text,
+        break_host,
+        arrow_or_none(break_announced, "Europe/London"),
+        break_cost,
+        arrow_or_none(host_reimbursed, "Europe/London"),
+        arrow_or_none(claim_date, "Europe/London"),
+        claim_id,
+        arrow_or_none(claim_reimbursed, "Europe/London"),
+    )
 
 
 def remove_break(break_id: int) -> None:
