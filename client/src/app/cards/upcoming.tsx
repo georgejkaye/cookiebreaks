@@ -1,9 +1,95 @@
 import { useState, useEffect } from "react"
 import { BreakDetails } from "./breaks"
-import { BreaksHeader, Card, CardButtonProps, CardButtons } from "./cards"
+import {
+    ActionButton,
+    BreaksHeader,
+    Card,
+    CardButtonProps,
+    CardButtons,
+    buttonHoverColour,
+} from "./cards"
 import { User, CookieBreak, UpdateFn, getFutureBreaks } from "../structs"
 import { SetState } from "../page"
-import { announceBreak, deleteBreak, setHoliday } from "../api"
+import { announceBreak, deleteBreak, setHoliday, setHost } from "../api"
+
+const BreakHostEditor = (props: {
+    user: User | undefined
+    cookieBreak: CookieBreak
+    updateBreaks: UpdateFn<CookieBreak>
+    setCardLoading: SetState<boolean>
+    setEditingHost: SetState<CookieBreak | undefined>
+}) => {
+    const [hostName, setHostName] = useState(props.cookieBreak.host)
+    const [hostEmail, setHostEmail] = useState(props.cookieBreak.email)
+    const onSubmitHost = () => {
+        setHost(
+            props.user,
+            props.cookieBreak,
+            hostName,
+            hostEmail,
+            props.updateBreaks,
+            props.setCardLoading
+        )
+        props.setEditingHost(undefined)
+    }
+    const onKeyDownHostNameBox = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            onSubmitHost()
+        }
+    }
+    const onChangeHostNameBox = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setHostName(e.target.value)
+    }
+    const onKeyDownHostEmailBox = (
+        e: React.KeyboardEvent<HTMLInputElement>
+    ) => {
+        if (e.key === "Enter") {
+            onSubmitHost()
+        }
+    }
+    const onChangeHostEmailBox = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setHostEmail(e.target.value)
+    }
+    return (
+        <div className="flex flex-col desktop:flex-row my-2">
+            <div className="flex flex-row items-center">
+                <div className="mr-2 w-20">Host name</div>
+                <input
+                    autoFocus
+                    className="m-1 rounded p-1 border-2 bg-white border-bg2"
+                    size={22}
+                    type="text"
+                    value={hostName}
+                    onKeyDown={onKeyDownHostNameBox}
+                    onChange={onChangeHostNameBox}
+                />
+            </div>
+            <div className="flex flex-row items-center">
+                <div className="desktop:ml-4 mr-2 w-20">Host email</div>
+                <input
+                    className="m-1 mr-4 rounded p-1 border-2 bg-white border-bg2"
+                    size={22}
+                    type="text"
+                    value={hostEmail}
+                    onKeyDown={onKeyDownHostEmailBox}
+                    onChange={onChangeHostEmailBox}
+                />
+            </div>
+            <div className="-ml-1">
+                <ActionButton
+                    hoverColour={buttonHoverColour}
+                    icon={"tick"}
+                    onClick={(e) => onSubmitHost()}
+                />
+                <ActionButton
+                    hoverColour={buttonHoverColour}
+                    icon={"cross"}
+                    onClick={(e) => props.setEditingHost(undefined)}
+                />
+            </div>
+        </div>
+    )
+}
 
 export const UpcomingBreakCard = (props: {
     index: number
@@ -11,6 +97,8 @@ export const UpcomingBreakCard = (props: {
     cookieBreak: CookieBreak
     updateBreaks: UpdateFn<CookieBreak>
     setCardLoading: SetState<boolean>
+    editingHostBreak: CookieBreak | undefined
+    setEditingHostBreak: SetState<CookieBreak | undefined>
 }) => {
     const buttons: CardButtonProps[] = [
         {
@@ -23,6 +111,17 @@ export const UpcomingBreakCard = (props: {
                     props.updateBreaks,
                     props.setCardLoading
                 ),
+        },
+        {
+            isVisible: props.cookieBreak.holiday === undefined,
+            icon: "person",
+            onClick: () => {
+                if (props.editingHostBreak === props.cookieBreak) {
+                    props.setEditingHostBreak(undefined)
+                } else {
+                    props.setEditingHostBreak(props.cookieBreak)
+                }
+            },
         },
         {
             isVisible: true,
@@ -49,19 +148,32 @@ export const UpcomingBreakCard = (props: {
         },
     ]
     return (
-        <div className="flex align-stretch flex-col desktop:flex-row">
-            <BreakDetails
-                cookieBreak={props.cookieBreak}
-                user={props.user}
-                setCardLoading={props.setCardLoading}
-                updateBreaks={props.updateBreaks}
-            />
-            {!props.user?.admin ? (
+        <>
+            <div className="flex align-stretch flex-col desktop:flex-row">
+                <BreakDetails
+                    cookieBreak={props.cookieBreak}
+                    user={props.user}
+                    setCardLoading={props.setCardLoading}
+                    updateBreaks={props.updateBreaks}
+                />
+                {!props.user?.admin ? (
+                    ""
+                ) : (
+                    <CardButtons width={"w-48"} buttons={buttons} />
+                )}
+            </div>
+            {props.cookieBreak !== props.editingHostBreak ? (
                 ""
             ) : (
-                <CardButtons width={"w-36"} buttons={buttons} />
+                <BreakHostEditor
+                    setEditingHost={props.setEditingHostBreak}
+                    user={props.user}
+                    cookieBreak={props.cookieBreak}
+                    updateBreaks={props.updateBreaks}
+                    setCardLoading={props.setCardLoading}
+                />
             )}
-        </div>
+        </>
     )
 }
 
@@ -71,6 +183,9 @@ export const UpcomingBreaksCards = (props: {
     updateBreaks: UpdateFn<CookieBreak>
 }) => {
     const [upcomingBreaks, setUpcomingBreaks] = useState<CookieBreak[]>([])
+    const [editingHostBreak, setEditingHostBreak] = useState<
+        CookieBreak | undefined
+    >(undefined)
     useEffect(() => {
         setUpcomingBreaks(getFutureBreaks(props.cookieBreaks))
     }, [props.cookieBreaks])
@@ -87,6 +202,8 @@ export const UpcomingBreaksCards = (props: {
                             cookieBreak={b}
                             updateBreaks={props.updateBreaks}
                             setCardLoading={setCardLoading}
+                            editingHostBreak={editingHostBreak}
+                            setEditingHostBreak={setEditingHostBreak}
                         />
                     )}
                     colour={!b.holiday ? "bg-white" : "bg-gray-200"}

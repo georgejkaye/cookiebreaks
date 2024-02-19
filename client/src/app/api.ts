@@ -8,9 +8,10 @@ const dateOrUndefined = (datetime: string | undefined) =>
 const responseToBreak = (b: any) => ({
     id: b.id,
     host: b.host,
+    email: b.email,
     datetime: new Date(b.break_time),
     location: b.location,
-    holiday: b.holiday,
+    holiday: b.holiday === null ? undefined : b.holiday,
     cost: parseFloat(b.cost),
     announced: dateOrUndefined(b.break_announced),
     reimbursed: dateOrUndefined(b.host_reimbursed),
@@ -178,26 +179,31 @@ export const reimburseBreak = async (
 }
 
 export const setHost = async (
-    user: User,
+    user: User | undefined,
     cookieBreak: CookieBreak,
     host: string,
+    email: string | undefined,
     updateBreaks: UpdateFn<CookieBreak>,
     setLoadingCard: SetState<boolean>
 ) => {
-    let actualHost = host === "" ? undefined : host
-    let endpoint = `/api/breaks/host`
-    let config = {
-        params: {
-            break_id: cookieBreak.id,
-            host_name: actualHost,
-        },
-        headers: getHeaders(user),
+    if (user) {
+        let actualHost = host === "" ? undefined : host
+        let actualEmail = email === "" ? undefined : email
+        let endpoint = `/api/breaks/host`
+        let config = {
+            params: {
+                break_id: cookieBreak.id,
+                host_name: actualHost,
+                host_email: actualEmail,
+            },
+            headers: getHeaders(user),
+        }
+        setLoadingCard(true)
+        let response = await axios.post(endpoint, null, config)
+        let responseData = response.data
+        updateBreaks([responseToBreak(responseData)], [])
+        setTimeout(() => setLoadingCard(false), 1)
     }
-    setLoadingCard(true)
-    let response = await axios.post(endpoint, null, config)
-    let responseData = response.data
-    updateBreaks([responseToBreak(responseData)], [])
-    setTimeout(() => setLoadingCard(false), 1)
 }
 
 export const setHoliday = async (
@@ -263,7 +269,6 @@ export const submitClaim = async (
         let responseData = response.data
         let newClaim = responseToClaim(responseData, breaksToClaim)
         let claims = updateClaims([newClaim], [])
-        console.log("the new claims after submitting are are", claims)
         updateBreaks(newClaim.breaks, [])
         setTimeout(() => setLoadingCards(false), 1)
     }

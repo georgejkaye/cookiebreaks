@@ -1,8 +1,15 @@
+CREATE TABLE Person (
+    user_name TEXT PRIMARY KEY,
+    admin BOOLEAN NOT NULL,
+    hashed_password TEXT NOT NULL,
+    email TEXT NOT NULL
+);
 CREATE TABLE Break (
     break_id SERIAL PRIMARY KEY,
-    break_host TEXT,
     break_datetime TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     break_location TEXT NOT NULL,
+    host_name TEXT,
+    host_email TEXT,
     holiday_text TEXT,
     break_announced TIMESTAMP WITHOUT TIME ZONE,
     break_cost DECIMAL,
@@ -19,14 +26,9 @@ CREATE TABLE ClaimItem (
     FOREIGN KEY(claim_id) REFERENCES Claim(claim_id) ON DELETE CASCADE,
     FOREIGN KEY(break_id) REFERENCES Break(break_id) ON DELETE CASCADE
 );
-CREATE TABLE Host (
-    user_name TEXT PRIMARY KEY,
-    hashed_password TEXT NOT NULL,
-    admin BOOLEAN NOT NULL,
-    email TEXT NOT NULL
-);
-INSERT INTO Host (user_name, hashed_password, admin, email) VALUES (
+INSERT INTO PERSON (user_name, hashed_password, admin, email) VALUES (
     'admin',
     '$2b$12$nstgZNzQWP5vWThNoxG.pOuTrqpgvxsoztJOZXE2gSVx8dD8OySkW',
-    'true', 'admin@cookies.com'
-)
+    'true',
+    'admin@cookies.com'
+);

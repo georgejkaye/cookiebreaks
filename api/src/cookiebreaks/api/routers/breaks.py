@@ -61,8 +61,9 @@ async def insert_break(
     break_datetime: datetime,
     location: str,
     host: Optional[str],
+    email: Optional[str],
 ):
-    new_break = insert_breaks([(arrow.get(break_datetime), location, host)])[0]
+    new_break = insert_breaks([(arrow.get(break_datetime), location, host, email)])[0]
     return break_internal_to_external(new_break, current_user)
 
 
@@ -75,8 +76,9 @@ async def set_host(
     current_user: Annotated[User, Depends(is_admin)],
     break_id: int,
     host_name: Optional[str] = None,
+    host_email: Optional[str] = None,
 ):
-    hosted_break = insert_host(host_name, break_id)
+    hosted_break = insert_host(break_id, host_name, host_email)
     if hosted_break is None:
         raise HTTPException(400, "BreakExternal does not exist")
     return break_internal_to_external(hosted_break, current_user)

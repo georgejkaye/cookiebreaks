@@ -15,17 +15,17 @@ def display_breaks(breaks: list[Break]):
         break_date = b.get_break_date()
         break_time = b.get_break_time()
         if b.holiday:
-            break_host = "holiday"
+            host_name = "holiday"
         elif b.host_reimbursed:
             if b.cost:
-                break_host = format_as_price(b.cost)
+                host_name = format_as_price(b.cost)
             else:
-                break_host = ""
+                host_name = ""
         elif b.host is None:
-            break_host = "no host"
+            host_name = "no host"
         else:
-            break_host = b.host
-        print(f"{i+1}: {break_date} @ {break_time} ({break_host})")
+            host_name = b.host
+        print(f"{i+1}: {break_date} @ {break_time} ({host_name})")
     print(f"{len(breaks) + 1}: Cancel")
 
 
