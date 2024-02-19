@@ -37,7 +37,7 @@ const Home = () => {
         console.log(claims)
     }, [claims])
     useEffect(() => {
-        console.log(claims)
+        console.log(breaks)
     }, [breaks])
     const updateBreaks = (
         newBreaks: CookieBreak[],
@@ -61,7 +61,6 @@ const Home = () => {
             (c1, c2) => c1.id === c2.id,
             (c1, c2) => c1.date.getTime() - c2.date.getTime()
         )
-        console.log("Updated claims are", updatedClaims)
         setClaims(updatedClaims)
         return updatedClaims
     }

@@ -68,8 +68,6 @@ export const AwaitingCompletionCards = (props: {
 }) => {
     const [claimsToComplete, setClaimsToComplete] = useState<Claim[]>([])
     useEffect(() => {
-        console.log("Upading claims")
-        console.log("The claims seen by awaiting completion are", props.claims)
         setClaimsToComplete(getClaimsToComplete(props.claims))
     }, [props.claims])
     return (

@@ -263,7 +263,6 @@ export const submitClaim = async (
         let responseData = response.data
         let newClaim = responseToClaim(responseData, breaksToClaim)
         let claims = updateClaims([newClaim], [])
-        console.log("the new claims after submitting are are", claims)
         updateBreaks(newClaim.breaks, [])
         setTimeout(() => setLoadingCards(false), 1)
     }

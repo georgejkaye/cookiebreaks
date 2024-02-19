@@ -76,7 +76,6 @@ export const AwaitingClaimCards = (props: {
         }
     }
     useEffect(() => {
-        console.log("Updatingo claimos")
         setBreaksToClaim(getBreaksToClaim(props.breaks))
     }, [props.breaks])
     const onClickClaimButton = (e: React.MouseEvent<HTMLButtonElement>) => {
