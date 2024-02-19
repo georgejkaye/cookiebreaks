@@ -292,7 +292,7 @@ def get_specific_breaks(breaks: list[int]) -> list[Break]:
             arrow_or_none(break_announced, "Europe/London"),
             break_cost,
             arrow_or_none(host_reimbursed, "Europe/London"),
-            claim_date,
+            arrow_or_none(claim_date, "Europe/London"),
             claim_id,
             arrow_or_none(claim_reimbursed, "Europe/London"),
         )
@@ -356,7 +356,7 @@ def get_break_objects(filters: BreakFilters = BreakFilters()) -> list[Break]:
             claim_id,
             arrow_or_none(claim_reimbursed, "Europe/London"),
         )
-        break_objs.append(break_objs)
+        break_objs.append(break_obj)
     return break_objs
 
 
