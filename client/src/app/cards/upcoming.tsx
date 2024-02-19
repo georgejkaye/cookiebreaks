@@ -51,36 +51,42 @@ const BreakHostEditor = (props: {
         setHostEmail(e.target.value)
     }
     return (
-        <div className="flex flex-col desktop:flex-row items-center my-2">
-            <div className="mr-2">Host name</div>
-            <input
-                autoFocus
-                className="m-1 rounded p-1 border-2 bg-white border-bg2"
-                size={20}
-                type="text"
-                value={hostName}
-                onKeyDown={onKeyDownHostNameBox}
-                onChange={onChangeHostNameBox}
-            />
-            <div className="ml-4 mr-2">Host email</div>
-            <input
-                className="m-1 mr-4 rounded p-1 border-2 bg-white border-bg2"
-                size={20}
-                type="text"
-                value={hostEmail}
-                onKeyDown={onKeyDownHostEmailBox}
-                onChange={onChangeHostEmailBox}
-            />
-            <ActionButton
-                hoverColour={buttonHoverColour}
-                icon={"tick"}
-                onClick={(e) => onSubmitHost()}
-            />
-            <ActionButton
-                hoverColour={buttonHoverColour}
-                icon={"cross"}
-                onClick={(e) => props.setEditingHost(undefined)}
-            />
+        <div className="flex flex-col desktop:flex-row my-2">
+            <div className="flex flex-row items-center">
+                <div className="mr-2 w-20">Host name</div>
+                <input
+                    autoFocus
+                    className="m-1 rounded p-1 border-2 bg-white border-bg2"
+                    size={22}
+                    type="text"
+                    value={hostName}
+                    onKeyDown={onKeyDownHostNameBox}
+                    onChange={onChangeHostNameBox}
+                />
+            </div>
+            <div className="flex flex-row items-center">
+                <div className="desktop:ml-4 mr-2 w-20">Host email</div>
+                <input
+                    className="m-1 mr-4 rounded p-1 border-2 bg-white border-bg2"
+                    size={22}
+                    type="text"
+                    value={hostEmail}
+                    onKeyDown={onKeyDownHostEmailBox}
+                    onChange={onChangeHostEmailBox}
+                />
+            </div>
+            <div className="-ml-1">
+                <ActionButton
+                    hoverColour={buttonHoverColour}
+                    icon={"tick"}
+                    onClick={(e) => onSubmitHost()}
+                />
+                <ActionButton
+                    hoverColour={buttonHoverColour}
+                    icon={"cross"}
+                    onClick={(e) => props.setEditingHost(undefined)}
+                />
+            </div>
         </div>
     )
 }
@@ -153,7 +159,7 @@ export const UpcomingBreakCard = (props: {
                 {!props.user?.admin ? (
                     ""
                 ) : (
-                    <CardButtons width={"w-36"} buttons={buttons} />
+                    <CardButtons width={"w-48"} buttons={buttons} />
                 )}
             </div>
             {props.cookieBreak !== props.editingHostBreak ? (
