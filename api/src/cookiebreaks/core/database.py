@@ -328,7 +328,36 @@ def get_break_dicts(filters: BreakFilters = BreakFilters()) -> list[dict]:
 
 def get_break_objects(filters: BreakFilters = BreakFilters()) -> list[Break]:
     break_dicts = get_break_dicts(filters)
-    return rows_to_breaks(break_dicts)
+    break_objs = []
+    for row in break_dicts:
+        (
+            break_id,
+            break_host,
+            break_datetime,
+            break_location,
+            holiday_text,
+            break_announced,
+            break_cost,
+            host_reimbursed,
+            claim_id,
+            claim_date,
+            claim_reimbursed,
+        ) = row
+        break_obj = Break(
+            break_id,
+            arrow.get(break_datetime),
+            break_location,
+            holiday_text,
+            break_host,
+            arrow_or_none(break_announced, "Europe/London"),
+            break_cost,
+            arrow_or_none(host_reimbursed, "Europe/London"),
+            arrow_or_none(claim_date, "Europe/London"),
+            claim_id,
+            arrow_or_none(claim_reimbursed, "Europe/London"),
+        )
+        break_objs.append(break_objs)
+    return break_objs
 
 
 def get_next_break() -> Break:
