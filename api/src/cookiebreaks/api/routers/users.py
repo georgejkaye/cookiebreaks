@@ -84,7 +84,7 @@ async def get_current_user(token: Annotated[Optional[str], Depends(oauth2_scheme
 
 async def is_admin(current_user: Annotated[User, Depends(get_current_user)]):
     if current_user and not current_user.admin:
-        raise HTTPException(status_code=400, detail="Not an admin")
+        raise HTTPException(status_code=401, detail="Not an admin")
     return current_user
 
 
@@ -124,10 +124,7 @@ async def login(
         admin_reimbursed,
     )
     breaks = get_breaks(current_user=user, filters=break_filters)
-    if user.admin:
-        claims = get_claims(current_user=user)
-    else:
-        claims = []
+    claims = get_claims(current_user=user)
     return {
         "access_token": access_token,
         "token_type": "bearer",

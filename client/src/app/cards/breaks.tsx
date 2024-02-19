@@ -86,45 +86,6 @@ export const TickCrossInputBox = (props: {
     )
 }
 
-const BreakContentEditor = (props: {
-    user: User | undefined
-    cookieBreak: CookieBreak
-    updateBreaks: UpdateFn<CookieBreak>
-    setEditingText: SetState<boolean>
-    setCardLoading: SetState<boolean>
-}) => {
-    const discardContentText = () => {
-        props.setEditingText(false)
-    }
-    const submitContentText = (text: string) => {
-        if (props.user) {
-            let request = props.cookieBreak.holiday ? setHoliday : setHost
-            let currentValue =
-                props.cookieBreak.holiday && text === "" ? "Holiday" : text
-            request(
-                props.user,
-                props.cookieBreak,
-                currentValue,
-                props.updateBreaks,
-                props.setCardLoading
-            )
-        }
-        props.setEditingText(false)
-    }
-    return (
-        <TickCrossInputBox
-            onClickClose={discardContentText}
-            onClickConfirm={submitContentText}
-            divStyle="h=10"
-            inputStyle="text-sm"
-            placeholder={
-                props.cookieBreak.holiday ? "Holiday" : "Host required"
-            }
-            size={16}
-        />
-    )
-}
-
 const BreakContent = (props: {
     user: User | undefined
     cookieBreak: CookieBreak

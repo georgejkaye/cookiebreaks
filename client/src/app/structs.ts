@@ -9,6 +9,7 @@ export const dateInPast = (dt: Date) => dt.getTime() < Date.now()
 export interface CookieBreak {
     id: number
     host: string
+    email?: string
     location: string
     holiday?: string
     cost?: number

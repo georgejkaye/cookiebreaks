@@ -20,8 +20,8 @@ async def add_test_data(num: int):
         exit(1)
     else:
         break_location_str: str = break_location
-        breaks: list[tuple[arrow.Arrow, str, str | None]] = [
-            (now, break_location_str, "") for i in range(0, num)
+        breaks: list[tuple[arrow.Arrow, str, str | None, str | None]] = [
+            (now, break_location_str, "", "") for i in range(0, num)
         ]
         insert_breaks(breaks)
         return list(

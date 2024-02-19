@@ -84,7 +84,7 @@ const AwaitingReimbursementCard = (props: {
                     <div className="flex flex-row items-center">
                         <input
                             autoFocus
-                            className="m-1 rounded p-1 border-2 bg-white border-bg2 "
+                            className="m-1 rounded p-1 border-2 bg-white border-bg2"
                             size={5}
                             type="text"
                             value={breakCostText}

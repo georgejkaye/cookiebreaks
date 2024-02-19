@@ -22,7 +22,8 @@ class Break:
     break_time: Arrow
     location: str
     holiday: Optional[str] = None
-    host: Optional[str] = None
+    host_name: Optional[str] = None
+    host_email: Optional[str] = None
     break_announced: Optional[Arrow] = None
     cost: Optional[Decimal] = None
     host_reimbursed: Optional[Arrow] = None

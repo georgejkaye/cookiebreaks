@@ -20,7 +20,7 @@ def create_calendar_event(next_break: Break, participants: list[str]) -> str:
     cal.add("method", "REQUEST")
 
     event = Event()
-    event.add("summary", f"Cookie break: {next_break.host}")
+    event.add("summary", f"Cookie break: {next_break.host_name}")
     event.add("dtstart", next_break.break_time.datetime)
     event.add("dtend", next_break.break_time.shift(hours=1).datetime)
     event.add("dtstamp", arrow.now().datetime)
