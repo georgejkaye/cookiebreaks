@@ -553,13 +553,28 @@ def after_announced_break(
         SET break_announced = NOW()
         FROM ({get_breaks_statement(BreakFilters())}) data
         WHERE break.break_id = %(id)s
-        RETURNING {get_returning_statement()}
+        RETURNING break_id, break_datetime, break_location, host_name, host_email, break_announced
     """
     cur.execute(statement, {"id": cookie_break.id})
-    updated_break = cur.fetchall()[0]
+    (
+        break_id,
+        break_datetime,
+        break_location,
+        host_name,
+        host_email,
+        break_announced,
+    ) = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
-    return row_to_break(updated_break)
+    return Break(
+        break_id,
+        arrow.get(break_datetime),
+        break_location,
+        None,
+        host_name,
+        host_email,
+        arrow.get(break_announced),
+    )
 
 
 def remove_break(break_id: int) -> None:
