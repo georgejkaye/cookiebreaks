@@ -92,7 +92,7 @@ def get_breaks_statement(filters: BreakFilters = BreakFilters()) -> str:
 
 def get_returning_statement() -> str:
     return f"""
-        break.break_id, break.host_name, break.break_datetime,
+        break.break_id, break.host_name, break.host_email, break.break_datetime,
         break.break_location, break.holiday_text, break.break_announced,
         break.break_cost, break.host_reimbursed, data.claim_id,
         data.claim_date, data.claim_reimbursed
@@ -173,9 +173,9 @@ def reimburse_host(break_id: int, cost: Decimal) -> Break:
         None,
         host_name,
         host_email,
-        arrow.get(break_announced),
+        arrow_or_none(break_announced, "Europe/London"),
         cost,
-        arrow.get(host_reimbursed),
+        arrow_or_none(host_reimbursed, "Europe/London"),
         None,
         None,
         None,
@@ -187,16 +187,42 @@ def mask_host(break_id: int) -> Break:
     (conn, cur) = connect()
     statement = f"""
         UPDATE break
-        SET host_name = null
+        SET host_name = null, host_email = null,
         FROM ({get_breaks_statement()}) data
         WHERE break.break_id = %(is)s
         RETURNING {get_returning_statement()}
     """
     cur.execute(statement, {"id": break_id})
-    row = cur.fetchall()[0]
+    (
+        break_id,
+        break_host,
+        break_email,
+        break_datetime,
+        break_location,
+        holiday_text,
+        break_announced,
+        break_cost,
+        host_reimbursed,
+        claim_id,
+        claim_date,
+        claim_reimbursed,
+    ) = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
-    return row_to_break(row)
+    return Break(
+        break_id,
+        arrow.get(break_datetime),
+        break_location,
+        holiday_text,
+        break_host,
+        break_email,
+        arrow_or_none(break_announced, "Europe/London"),
+        break_cost,
+        arrow_or_none(host_reimbursed, "Europe/London"),
+        arrow_or_none(claim_date, "Europe/London"),
+        claim_id,
+        arrow_or_none(claim_reimbursed, "Europe/London"),
+    )
 
 
 def get_exists_where_clause(
@@ -226,45 +252,6 @@ def arrow_or_none(candidate, timezone: str) -> Optional[Arrow]:
         return None
     else:
         return arrow.get(candidate, timezone)
-
-
-def row_to_break(row) -> Break:
-    (
-        break_id,
-        host_name,
-        host_email,
-        break_datetime,
-        break_location,
-        holiday_text,
-        break_announced,
-        break_cost,
-        host_reimbursed,
-        claim_id,
-        claim_date,
-        claim_reimbursed,
-    ) = row
-    timezone = "Europe/London"
-    return Break(
-        break_id,
-        arrow.get(break_datetime, timezone),
-        break_location,
-        holiday_text,
-        host_name,
-        host_email,
-        arrow_or_none(break_announced, timezone),
-        break_cost,
-        arrow_or_none(host_reimbursed, timezone),
-        arrow_or_none(claim_date, timezone),
-        claim_id,
-        claim_reimbursed,
-    )
-
-
-def rows_to_breaks(rows) -> list[Break]:
-    next_breaks = []
-    for row in rows:
-        next_breaks.append(row_to_break(row))
-    return next_breaks
 
 
 def get_specific_breaks(breaks: list[int]) -> list[Break]:
@@ -443,10 +430,36 @@ def set_holiday(break_id: int, reason: Optional[str] = None) -> Break:
             RETURNING {get_returning_statement()}
         """
     cur.execute(statement, {"id": break_id, "text": reason_text})
-    row = cur.fetchall()[0]
+    (
+        break_id,
+        break_host,
+        break_email,
+        break_datetime,
+        break_location,
+        holiday_text,
+        break_announced,
+        break_cost,
+        host_reimbursed,
+        claim_id,
+        claim_date,
+        claim_reimbursed,
+    ) = cur.fetchall()[0]
     conn.commit()
     disconnect(conn, cur)
-    return row_to_break(row)
+    return Break(
+        break_id,
+        arrow.get(break_datetime),
+        break_location,
+        holiday_text,
+        break_host,
+        break_email,
+        arrow_or_none(break_announced, "Europe/London"),
+        break_cost,
+        arrow_or_none(host_reimbursed, "Europe/London"),
+        arrow_or_none(claim_date, "Europe/London"),
+        claim_id,
+        arrow_or_none(claim_reimbursed, "Europe/London"),
+    )
 
 
 def get_maybe_cost(b: Break) -> Decimal:
@@ -460,29 +473,31 @@ def claim_for_breaks(break_ids: list[int]) -> Claim:
     claim_table_statement = f"""
         INSERT INTO Claim(claim_date)
         VALUES(DATE_TRUNC('minute', NOW()))
-        RETURNING claim_id, claim_date, claim_reimbursed
+        RETURNING claim_id, claim_date
     """
     cur.execute(claim_table_statement, {"breaks": break_ids})
-    row = cur.fetchall()[0]
+    claim_row = cur.fetchall()[0]
+    claim_id = claim_row[0]
+    claim_date = arrow.get(claim_row[1])
     claim_item_statement = f"""
         INSERT INTO ClaimItem(claim_id, break_id) (
             SELECT %(claim_id)s, unnest(%(break_ids)s)
         )
     """
-    cur.execute(claim_item_statement, {"claim_id": row[0], "break_ids": break_ids})
+    cur.execute(claim_item_statement, {"claim_id": claim_id, "break_ids": break_ids})
     break_table_statement = f"""
         UPDATE Break
-        SET host_name = NULL
-        FROM ({get_breaks_statement(BreakFilters())}) data
+        SET host_name = NULL, host_email = NULL
         WHERE break.break_id IN (SELECT * FROM unnest(%(ids)s) AS ids)
-        RETURNING {get_returning_statement()}
+        RETURNING break_cost
     """
     cur.execute(break_table_statement, {"ids": break_ids})
-    rows = cur.fetchall()
-    updated_breaks = rows_to_breaks(rows)
-    costs = list(map(lambda b: get_maybe_cost(b), updated_breaks))
-    amount = sum(costs)
-    updated_claim = Claim(row[0], arrow.get(row[1]), break_ids, amount, None)
+    break_rows = cur.fetchall()
+    total_cost = 0
+    for row in break_rows:
+        break_cost = row[0]
+        total_cost = total_cost + break_cost
+    updated_claim = Claim(claim_id, claim_date, break_ids, total_cost, None)
     conn.commit()
     disconnect(conn, cur)
     return updated_claim
