@@ -41,7 +41,7 @@ export const CardButtons = (props: {
     width: string
     buttons: CardButtonProps[]
 }) => (
-    <div className="w-36 flex justify-center desktop:justify-end">
+    <div className="desktop:w-36 -ml-1 desktop:ml-0 flex desktop:justify-end">
         {props.buttons.map(({ isVisible, icon, onClick }, i) =>
             !isVisible ? (
                 ""

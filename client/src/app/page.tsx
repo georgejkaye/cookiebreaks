@@ -86,10 +86,10 @@ const Home = () => {
                     setLoadingData={setLoadingData}
                 />
                 <div className="m-5 w-mobileContent tablet:w-tabletContent desktop:w-content mx-auto">
-                    <div className="text-center">
+                    <div className="text-lg">
                         The cookie break is the school's longest running social
                         event: every week a different host buys some biscuits up
-                        to the amount of £10 and shares them with everyone else.
+                        to the amount of £15 and shares them with everyone else.
                         Thanks to the gracious funding of Research Committee,
                         they get reimbursed for their troubles!
                     </div>

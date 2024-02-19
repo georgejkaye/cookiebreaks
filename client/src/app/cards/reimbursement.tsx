@@ -63,7 +63,7 @@ const AwaitingReimbursementCard = (props: {
     }
     return (
         <>
-            <div className="flex align-stretch flex-col justify-evenly items-center desktop:flex-row">
+            <div className="flex align-stretch flex-col desktop:flex-row">
                 <BreakDetails
                     cookieBreak={props.cookieBreak}
                     user={props.user}
