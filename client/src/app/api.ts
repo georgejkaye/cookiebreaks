@@ -10,7 +10,7 @@ const responseToBreak = (b: any) => ({
     host: b.host,
     datetime: new Date(b.break_time),
     location: b.location,
-    holiday: b.holiday,
+    holiday: b.holiday === null ? undefined : b.holiday,
     cost: parseFloat(b.cost),
     announced: dateOrUndefined(b.break_announced),
     reimbursed: dateOrUndefined(b.host_reimbursed),
