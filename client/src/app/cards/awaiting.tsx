@@ -29,10 +29,10 @@ const AwaitingClaimCard = (props: {
         },
     ]
     return (
-        <div className="flex align-stretch flex-col justify-evenly items-center desktop:flex-row">
+        <div className="flex flex-col desktop:flex-row">
             <div className="flex flex-col desktop:flex-row flex-1">
                 <BreakDate cookieBreak={props.cookieBreak} />
-                <div className="flex flex-row justify-center items-center mx-4 mb-2 desktop:my-0">
+                <div className="flex flex-row desktop:mx-4 mb-2 desktop:my-0">
                     {formatAsPrice(
                         !props.cookieBreak.cost ? 0 : props.cookieBreak.cost
                     )}
@@ -92,7 +92,7 @@ export const AwaitingClaimCards = (props: {
     }
     return (
         <div>
-            <div className="flex flex-col desktop:flex-row items-center border-t">
+            <div className="flex flex-col desktop:flex-row border-t">
                 <h2 className="flex-1 p-4 text-2xl font-bold">
                     Awaiting claim
                 </h2>

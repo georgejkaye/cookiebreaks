@@ -19,7 +19,7 @@ export const ClaimDetails = (props: { claim: Claim }) => {
             <div className="w-full desktop:w-1/2 my-2 font-bold">
                 {getDatetimeString(props.claim.date)}
             </div>
-            <div className="flex flex-row justify-center items-center mx-4 mb-2 desktop:my-0">
+            <div className="flex flex-row desktop:mx-4 mb-2 desktop:my-0">
                 {formatAsPrice(props.claim.amount)}
             </div>
         </div>
@@ -49,7 +49,7 @@ const AwaitingCompletionCard = (props: {
         },
     ]
     return (
-        <div className="flex align-stretch flex-col justify-evenly items-center desktop:flex-row">
+        <div className="flex align-stretch flex-col desktop:flex-row">
             <ClaimDetails claim={props.claim} />
             {!props.user?.admin ? (
                 ""

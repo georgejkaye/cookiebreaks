@@ -141,8 +141,7 @@ const BreakContent = (props: {
             ? "Host reimbursed"
             : "Host required"
         : props.cookieBreak.host
-    let breakContentStyle =
-        "flex flex-row justify-center items-center mx-4 mb-2 desktop:my-0"
+    let breakContentStyle = "flex flex-row desktop:mx-4 mb-2 desktop:my-0"
     return <div className={breakContentStyle}>{contentText}</div>
 }
 
