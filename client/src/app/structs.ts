@@ -6,6 +6,11 @@ export const getDatetimeText = (datetime: Date) => {
 
 export const dateInPast = (dt: Date) => dt.getTime() < Date.now()
 
+export enum Mode {
+    Main,
+    Admin,
+}
+
 export interface CookieBreak {
     id: number
     host: string

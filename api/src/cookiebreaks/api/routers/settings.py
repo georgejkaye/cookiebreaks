@@ -2,7 +2,7 @@ from datetime import time
 from decimal import Decimal
 from typing import Annotated, Optional
 from cookiebreaks.api.routers.users import is_admin
-from cookiebreaks.core.database import select_settings
+from cookiebreaks.core.database import select_settings, set_settings
 from cookiebreaks.core.structs import Settings, User
 from fastapi import APIRouter, Depends
 
@@ -24,4 +24,4 @@ def post_settings(
     budget: Decimal,
     location: str,
 ):
-    set_settings(day, time, budget, location)
+    set_settings(day, time, location, budget)
