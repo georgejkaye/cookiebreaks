@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { SetState, Mode } from "./page"
+import { SetState } from "./page"
 import {
     User,
     CookieBreak,
@@ -8,6 +8,7 @@ import {
     Day,
     dayNumberToDay,
     formatAsPrice,
+    Mode,
 } from "./structs"
 import { login, postSettings } from "./api"
 import { TailSpin } from "react-loader-spinner"

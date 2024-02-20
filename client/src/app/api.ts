@@ -62,6 +62,7 @@ export const login = async (
 ) => {
     let endpoint = `/api/users/token`
     let data = new FormData()
+    console.log(username, password)
     data.append("username", username)
     data.append("password", password)
     data.append("grant_type", "")

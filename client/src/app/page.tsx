@@ -1,7 +1,14 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Claim, CookieBreak, Settings, User, replaceItems } from "./structs"
+import {
+    Claim,
+    CookieBreak,
+    Mode,
+    Settings,
+    User,
+    replaceItems,
+} from "./structs"
 import { getData, submitClaim } from "./api"
 import { TopBar } from "./bar"
 import { Manrope } from "next/font/google"
@@ -25,11 +32,6 @@ export interface Data {
     claims: Claim[]
 }
 
-export enum Mode {
-    Main,
-    Admin,
-}
-
 const Home = () => {
     const [mode, setMode] = useState(Mode.Main)
     const [user, setUser] = useState<User | undefined>(undefined)
@@ -47,6 +49,9 @@ const Home = () => {
     useEffect(() => {
         console.log(breaks)
     }, [breaks])
+    useEffect(() => {
+        console.log(settings)
+    }, [settings])
     const updateBreaks = (
         newBreaks: CookieBreak[],
         breaksToRemove: CookieBreak[]

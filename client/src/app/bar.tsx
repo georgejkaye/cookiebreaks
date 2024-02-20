@@ -1,9 +1,9 @@
 import React, { Dispatch, SetStateAction, useState } from "react"
-import { User, CookieBreak, Claim, Settings } from "./structs"
+import { User, CookieBreak, Claim, Settings, Mode } from "./structs"
 import Loader from "./loader"
 import { getData, login } from "./api"
 import { LoginModal, LogoutModal } from "./modals/login"
-import { Data, Mode, SetState } from "./page"
+import { Data, SetState } from "./page"
 
 const InputBox = (props: {
     type: string
