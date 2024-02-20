@@ -1,9 +1,25 @@
 import axios from "axios"
-import { Claim, CookieBreak, UpdateFn, User } from "./structs"
+import {
+    Claim,
+    CookieBreak,
+    Day,
+    Settings,
+    UpdateFn,
+    User,
+    dayNumberToDay,
+    dayToDayNumber,
+} from "./structs"
 import { Data, SetState } from "./page"
 
 const dateOrUndefined = (datetime: string | undefined) =>
     datetime ? new Date(datetime) : undefined
+
+const responseToSettings = (set: any) => ({
+    day: dayNumberToDay(set.day),
+    time: new Date(`1970-01-01T${set.time}`),
+    location: set.location,
+    budget: Number.parseFloat(set.budget),
+})
 
 const responseToBreak = (b: any) => ({
     id: b.id,
@@ -71,11 +87,13 @@ export const login = async (
             )
             setBreaks(breakObjects)
             setClaims(claimObjects)
+            setTimeout(() => setLoading(false), 1)
+            return 0
         } catch (err) {
             console.log(err)
             setStatus("Could not log in...")
-        } finally {
             setTimeout(() => setLoading(false), 1)
+            return 1
         }
     }
 }
@@ -84,14 +102,44 @@ export const getData = async (
     user: User | undefined,
     setBreaks: SetState<CookieBreak[]>,
     setClaims: SetState<Claim[]>,
+    setSettings: SetState<Settings | undefined>,
     setLoadingData: SetState<boolean>
 ) => {
     setLoadingData(true)
-    let breaks = await getBreaks(user)
-    let claims = await getClaims(user, breaks)
+    let endpoint = `/api/data`
+    let config = {
+        headers: getHeaders(user),
+    }
+    let response = await axios.get(endpoint, config)
+    let data = response.data
+    let settings = responseToSettings(data.settings)
+    let breaks = data.breaks.map(responseToBreak)
+    let claims = data.claims.map(responseToClaim)
+    setSettings(settings)
     setBreaks(breaks)
     setClaims(claims)
     setTimeout(() => setLoadingData(false))
+}
+
+export const postSettings = async (
+    user: User | undefined,
+    day: Day,
+    time: Date,
+    location: string,
+    budget: number
+) => {
+    let endpoint = `/api/settings`
+    let config = {
+        params: {
+            day: dayToDayNumber(day),
+            time: time.toTimeString().substring(0, 5),
+            location: location,
+            budget: budget,
+        },
+        headers: getHeaders(user),
+    }
+    let response = await axios.get(endpoint, config)
+    return response.status
 }
 
 export const getBreaks = async (user: User | undefined) => {

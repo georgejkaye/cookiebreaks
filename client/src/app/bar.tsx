@@ -1,9 +1,9 @@
 import React, { Dispatch, SetStateAction, useState } from "react"
-import { User, CookieBreak, Claim } from "./structs"
+import { User, CookieBreak, Claim, Settings } from "./structs"
 import Loader from "./loader"
 import { getData, login } from "./api"
 import { LoginModal, LogoutModal } from "./modals/login"
-import { Data, SetState } from "./page"
+import { Data, Mode, SetState } from "./page"
 
 const InputBox = (props: {
     type: string
@@ -30,6 +30,8 @@ const LoginButton = (props: {
     setClaims: SetState<Claim[]>
     setLoadingLogin: SetState<boolean>
     user: User | undefined
+    mode: Mode
+    setMode: SetState<Mode>
 }) => {
     const [isActive, setActive] = useState(false)
     const [userText, setUserText] = useState("")
@@ -54,9 +56,13 @@ const LoginButton = (props: {
         <>
             <div
                 className="hover:underline cursor-pointer px-2"
-                onClick={toggleLoginButton}
+                onClick={(e) =>
+                    props.mode === Mode.Main
+                        ? props.setMode(Mode.Admin)
+                        : props.setMode(Mode.Main)
+                }
             >
-                {!props.user ? "Login" : props.user.user}
+                {!props.user ? "Login" : "Settings"}
             </div>
             {!props.user ? (
                 <LoginModal
@@ -85,6 +91,8 @@ const LoginRegion = (props: {
     setBreaks: SetState<CookieBreak[]>
     setClaims: SetState<Claim[]>
     user: User | undefined
+    mode: Mode
+    setMode: SetState<Mode>
 }) => {
     const [isLoadingLogin, setLoadingLogin] = useState(false)
     return (
@@ -98,6 +106,8 @@ const LoginRegion = (props: {
                     setClaims={props.setClaims}
                     setUser={props.setUser}
                     setLoadingLogin={setLoadingLogin}
+                    mode={props.mode}
+                    setMode={props.setMode}
                 />
             )}
         </div>
@@ -108,6 +118,7 @@ const RefreshButton = (props: {
     user: User | undefined
     setBreaks: SetState<CookieBreak[]>
     setClaims: SetState<Claim[]>
+    setSettings: SetState<Settings | undefined>
     setLoadingData: SetState<boolean>
 }) => {
     const onClickRefresh = (e: React.MouseEvent<HTMLButtonElement>) =>
@@ -115,6 +126,7 @@ const RefreshButton = (props: {
             props.user,
             props.setBreaks,
             props.setClaims,
+            props.setSettings,
             props.setLoadingData
         )
     return <button onClick={onClickRefresh}>Refresh</button>
@@ -124,15 +136,19 @@ const RightButtons = (props: {
     setUser: SetState<User | undefined>
     setBreaks: SetState<CookieBreak[]>
     setClaims: SetState<Claim[]>
+    setSettings: SetState<Settings | undefined>
     setLoadingData: SetState<boolean>
     user: User | undefined
+    mode: Mode
+    setMode: SetState<Mode>
 }) => {
     return (
-        <div className="ml-auto flex flex-row">
+        <div className="ml-auto flex flex-row gap-5">
             <RefreshButton
                 user={props.user}
                 setBreaks={props.setBreaks}
                 setClaims={props.setClaims}
+                setSettings={props.setSettings}
                 setLoadingData={props.setLoadingData}
             />
             <LoginRegion
@@ -140,6 +156,8 @@ const RightButtons = (props: {
                 setBreaks={props.setBreaks}
                 setClaims={props.setClaims}
                 setUser={props.setUser}
+                mode={props.mode}
+                setMode={props.setMode}
             />
         </div>
     )
@@ -149,8 +167,11 @@ export const TopBar = (props: {
     setUser: SetState<User | undefined>
     setBreaks: SetState<CookieBreak[]>
     setClaims: SetState<Claim[]>
+    setSettings: SetState<Settings | undefined>
     setLoadingData: SetState<boolean>
     user: User | undefined
+    mode: Mode
+    setMode: SetState<Mode>
 }) => {
     return (
         <div className="flex items-center h-10 p-4 pr-2 bg-bg2 text-fg2">
@@ -159,8 +180,11 @@ export const TopBar = (props: {
                 user={props.user}
                 setBreaks={props.setBreaks}
                 setClaims={props.setClaims}
+                setSettings={props.setSettings}
                 setLoadingData={props.setLoadingData}
                 setUser={props.setUser}
+                mode={props.mode}
+                setMode={props.setMode}
             />
         </div>
     )
