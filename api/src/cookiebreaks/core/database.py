@@ -1,3 +1,4 @@
+from datetime import time
 from decimal import Decimal
 from unittest.util import strclass
 import arrow
@@ -12,6 +13,7 @@ from cookiebreaks.core.structs import (
     Claim,
     ClaimFilters,
     Arrow,
+    Settings,
     User,
 )
 
@@ -30,6 +32,35 @@ def connect() -> tuple[Any, Any]:
 def disconnect(conn: Any, cur: Any) -> None:
     conn.close()
     cur.close()
+
+
+def select_settings() -> Settings:
+    (conn, cur) = connect()
+    statement = """
+        SELECT day, time, location, budget
+        FROM Settings
+    """
+    cur.execute(statement)
+    (day, time, location, budget) = cur.fetchall()[0]
+    conn.close()
+    return Settings(day, time, location, budget)
+
+
+def set_settings(day: int, time: time, location: str, budget: Decimal):
+    (conn, cur) = connect()
+    statement = """
+        UPDATE Settings
+        SET
+            day = %(day)s,
+            time = %(time)s,
+            location = %(location)s,
+            budget = %(budget)s
+    """
+    cur.execute(
+        statement, {"day": day, "time": time, "location": location, "budget": budget}
+    )
+    conn.commit()
+    conn.close()
 
 
 def get_user(username: str) -> Optional[User]:

@@ -1,3 +1,13 @@
+CREATE TABLE Settings (
+    day INT NOT NULL,
+    time TIME NOT NULL,
+    location TEXT NOT NULL,
+    budget DECIMAL,
+    CONSTRAINT max_day CHECK (day between 0 and 6)
+);
+INSERT INTO Settings (day, time, location, budget) VALUES (
+    2, '14:30', 'LG06a', 15.0
+);
 CREATE TABLE Person (
     user_name TEXT PRIMARY KEY,
     admin BOOLEAN NOT NULL,
@@ -26,7 +36,7 @@ CREATE TABLE ClaimItem (
     FOREIGN KEY(claim_id) REFERENCES Claim(claim_id) ON DELETE CASCADE,
     FOREIGN KEY(break_id) REFERENCES Break(break_id) ON DELETE CASCADE
 );
-INSERT INTO PERSON (user_name, hashed_password, admin, email) VALUES (
+INSERT INTO Person (user_name, hashed_password, admin, email) VALUES (
     'admin',
     '$2b$12$nstgZNzQWP5vWThNoxG.pOuTrqpgvxsoztJOZXE2gSVx8dD8OySkW',
     'true',

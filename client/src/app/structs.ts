@@ -27,6 +27,53 @@ export interface Claim {
     reimbursed?: Date
 }
 
+export enum Day {
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday,
+}
+
+export const dayNumberToDay = (d: number) =>
+    d === 0
+        ? Day.Monday
+        : d === 1
+        ? Day.Tuesday
+        : d === 2
+        ? Day.Wednesday
+        : d === 3
+        ? Day.Thursday
+        : d === 4
+        ? Day.Friday
+        : d === 5
+        ? Day.Saturday
+        : Day.Sunday
+
+export const dayToDayNumber = (d: Day) =>
+    d === Day.Monday
+        ? 0
+        : d === Day.Tuesday
+        ? 1
+        : d === Day.Wednesday
+        ? 2
+        : d === Day.Thursday
+        ? 3
+        : d === Day.Friday
+        ? 4
+        : d === Day.Saturday
+        ? 5
+        : 6
+
+export interface Settings {
+    day: Day
+    time: Date
+    budget: number
+    location: string
+}
+
 export const breakInPast = (cookieBreak: CookieBreak) =>
     dateInPast(cookieBreak.datetime)
 
