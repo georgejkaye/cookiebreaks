@@ -2,6 +2,15 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Literal, Optional
 from arrow import Arrow
+from datetime import time
+
+
+@dataclass
+class Settings:
+    day: int
+    time: time
+    location: str
+    budget: Decimal
 
 
 @dataclass

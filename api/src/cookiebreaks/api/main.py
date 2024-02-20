@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 
-from cookiebreaks.api.routers import users, breaks, claims, debug
+from cookiebreaks.api.routers import data, users, breaks, claims, debug, settings
 from cookiebreaks.core.env import get_env_path, get_env_variable, load_envs
 
 tags_metadata = [
     {"name": "users", "description": "Authenticate users"},
+    {"name": "data", "description": "Get cookie break data"},
+    {"name": "settings", "description": "View and modify cookie break settings"},
     {"name": "breaks", "description": "Operations for interacting with cookie breaks"},
     {
         "name": "claims",
@@ -30,6 +32,8 @@ app = FastAPI(
 )
 
 app.include_router(users.router)
+app.include_router(data.router)
+app.include_router(settings.router)
 app.include_router(breaks.router)
 app.include_router(claims.router)
 app.include_router(debug.router)
