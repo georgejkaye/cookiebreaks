@@ -115,7 +115,7 @@ export const getData = async (
     let data = response.data
     let settings = responseToSettings(data.settings)
     let breaks = data.breaks.map(responseToBreak)
-    let claims = data.claims.map(responseToClaim)
+    let claims = data.claims.map((c: any) => responseToClaim(c, breaks))
     setSettings(settings)
     setBreaks(breaks)
     setClaims(claims)
