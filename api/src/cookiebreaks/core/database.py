@@ -1,6 +1,5 @@
 from datetime import time
 from decimal import Decimal
-from unittest.util import strclass
 import arrow
 import psycopg2
 
@@ -408,30 +407,38 @@ def to_postgres_day(day: int) -> int:
 
 def insert_missing_breaks() -> list[Break]:
     (conn, cur) = connect()
+    break_day = int(get_env_variable("BREAK_DAY"))
+    break_time = arrow.get(get_env_variable("BREAK_TIME"), "HH:mm")
+    today = arrow.now(get_env_variable("TIMEZONE"))
+    today_day = today.weekday()
+    day_diff = break_day - today_day
+    if day_diff > 0:
+        day_offset = day_diff
+    else:
+        day_offset = 6 - today_day + break_day
+    break_max = int(get_env_variable("BREAK_MAX"))
+    break_days = []
+    for i in range(0, break_max):
+        break_date = today.shift(days=day_offset + i * 7).replace(
+            hour=break_time.time().hour,
+            minute=break_time.time().minute,
+            second=0,
+            microsecond=0,
+            tzinfo=get_env_variable("TIMEZONE"),
+        )
+        break_days.append(break_date)
     statement = f"""
         INSERT INTO break (break_datetime, break_location) (
-            SELECT days AS break_datetime, %(location)s
-            FROM (
-                SELECT days
-                FROM generate_series(
-                    CURRENT_DATE + TIME %(time)s,
-                    CURRENT_DATE + TIME %(time)s + INTERVAL %(max)s,
-                    '1 day'
-                ) AS days
-                WHERE EXTRACT(DOW from days) = %(day)s
-            ) AS dates
-            WHERE dates.days NOT IN (SELECT break_datetime FROM break)
+            SELECT unnest(%(datetimes)s), unnest(%(locations)s)
         )
-        RETURNING
-            break_id, break_datetime, break_location
+        ON CONFLICT DO NOTHING
+        RETURNING break_id, break_datetime, break_location
     """
     cur.execute(
         statement,
         {
-            "location": get_env_variable("BREAK_LOCATION"),
-            "time": get_env_variable("BREAK_TIME"),
-            "max": f"{get_env_variable('BREAK_MAX')} weeks",
-            "day": int(get_env_variable("BREAK_DAY")) + 1,
+            "locations": [get_env_variable("BREAK_LOCATION") for day in break_days],
+            "datetimes": [break_day.datetime for break_day in break_days],
         },
     )
     rows = cur.fetchall()
