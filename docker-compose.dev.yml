@@ -55,6 +55,7 @@ services:
       DB_NAME: cookies
       DB_PASSWORD: /run/secrets/db_password
       MAILING_LISTS: ${MAILING_LISTS}
+      TIMEZONE: ${TIMEZONE}
     secrets:
       - api_secret
       - gpg_private

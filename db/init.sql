@@ -21,14 +21,15 @@ CREATE TABLE Break (
     host_name TEXT,
     host_email TEXT,
     holiday_text TEXT,
-    break_announced TIMESTAMP WITHOUT TIME ZONE,
+    break_announced TIMESTAMP WITH TIME ZONE,
     break_cost DECIMAL,
-    host_reimbursed TIMESTAMP WITHOUT TIME ZONE
+    host_reimbursed TIMESTAMP WITH TIME ZONE,
+    UNIQUE (break_datetime, break_location)
 );
 CREATE TABLE Claim (
     claim_id SERIAL PRIMARY KEY,
-    claim_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    claim_reimbursed TIMESTAMP WITHOUT TIME ZONE
+    claim_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    claim_reimbursed TIMESTAMP WITH TIME ZONE
 );
 CREATE TABLE ClaimItem (
     claim_id INT NOT NULL,

@@ -42,7 +42,7 @@ def request_update(endpoint: str, token: str):
     requests.post(url, headers=headers)
 
 
-def main() -> str:
+def main():
     endpoint = get_env_variable("API_ENDPOINT")
     token = get_token(
         endpoint,
