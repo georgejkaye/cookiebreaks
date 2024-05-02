@@ -415,7 +415,7 @@ def insert_missing_breaks() -> list[Break]:
     if day_diff > 0:
         day_offset = day_diff
     else:
-        day_offset = 6 - today_day + break_day
+        day_offset = 7 - today_day + break_day
     break_max = int(get_env_variable("BREAK_MAX"))
     break_days = []
     for i in range(0, break_max):
